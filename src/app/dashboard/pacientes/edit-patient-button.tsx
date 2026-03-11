@@ -64,9 +64,9 @@ export function EditPatientButton({ patient }: { patient: any }) {
                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative z-10 border border-zinc-200/50 dark:border-zinc-800"
+                            className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-lg relative z-10 border border-zinc-200/50 dark:border-zinc-800"
                         >
-                            <div className="bg-gradient-to-r from-[var(--color-hospital-blue)] to-[var(--color-hospital-light)] px-6 py-4 flex items-center justify-between">
+                            <div className="bg-gradient-to-r from-[var(--color-hospital-blue)] to-[var(--color-hospital-light)] px-6 py-4 rounded-t-3xl flex items-center justify-between">
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                     <Edit2 size={18} className="text-blue-100" />
                                     Actualizar Datos del Paciente
