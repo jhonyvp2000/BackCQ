@@ -5,14 +5,18 @@ import { cqPatientPii, cqPatients, cqSurgeries } from "@/db/schema";
 import { eq, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-export async function lookupPatientByDni(dni: string) {
-    if (!dni || dni.length < 8) return null;
+export async function lookupPatientByDni(rawId: string) {
+    if (!rawId) return null;
+    const dni = rawId.trim();
+    if (dni.length < 8) return null;
 
     try {
         const result = await db.select().from(cqPatientPii).where(
             or(
                 eq(cqPatientPii.dni, dni),
-                eq(cqPatientPii.historiaClinica, dni)
+                eq(cqPatientPii.historiaClinica, dni),
+                eq(cqPatientPii.carnetExtranjeria, dni),
+                eq(cqPatientPii.pasaporte, dni)
             )
         );
 

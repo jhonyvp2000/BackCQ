@@ -206,7 +206,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
     // Debounce the DNI search
     useEffect(() => {
-        if (patientDni.length >= 8) {
+        if (patientDni.length >= 5) {
             setIsSearching(true);
             const timeoutId = setTimeout(async () => {
                 const res = await lookupPatientByDni(patientDni);
@@ -305,7 +305,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
 
                                 <AnimatePresence>
-                                    {patientDni.length >= 8 && !isSearching && (
+                                    {patientDni.length >= 5 && !isSearching && (
                                         <motion.div
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: 'auto' }}

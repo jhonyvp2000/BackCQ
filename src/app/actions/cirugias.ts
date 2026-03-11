@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqProcedures, cqSurgeryProcedures } from "@/db/schema";
-import { eq, desc, asc, and, gte, lte, ne, inArray } from "drizzle-orm";
+import { eq, desc, asc, and, gte, lte, ne, inArray, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function getActiveDiagnoses() {
@@ -101,7 +101,8 @@ function getDurationMs(durationStr: string): number {
 }
 
 export async function createSurgery(formData: FormData) {
-    const patientId = formData.get("patient_id") as string;
+    const patientIdRaw = formData.get("patient_id") as string;
+    const patientId = patientIdRaw ? patientIdRaw.trim() : "";
     const operatingRoomId = formData.get("operating_room_id") as string | null;
     const scheduledDateStr = formData.get("scheduled_date") as string;
     const scheduledTimeStr = formData.get("scheduled_time") as string;
@@ -162,7 +163,14 @@ export async function createSurgery(formData: FormData) {
 
     // Identidad Disociada (Identity Vault Logic)
     let finalPatientId: string;
-    const existingPii = await db.select().from(cqPatientPii).where(eq(cqPatientPii.dni, patientId));
+    const existingPii = await db.select().from(cqPatientPii).where(
+        or(
+            eq(cqPatientPii.dni, patientId),
+            eq(cqPatientPii.historiaClinica, patientId),
+            eq(cqPatientPii.carnetExtranjeria, patientId),
+            eq(cqPatientPii.pasaporte, patientId)
+        )
+    );
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
@@ -361,7 +369,8 @@ export async function deleteSurgery(formData: FormData) {
 
 export async function editSurgery(formData: FormData) {
     const id = formData.get("id") as string;
-    const patientId = formData.get("patient_id") as string;
+    const patientIdRaw = formData.get("patient_id") as string;
+    const patientId = patientIdRaw ? patientIdRaw.trim() : "";
     const operatingRoomId = formData.get("operating_room_id") as string | null;
     const scheduledDateStr = formData.get("scheduled_date") as string;
     const scheduledTimeStr = formData.get("scheduled_time") as string;
@@ -414,7 +423,14 @@ export async function editSurgery(formData: FormData) {
     }
 
     let finalPatientId: string;
-    const existingPii = await db.select().from(cqPatientPii).where(eq(cqPatientPii.dni, patientId));
+    const existingPii = await db.select().from(cqPatientPii).where(
+        or(
+            eq(cqPatientPii.dni, patientId),
+            eq(cqPatientPii.historiaClinica, patientId),
+            eq(cqPatientPii.carnetExtranjeria, patientId),
+            eq(cqPatientPii.pasaporte, patientId)
+        )
+    );
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
