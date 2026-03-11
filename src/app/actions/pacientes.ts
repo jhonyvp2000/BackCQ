@@ -20,21 +20,48 @@ export async function lookupPatientByDni(rawId: string) {
             )
         );
 
-        if (result.length > 0) {
+        let localPatient = result.length > 0 ? result[0] : null;
+
+        // Si ya está en la bóveda y NO se llama "No Identificado", lo devolvemos rápido.
+        if (localPatient && localPatient.nombres !== 'No Identificado') {
             return {
                 found: true,
-                fullName: `${result[0].nombres} ${result[0].apellidos}`,
+                fullName: `${localPatient.nombres} ${localPatient.apellidos}`,
                 source: 'Registro Local CQ (Bóveda)'
             };
         }
 
-        // --- Mocking RENIEC call for demonstration ---
+        // --- Mocking Llamada a RENIEC / MIGRACIONES (o API real en el futuro) ---
         await new Promise(resolve => setTimeout(resolve, 600));
 
+        let reniecName: string | null = null;
         if (dni === "09791568") {
-            return { found: true, fullName: "Jhony Vela Paredes", source: 'RENIEC API' };
+            reniecName = "Jhony Vela Paredes";
         } else if (dni === "12345678") {
-            return { found: true, fullName: "Paciente de Prueba RENIEC", source: 'RENIEC API' };
+            reniecName = "Paciente de Prueba RENIEC";
+        }
+
+        // Si la API externa lo encontró, podemos auto-actualizar la Bóveda si era "No Identificado" 
+        // o si simplemente no existía y queremos devolver el nombre para el form.
+        if (reniecName) {
+            if (localPatient) {
+                // Actualización silenciosa de identidad disociada
+                const parts = reniecName.split(' ');
+                const n = parts.slice(0, Math.ceil(parts.length / 2)).join(' ');
+                const a = parts.slice(Math.ceil(parts.length / 2)).join(' ');
+                await db.update(cqPatientPii).set({
+                    nombres: n,
+                    apellidos: a
+                }).where(eq(cqPatientPii.patientId, localPatient.patientId));
+                revalidatePath("/dashboard/pacientes");
+            }
+            return { found: true, fullName: reniecName, source: 'RENIEC API' };
+        }
+
+        // Si la API externa falló pero sí estaba en local (ej. como "No Identificado") devolvemos falso 
+        // para que la UI sepa que no hay nombre real todavía, a menos que el usuario lo escriba despues
+        if (localPatient) {
+            return { found: false, source: null };
         }
 
         return { found: false, source: null };
