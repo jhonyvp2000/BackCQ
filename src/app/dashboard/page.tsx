@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getDashboardStats } from "@/app/actions/dashboard";
-import { Activity, Clock, Plus, Users, Calendar, ArrowRight, ActivitySquare, LayoutDashboard, CalendarDays } from "lucide-react";
+import { Activity, Clock, Plus, Users, Calendar, ArrowRight, ActivitySquare, LayoutDashboard, CalendarDays, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -14,7 +14,7 @@ export default async function DashboardPage() {
 
     // Fallbacks in case stats fail
     const data = await getDashboardStats().catch(() => ({
-        stats: { salasAvailable: 0, scheduledToday: 0, inProgressToday: 0, completedThisMonth: 0, totalPacientes: 0 },
+        stats: { salasAvailable: 0, scheduledToday: 0, inProgressToday: 0, completedToday: 0, cancelledToday: 0, completedThisMonth: 0, totalPacientes: 0 },
         activeSurgeries: [],
         latestPatients: []
     }));
@@ -93,14 +93,27 @@ export default async function DashboardPage() {
                         </div>
                     </div>
 
-                    {/* Stat 3: Quirófanos Libres */}
-                    <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-700/50 rounded-2xl p-4 shadow-sm flex items-center gap-4 flex-1 min-w-[140px] hover:shadow-md transition-all hover:-translate-y-0.5">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                            <Calendar size={20} />
+                    {/* Stat 3: Finalizadas */}
+                    <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-emerald-200/50 dark:border-emerald-900/30 rounded-2xl p-4 shadow-sm flex items-center gap-4 flex-1 min-w-[140px] hover:shadow-md transition-all hover:-translate-y-0.5 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-500 flex items-center justify-center font-bold">
+                            <CheckCircle size={20} />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5">Salas Libres</p>
-                            <h3 className="text-xl font-black text-zinc-800 dark:text-white leading-none">{stats.salasAvailable}</h3>
+                        <div className="relative z-10">
+                            <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-500 uppercase tracking-widest mb-0.5">Finalizadas</p>
+                            <h3 className="text-xl font-black text-zinc-800 dark:text-white leading-none">{stats.completedToday}</h3>
+                        </div>
+                    </div>
+
+                    {/* Stat 4: Suspendidas */}
+                    <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-red-200/50 dark:border-red-900/30 rounded-2xl p-4 shadow-sm flex items-center gap-4 flex-1 min-w-[140px] hover:shadow-md transition-all hover:-translate-y-0.5 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-500 flex items-center justify-center font-bold">
+                            <XCircle size={20} />
+                        </div>
+                        <div className="relative z-10">
+                            <p className="text-[10px] font-bold text-red-700 dark:text-red-500 uppercase tracking-widest mb-0.5">Suspendidas</p>
+                            <h3 className="text-xl font-black text-zinc-800 dark:text-white leading-none">{stats.cancelledToday}</h3>
                         </div>
                     </div>
 

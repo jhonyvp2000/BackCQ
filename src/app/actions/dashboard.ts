@@ -27,6 +27,8 @@ export async function getDashboardStats() {
     const inProgressToday = todaySurgeries.filter(s => [
         'in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'
     ].includes(s.status)).length;
+    const completedToday = todaySurgeries.filter(s => s.status === 'completed').length;
+    const cancelledToday = todaySurgeries.filter(s => s.status === 'cancelled').length;
 
     // Mes actual completadas
     const [completedMonthCount] = await db
@@ -94,6 +96,8 @@ export async function getDashboardStats() {
             salasAvailable: Number(salasCount?.count || 0),
             scheduledToday,
             inProgressToday,
+            completedToday,
+            cancelledToday,
             completedThisMonth: Number(completedMonthCount?.count || 0),
             totalPacientes: Number(pacientesCount?.count || 0)
         },
