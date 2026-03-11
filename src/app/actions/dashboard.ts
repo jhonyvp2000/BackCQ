@@ -2,19 +2,13 @@
 
 import { db } from "@/db";
 import { cqOperatingRooms, cqSurgeries, cqPatients, cqPatientPii } from "@/db/schema";
-import { sql, eq, and, gte, lte, or, inArray, desc } from "drizzle-orm";
+import { sql, eq, and, inArray, desc } from "drizzle-orm";
+import { format } from "date-fns";
 
 export async function getDashboardStats() {
     const today = new Date();
-    const startOfDay = new Date(today);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(today);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    const startOfMonth = new Date(today);
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
+    const todayStr = format(today, 'yyyy-MM-dd');
+    const firstDayOfMonthStr = format(new Date(today.getFullYear(), today.getMonth(), 1), 'yyyy-MM-dd');
 
     // 1. Estadísticas Generales
     // Salas
@@ -27,12 +21,7 @@ export async function getDashboardStats() {
     const todaySurgeries = await db
         .select({ status: cqSurgeries.status })
         .from(cqSurgeries)
-        .where(
-            and(
-                gte(cqSurgeries.scheduledDate, startOfDay),
-                lte(cqSurgeries.scheduledDate, endOfDay),
-            )
-        );
+        .where(sql`DATE(scheduled_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Lima') = ${todayStr}::date`);
 
     const scheduledToday = todaySurgeries.filter(s => s.status === 'scheduled').length;
     const inProgressToday = todaySurgeries.filter(s => [
@@ -45,8 +34,8 @@ export async function getDashboardStats() {
         .from(cqSurgeries)
         .where(
             and(
-                gte(cqSurgeries.scheduledDate, startOfMonth),
-                lte(cqSurgeries.scheduledDate, endOfDay),
+                sql`DATE(scheduled_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Lima') >= ${firstDayOfMonthStr}::date`,
+                sql`DATE(scheduled_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Lima') <= ${todayStr}::date`,
                 eq(cqSurgeries.status, 'completed')
             )
         );
@@ -59,8 +48,7 @@ export async function getDashboardStats() {
     // 2. Cirugías Activas / Próximas (Hoy)
     const activeSurgeries = await db.query.cqSurgeries.findMany({
         where: and(
-            gte(cqSurgeries.scheduledDate, startOfDay),
-            lte(cqSurgeries.scheduledDate, endOfDay),
+            sql`DATE(scheduled_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Lima') = ${todayStr}::date`,
             inArray(cqSurgeries.status, ['scheduled', 'in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'])
         ),
         with: {
