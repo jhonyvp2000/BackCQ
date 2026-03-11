@@ -2,11 +2,11 @@
 
 import { db } from "@/db";
 import { cqOperatingRooms } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function getOperatingRooms() {
-    return await db.select().from(cqOperatingRooms).orderBy(desc(cqOperatingRooms.createdAt));
+    return await db.select().from(cqOperatingRooms).orderBy(asc(cqOperatingRooms.name));
 }
 
 export async function createOperatingRoom(formData: FormData) {
