@@ -58,10 +58,14 @@ export async function lookupPatientByDni(rawId: string) {
             return { found: true, fullName: reniecName, source: 'RENIEC API' };
         }
 
-        // Si la API externa falló pero sí estaba en local (ej. como "No Identificado") devolvemos falso 
-        // para que la UI sepa que no hay nombre real todavía, a menos que el usuario lo escriba despues
+        // Si la API externa falló pero sí estaba en local (ej. como "No Identificado") 
+        // devolvemos la información local para no crear duplicados y reconocer que el paciente existe.
         if (localPatient) {
-            return { found: false, source: null };
+            return {
+                found: true,
+                fullName: `${localPatient.nombres} ${localPatient.apellidos}`,
+                source: 'Registro Local CQ (Bóveda)'
+            };
         }
 
         return { found: false, source: null };
