@@ -181,7 +181,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
 
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Ubigeo (INEI)</label>
-                                        <UbigeoSelector name="ubigeo" defaultValue={patient.ubigeo} />
+                                        <UbigeoSelector name="ubigeo" defaultValue={patient.ubigeo || ""} />
                                     </div>
                                 </div>
 

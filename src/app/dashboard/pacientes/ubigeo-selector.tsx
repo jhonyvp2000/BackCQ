@@ -15,7 +15,7 @@ export function UbigeoSelector({
 }) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
-    const [value, setValue] = useState(defaultValue);
+    const [value, setValue] = useState(defaultValue || "");
     const [label, setLabel] = useState(defaultLabel);
 
     const [options, setOptions] = useState<any[]>([]);
