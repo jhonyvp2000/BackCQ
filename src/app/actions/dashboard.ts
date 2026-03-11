@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { cqOperatingRooms, cqSurgeries, cqPatients, cqPatientPii } from "@/db/schema";
-import { sql, eq, and, inArray, desc } from "drizzle-orm";
+import { sql, eq, and, inArray, desc, asc } from "drizzle-orm";
 import { format } from "date-fns";
 
 export async function getDashboardStats() {
@@ -46,20 +46,32 @@ export async function getDashboardStats() {
         .from(cqPatients);
 
     // 2. Cirugías Activas / Próximas (Hoy)
-    const activeSurgeries = await db.query.cqSurgeries.findMany({
-        where: and(
-            sql`DATE(scheduled_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Lima') = ${todayStr}::date`,
-            inArray(cqSurgeries.status, ['scheduled', 'in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'])
-        ),
-        with: {
-            patient: {
-                with: { pii: true }
-            },
-            operatingRoom: true
-        },
-        orderBy: (s, { asc }) => [asc(s.scheduledDate)],
-        limit: 5
-    });
+    const _activeSurgeries = await db.select({
+        surgery: cqSurgeries,
+        operatingRoom: cqOperatingRooms,
+        patientPii: cqPatientPii,
+    })
+        .from(cqSurgeries)
+        .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
+        .leftJoin(cqPatientPii, eq(cqSurgeries.patientId, cqPatientPii.patientId))
+        .where(
+            and(
+                sql`DATE(scheduled_date AT TIME ZONE 'UTC' AT TIME ZONE 'America/Lima') = ${todayStr}::date`,
+                inArray(cqSurgeries.status, ['scheduled', 'in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'])
+            )
+        )
+        .orderBy(asc(cqSurgeries.scheduledDate))
+        .limit(5);
+
+    const activeSurgeries = _activeSurgeries.map(row => ({
+        id: row.surgery.id,
+        scheduledDate: row.surgery.scheduledDate,
+        status: row.surgery.status,
+        urgencyType: row.surgery.urgencyType,
+        diagnosis: row.surgery.diagnosis,
+        operatingRoom: row.operatingRoom,
+        patient: { pii: row.patientPii }
+    }));
 
     // 3. Últimos Pacientes Empadronados
     const latestPatients = await db
