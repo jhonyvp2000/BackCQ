@@ -66,7 +66,7 @@ export default async function DashboardPage() {
             </div>
 
             {/* Top Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
                     <div className="w-12 h-12 rounded-[14px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold shadow-inner">
                         <ActivitySquare size={24} />
@@ -97,23 +97,13 @@ export default async function DashboardPage() {
                         <h3 className="text-2xl font-black text-zinc-800 dark:text-white leading-none mt-1">{stats.salasAvailable} <span className="text-xs font-medium text-zinc-400">Disponibles</span></h3>
                     </div>
                 </div>
-
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold shadow-inner">
-                        <Users size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Pacientes BD</p>
-                        <h3 className="text-2xl font-black text-zinc-800 dark:text-white leading-none mt-1">{stats.totalPacientes} <span className="text-xs font-medium text-zinc-400">Empadronados</span></h3>
-                    </div>
-                </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6">
 
-                {/* Active and Upcoming Surgeries List (Span 2) */}
-                <div className="lg:col-span-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+                {/* Active and Upcoming Surgeries List */}
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden flex flex-col">
                     <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
                         <h3 className="font-bold text-lg text-zinc-800 dark:text-white flex items-center gap-2">
                             <Clock className="text-blue-500" size={20} /> Tracker de Cirugías Próximas (Hoy)
@@ -179,58 +169,6 @@ export default async function DashboardPage() {
                                 </tbody>
                             </table>
                         )}
-                    </div>
-                </div>
-
-                {/* Latest Patients (Span 1) */}
-                <div className="lg:col-span-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-                    <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
-                        <h3 className="font-bold text-lg text-zinc-800 dark:text-white flex items-center gap-2">
-                            <Users className="text-emerald-500" size={20} /> Últimos Empadronados
-                        </h3>
-                    </div>
-
-                    <div className="p-0 flex-1">
-                        {latestPatients.length === 0 ? (
-                            <div className="p-8 text-center text-zinc-500">No hay pacientes nuevos.</div>
-                        ) : (
-                            <ul className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                                {latestPatients.map((p) => (
-                                    <li key={p.id} className="p-5 hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30 transition-colors">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 flex items-center justify-center font-bold text-sm">
-                                                    {p.nombres?.charAt(0)}{p.apellidos?.charAt(0)}
-                                                </div>
-                                                <div className="truncate pr-4">
-                                                    <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">
-                                                        {p.nombres.split(' ')[0]} {p.apellidos.split(' ')[0]}
-                                                    </p>
-                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                        {p.dni ? (
-                                                            <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded-sm">
-                                                                DNI: {p.dni}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-[10px] font-bold text-zinc-400 italic">S/DNI</span>
-                                                        )}
-                                                        <span className="text-[10px] font-semibold text-zinc-400">
-                                                            {format(new Date(p.createdAt), "d MMM, yyyy", { locale: es })}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
-
-                    <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30">
-                        <Link href="/dashboard/pacientes" className="w-full flex justify-center py-2.5 px-4 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-sm text-sm font-bold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                            Ir a Directorio Master
-                        </Link>
                     </div>
                 </div>
 
