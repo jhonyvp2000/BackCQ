@@ -30,7 +30,7 @@ export function DeletePatientButton({ id }: { id: string }) {
         <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className={`p-2 rounded-lg transition-colors tooltip \${isDeleting ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed' : 'text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
+            className={`p-2 rounded-lg transition-colors tooltip ${isDeleting ? 'bg-zinc-100 text-zinc-400 cursor-not-allowed' : 'text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
             title="Eliminar Paciente"
         >
             <Trash2 size={16} className={isDeleting ? 'animate-pulse' : ''} />

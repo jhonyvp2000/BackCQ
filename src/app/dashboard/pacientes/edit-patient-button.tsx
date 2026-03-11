@@ -196,7 +196,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className={`px-5 py-2.5 rounded-xl font-bold text-white transition-all flex items-center gap-2 shadow-sm \${isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-[var(--color-hospital-blue)] hover:bg-[#09357a] hover:shadow-md'}`}
+                                        className={`px-5 py-2.5 rounded-xl font-bold text-white transition-all flex items-center gap-2 shadow-sm ${isSaving ? 'bg-blue-400 cursor-not-allowed' : 'bg-[var(--color-hospital-blue)] hover:bg-[#09357a] hover:shadow-md'}`}
                                     >
                                         {isSaving ? <Save size={18} className="animate-spin" /> : <Save size={18} />}
                                         {isSaving ? 'Guardando...' : 'Guardar Cambios'}

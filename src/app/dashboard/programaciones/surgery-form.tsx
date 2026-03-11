@@ -267,14 +267,14 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('patient')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-semibold \${openSection === 'patient' ? 'bg-blue-50/50 dark:bg-zinc-800/50 text-[var(--color-hospital-blue)] dark:text-blue-400' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-semibold ${openSection === 'patient' ? 'bg-blue-50/50 dark:bg-zinc-800/50 text-[#0D47A1] dark:text-blue-400' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}
                     >
                         <div className="flex items-center gap-3">
-                            <User size={18} className={openSection === 'patient' ? "text-[var(--color-hospital-blue)] dark:text-blue-400" : "text-zinc-400"} />
+                            <User size={18} className={openSection === 'patient' ? "text-[#0D47A1] dark:text-blue-400" : "text-zinc-400"} />
                             <span>1. Detalle del Paciente</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <ChevronDown size={16} className={`transition-transform duration-300 \${openSection === 'patient' ? 'rotate-180' : ''}`} />
+                            <ChevronDown size={16} className={`transition-transform duration-300 ${openSection === 'patient' ? 'rotate-180' : ''}`} />
                         </div>
                     </button>
 
@@ -296,7 +296,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         value={patientDni}
                                         onChange={(e) => setPatientDni(e.target.value)}
                                         maxLength={12}
-                                        className={`\${inputClasses} pl-4 pr-10`}
+                                        className={`${inputClasses} pl-4 pr-10`}
                                         placeholder="Ej. 09791569"
                                     />
                                     <div className="absolute right-3 top-2.5 flex items-center">
@@ -310,7 +310,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                             initial={{ opacity: 0, height: 0 }}
                                             animate={{ opacity: 1, height: 'auto' }}
                                             exit={{ opacity: 0, height: 0 }}
-                                            className={`mt-2 rounded-xl p-3 text-sm flex items-start gap-2 border \${found ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-300' : 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20 text-red-800 dark:text-red-300'}`}
+                                            className={`mt-2 rounded-xl p-3 text-sm flex items-start gap-2 border ${found ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-300' : 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/20 text-red-800 dark:text-red-300'}`}
                                         >
                                             {found ? (
                                                 <>
