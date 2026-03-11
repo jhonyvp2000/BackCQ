@@ -45,7 +45,7 @@ async function main() {
             const surgeries = await db.execute(sql`SELECT id, patient_id FROM cq_surgeries`);
             for (const s of surgeries) {
                 const patientIdent = s.patient_id;
-                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(patientIdent);
+                const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(patientIdent as string);
                 if (!isUUID && patientIdent) {
                     const pii = await db.execute(sql`SELECT patient_id FROM cq_patient_pii WHERE dni = ${patientIdent} OR historia_clinica = ${patientIdent}`);
                     let realPatientId;

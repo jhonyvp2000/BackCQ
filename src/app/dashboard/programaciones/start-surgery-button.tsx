@@ -19,7 +19,7 @@ export function StartSurgeryButton({ id, hasRoom }: { id: string, hasRoom: boole
 
     return (
         <>
-            <form action={updateSurgeryStatus} className="inline-block" onSubmit={() => setIsSubmitting(true)}>
+            <form action={async (formData) => { await updateSurgeryStatus(formData); }} className="inline-block" onSubmit={() => setIsSubmitting(true)}>
                 <input type="hidden" name="id" value={id} />
                 <input type="hidden" name="status" value="in_progress" />
                 <button
