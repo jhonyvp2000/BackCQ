@@ -47,55 +47,61 @@ export default async function DashboardPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-12">
 
-            {/* Header Profiling */}
-            <div className="bg-gradient-to-r from-white to-blue-50/30 dark:from-zinc-900 dark:to-blue-900/10 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-                    <div>
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-hospital-blue)]/10 text-[var(--color-hospital-blue)] dark:text-blue-400 rounded-full text-xs font-bold uppercase tracking-widest mb-3 border border-[var(--color-hospital-blue)]/20">
-                            <LayoutDashboard size={14} /> Panel Principal Central
+            {/* Header Profiling & Quick Stats Integration */}
+            <div className="bg-gradient-to-br from-white to-blue-50/50 dark:from-zinc-900 dark:to-blue-900/10 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 lg:p-8 shadow-sm relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+
+                {/* Welcome Message Column */}
+                <div className="relative z-10 md:w-1/2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-hospital-blue)]/10 text-[var(--color-hospital-blue)] dark:text-blue-400 rounded-full text-xs font-bold uppercase tracking-widest mb-3 border border-[var(--color-hospital-blue)]/20 shadow-sm backdrop-blur-sm">
+                        <LayoutDashboard size={14} /> Panel Principal
+                    </div>
+                    <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-tight">
+                        Bienvenido, Dr. {user?.lastname}
+                    </h2>
+                    <p className="mt-2 text-zinc-500 dark:text-zinc-400 text-sm font-medium leading-relaxed max-w-md">
+                        Comando central de operaciones del Centro Quirúrgico. Vistazo en tiempo real del flujo de las salas y los pacientes agendados.
+                    </p>
+                </div>
+
+                {/* Integrated Stats Row */}
+                <div className="relative z-10 flex flex-wrap gap-4 md:w-1/2 md:justify-end">
+
+                    {/* Stat 1: Cirugías Hoy */}
+                    <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-700/50 rounded-2xl p-4 shadow-sm flex items-center gap-4 flex-1 min-w-[140px] hover:shadow-md transition-all hover:-translate-y-0.5">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+                            <ActivitySquare size={20} />
                         </div>
-                        <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
-                            Bienvenido, Dr. {user?.lastname}
-                        </h2>
-                        <p className="mt-2 text-zinc-500 dark:text-zinc-400 max-w-xl text-sm font-medium">
-                            Este es el comando central de operaciones del Centro Quirúrgico. Aquí tienes un vistazo en tiempo real de lo que acontece en las salas y los pacientes agendados.
-                        </p>
+                        <div>
+                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5">Agendadas</p>
+                            <h3 className="text-xl font-black text-zinc-800 dark:text-white leading-none">{stats.scheduledToday}</h3>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Top Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold shadow-inner">
-                        <ActivitySquare size={24} />
+                    {/* Stat 2: En Operación */}
+                    <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-amber-200/50 dark:border-amber-900/30 rounded-2xl p-4 shadow-sm flex items-center gap-4 flex-1 min-w-[140px] hover:shadow-md transition-all hover:-translate-y-0.5 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-500 flex items-center justify-center font-bold relative">
+                            <div className="absolute inset-0 bg-amber-400/20 rounded-xl animate-ping opacity-75"></div>
+                            <Activity size={20} className="relative z-10" />
+                        </div>
+                        <div className="relative z-10">
+                            <p className="text-[10px] font-bold text-amber-700 dark:text-amber-500 uppercase tracking-widest mb-0.5">En Operación</p>
+                            <h3 className="text-xl font-black text-zinc-800 dark:text-white leading-none">{stats.inProgressToday}</h3>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Cirugías Hoy</p>
-                        <h3 className="text-2xl font-black text-zinc-800 dark:text-white leading-none mt-1">{stats.scheduledToday} <span className="text-xs font-medium text-zinc-400">Agendadas</span></h3>
-                    </div>
-                </div>
 
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold shadow-inner relative overflow-hidden">
-                        <div className="absolute inset-0 bg-amber-400/20 animate-pulse"></div>
-                        <Activity size={24} className="relative z-10" />
+                    {/* Stat 3: Quirófanos Libres */}
+                    <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-700/50 rounded-2xl p-4 shadow-sm flex items-center gap-4 flex-1 min-w-[140px] hover:shadow-md transition-all hover:-translate-y-0.5">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                            <Calendar size={20} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-0.5">Salas Libres</p>
+                            <h3 className="text-xl font-black text-zinc-800 dark:text-white leading-none">{stats.salasAvailable}</h3>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-sm font-bold text-zinc-500 uppercase tracking-wider">En Operación</p>
-                        <h3 className="text-2xl font-black text-zinc-800 dark:text-white leading-none mt-1">{stats.inProgressToday} <span className="text-xs font-medium text-zinc-400">Salas Activas</span></h3>
-                    </div>
-                </div>
 
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-[14px] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold shadow-inner">
-                        <Calendar size={24} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Quirófanos Libres</p>
-                        <h3 className="text-2xl font-black text-zinc-800 dark:text-white leading-none mt-1">{stats.salasAvailable} <span className="text-xs font-medium text-zinc-400">Disponibles</span></h3>
-                    </div>
                 </div>
             </div>
 
