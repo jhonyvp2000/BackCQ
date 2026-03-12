@@ -130,7 +130,6 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                             // Filtrar cirugías para esta columna específica
                             const colSurgeries = surgeriesData.filter(s =>
                                 s.operatingRoom?.id === col.salaId &&
-                                s.surgery.status !== 'cancelled' &&
                                 isSameDayStr(s.surgery.scheduledDate, col.date)
                             );
 
@@ -149,7 +148,8 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                 'surgery_end': { bg: 'var(--color-cyan-50)', border: 'var(--color-cyan-200)', ribbon: 'bg-cyan-500' },
                                                 'patient_exit': { bg: 'var(--color-orange-50)', border: 'var(--color-orange-200)', ribbon: 'bg-orange-500' },
                                                 'urpa_exit': { bg: 'var(--color-indigo-50)', border: 'var(--color-indigo-200)', ribbon: 'bg-indigo-500' },
-                                                'completed': { bg: 'var(--color-emerald-50)', border: 'var(--color-emerald-200)', ribbon: 'bg-emerald-500' }
+                                                'completed': { bg: 'var(--color-emerald-50)', border: 'var(--color-emerald-200)', ribbon: 'bg-emerald-500' },
+                                                'cancelled': { bg: 'var(--color-red-50)', border: 'var(--color-red-200)', ribbon: 'bg-red-500' }
                                             };
 
                                             const status = s.surgery.status;
