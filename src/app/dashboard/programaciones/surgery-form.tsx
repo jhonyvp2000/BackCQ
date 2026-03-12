@@ -391,23 +391,25 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                             <span className="text-xs text-red-700/80 dark:text-red-300/80 mt-0.5 whitespace-normal">Ingresa DNI Sexo Nombres y Apellidos para registrarlo al instante.</span>
                                                         </div>
                                                     </div>
-                                                    <div className="flex w-full gap-2">
+                                                    <div className="flex flex-col w-full gap-2">
                                                         <input 
                                                             type="text" 
                                                             placeholder="Ej. 12345678 M Jhony Vela Paredes" 
                                                             value={manualPatientName}
                                                             onChange={e => setManualPatientName(e.target.value)}
-                                                            className="flex-1 min-w-0 px-3 py-2 text-sm rounded-lg border border-red-200 dark:border-red-800/50 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-red-400 placeholder:text-red-300 dark:placeholder:text-red-500/50 shadow-sm"
+                                                            className="w-full px-3 py-2 text-sm rounded-lg border border-red-200 dark:border-red-800/50 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-red-400 placeholder:text-red-300 dark:placeholder:text-red-500/50 shadow-sm"
                                                         />
-                                                        <button 
-                                                            type="button"
-                                                            onClick={handleCreatePat}
-                                                            disabled={isCreatingPat || !manualPatientName.trim()}
-                                                            className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-red-600 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 shadow-sm uppercase tracking-wider"
-                                                        >
-                                                            {isCreatingPat ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                                            Añadir
-                                                        </button>
+                                                        <div className="flex justify-end">
+                                                            <button 
+                                                                type="button"
+                                                                onClick={handleCreatePat}
+                                                                disabled={isCreatingPat || !manualPatientName.trim()}
+                                                                className="px-6 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-red-600 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 shadow-sm uppercase tracking-wider"
+                                                            >
+                                                                {isCreatingPat ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                                Añadir
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
