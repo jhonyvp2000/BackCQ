@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Plus, User, AlertCircle, CheckCircle, Search, Loader2, AlertTriangle, X, Shield, Users, CalendarDays, ChevronDown } from "lucide-react";
 import { createSurgery, createCustomDiagnosis, createCustomProcedure } from "@/app/actions/cirugias";
-import { lookupPatientByDni } from "@/app/actions/pacientes";
+import { lookupPatientByDni, createTemporaryPatient } from "@/app/actions/pacientes";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, diagnoses, procedures }: {
@@ -46,6 +46,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [localProcedures, setLocalProcedures] = useState<any[]>(procedures);
     const [isCreatingDx, setIsCreatingDx] = useState(false);
     const [isCreatingProc, setIsCreatingProc] = useState(false);
+    const [isCreatingPat, setIsCreatingPat] = useState(false);
+    const [manualPatientName, setManualPatientName] = useState("");
 
     useEffect(() => { setLocalDiagnoses(diagnoses); }, [diagnoses]);
     useEffect(() => { setLocalProcedures(procedures); }, [procedures]);
@@ -77,6 +79,26 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             console.error(e);
         } finally {
             setIsCreatingProc(false);
+        }
+    };
+
+    const handleCreatePat = async () => {
+        if (!patientDni || !manualPatientName) return;
+        setIsCreatingPat(true);
+        try {
+            const res = await createTemporaryPatient(patientDni, manualPatientName);
+            if (res.success) {
+                const fetchRes = await lookupPatientByDni(patientDni);
+                if (fetchRes && fetchRes.found) {
+                    setPatientName(fetchRes.fullName || "");
+                    setFound(true);
+                    setSource("Borrador Manual Añadido");
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsCreatingPat(false);
         }
     };
 
@@ -265,6 +287,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             setPatientName("");
             setFound(null);
             setSource(null);
+            setManualPatientName("");
         }
     }, [patientDni]);
 
@@ -360,13 +383,33 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                     </div>
                                                 </>
                                             ) : (
-                                                <>
-                                                    <AlertCircle className="w-5 h-5 shrink-0" />
-                                                    <div className="flex flex-col">
-                                                        <span className="font-semibold">Borrador Manual.</span>
-                                                        <span className="text-xs opacity-80 mt-0.5">Se asignará luego DNI temporal.</span>
+                                                <div className="flex flex-col w-full gap-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <AlertCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400" />
+                                                        <div className="flex flex-col">
+                                                            <span className="font-semibold text-red-800 dark:text-red-300">Paciente No Encontrado.</span>
+                                                            <span className="text-xs text-red-700/80 dark:text-red-300/80 mt-0.5">Ingresa su nombre para registrarlo temporalmente al instante.</span>
+                                                        </div>
                                                     </div>
-                                                </>
+                                                    <div className="flex gap-2 pr-1">
+                                                        <input 
+                                                            type="text" 
+                                                            placeholder="Nombres y Apellidos..." 
+                                                            value={manualPatientName}
+                                                            onChange={e => setManualPatientName(e.target.value)}
+                                                            className="flex-1 px-3 py-2 text-sm rounded-lg border border-red-200 dark:border-red-800/50 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-red-400 placeholder:text-red-300 dark:placeholder:text-red-500/50 shadow-sm"
+                                                        />
+                                                        <button 
+                                                            type="button"
+                                                            onClick={handleCreatePat}
+                                                            disabled={isCreatingPat || !manualPatientName.trim()}
+                                                            className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:hover:bg-red-600 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center justify-center gap-1.5 shadow-sm uppercase tracking-wider"
+                                                        >
+                                                            {isCreatingPat ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                            Añadir
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             )}
                                         </motion.div>
                                     )}

@@ -75,6 +75,42 @@ export async function lookupPatientByDni(rawId: string) {
     }
 }
 
+export async function createTemporaryPatient(dni: string, fullName: string) {
+    if (!dni || !fullName) return { error: "Datos incompletos" };
+    const cleanDni = dni.trim();
+    
+    try {
+        const existingPii = await db.select().from(cqPatientPii).where(
+            or(
+                eq(cqPatientPii.dni, cleanDni),
+                eq(cqPatientPii.historiaClinica, cleanDni),
+                eq(cqPatientPii.carnetExtranjeria, cleanDni),
+                eq(cqPatientPii.pasaporte, cleanDni)
+            )
+        );
+        if (existingPii.length > 0) return { error: "Ya existe" };
+
+        const parts = fullName.trim().split(/\s+/);
+        const n = parts.slice(0, Math.ceil(parts.length / 2)).join(' ');
+        const a = parts.slice(Math.ceil(parts.length / 2)).join(' ');
+
+        const newPat = await db.insert(cqPatients).values({}).returning({ id: cqPatients.id });
+        
+        await db.insert(cqPatientPii).values({
+            patientId: newPat[0].id,
+            dni: cleanDni,
+            nombres: n || "NO IDENTIFICADO",
+            apellidos: a || "NO IDENTIFICADO"
+        });
+        
+        return { success: true };
+    } catch (e) {
+        console.error(e);
+        return { error: "Error al crear paciente" };
+    }
+}
+
+
 export async function getPacientes() {
     try {
         const result = await db
