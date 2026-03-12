@@ -9,7 +9,7 @@ import { updateSurgeryStatus } from "@/app/actions/cirugias";
 const phaseConfig: Record<string, { title: string, color: string, border: string, bg: string, iconColor: string }> = {
     'in_progress': { title: 'Ingresar a Quirófano', color: 'text-amber-700', border: 'border-amber-200', bg: 'bg-amber-50 dark:bg-amber-900/20', iconColor: 'text-amber-500' },
     'anesthesia_start': { title: 'Inicio de Anestesia', color: 'text-purple-700', border: 'border-purple-200', bg: 'bg-purple-50 dark:bg-purple-900/20', iconColor: 'text-purple-500' },
-    'pre_incision': { title: 'Antes de Incisión', color: 'text-rose-700', border: 'border-rose-200', bg: 'bg-rose-50 dark:bg-rose-900/20', iconColor: 'text-rose-500' },
+    'pre_incision': { title: 'Antes de Incisión', color: 'text-fuchsia-700', border: 'border-fuchsia-200', bg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20', iconColor: 'text-fuchsia-500' },
     'surgery_end': { title: 'Término de Cirugía', color: 'text-cyan-700', border: 'border-cyan-200', bg: 'bg-cyan-50 dark:bg-cyan-900/20', iconColor: 'text-cyan-500' },
     'patient_exit': { title: 'Salida de Paciente', color: 'text-orange-700', border: 'border-orange-200', bg: 'bg-orange-50 dark:bg-orange-900/20', iconColor: 'text-orange-500' },
     'urpa_exit': { title: 'Pase a URPA', color: 'text-indigo-700', border: 'border-indigo-200', bg: 'bg-indigo-50 dark:bg-indigo-900/20', iconColor: 'text-indigo-500' },

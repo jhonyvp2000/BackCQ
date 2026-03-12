@@ -144,7 +144,7 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                 'scheduled': { bg: 'var(--color-blue-50)', border: 'var(--color-blue-200)', ribbon: 'bg-blue-500' },
                                                 'in_progress': { bg: 'var(--color-amber-50)', border: 'var(--color-amber-200)', ribbon: 'bg-amber-500' },
                                                 'anesthesia_start': { bg: 'var(--color-purple-50)', border: 'var(--color-purple-200)', ribbon: 'bg-purple-500' },
-                                                'pre_incision': { bg: 'var(--color-rose-50)', border: 'var(--color-rose-200)', ribbon: 'bg-rose-500' },
+                                                'pre_incision': { bg: 'var(--color-fuchsia-50)', border: 'var(--color-fuchsia-200)', ribbon: 'bg-fuchsia-500' },
                                                 'surgery_end': { bg: 'var(--color-cyan-50)', border: 'var(--color-cyan-200)', ribbon: 'bg-cyan-500' },
                                                 'patient_exit': { bg: 'var(--color-orange-50)', border: 'var(--color-orange-200)', ribbon: 'bg-orange-500' },
                                                 'urpa_exit': { bg: 'var(--color-indigo-50)', border: 'var(--color-indigo-200)', ribbon: 'bg-indigo-500' },

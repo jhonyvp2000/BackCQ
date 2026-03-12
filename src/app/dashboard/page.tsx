@@ -30,7 +30,7 @@ export default async function DashboardPage() {
             case 'anesthesia_start':
                 return <span className="bg-purple-50 text-purple-700 px-2 py-0.5 rounded-md text-[10px] font-bold border border-purple-200 uppercase tracking-wider flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></div> Anestesia</span>;
             case 'pre_incision':
-                return <span className="bg-rose-50 text-rose-700 px-2 py-0.5 rounded-md text-[10px] font-bold border border-rose-200 uppercase tracking-wider flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div> Pre-Incisión</span>;
+                return <span className="bg-fuchsia-50 text-fuchsia-700 px-2 py-0.5 rounded-md text-[10px] font-bold border border-fuchsia-200 uppercase tracking-wider flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-fuchsia-500 animate-pulse"></div> Pre-Incisión</span>;
             case 'surgery_end':
                 return <span className="bg-cyan-50 text-cyan-700 px-2 py-0.5 rounded-md text-[10px] font-bold border border-cyan-200 uppercase tracking-wider flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-cyan-500"></div> Fin Cirugía</span>;
             case 'patient_exit':

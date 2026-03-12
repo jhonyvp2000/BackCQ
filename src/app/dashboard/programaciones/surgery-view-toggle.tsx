@@ -85,7 +85,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             case 'anesthesia_start':
                 return <span className="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-full text-xs font-bold border border-purple-200/50 flex flex-nowrap items-center gap-1.5 w-max shadow-sm"><div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></div> Anestesia Inducida</span>;
             case 'pre_incision':
-                return <span className="bg-rose-50 text-rose-700 px-3 py-1.5 rounded-full text-xs font-bold border border-rose-200/50 flex flex-nowrap items-center gap-1.5 w-max shadow-sm"><div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></div> Antes de Incisión</span>;
+                return <span className="bg-fuchsia-50 text-fuchsia-700 px-3 py-1.5 rounded-full text-xs font-bold border border-fuchsia-200/50 flex flex-nowrap items-center gap-1.5 w-max shadow-sm"><div className="w-1.5 h-1.5 rounded-full bg-fuchsia-500 animate-pulse"></div> Antes de Incisión</span>;
             case 'surgery_end':
                 return <span className="bg-cyan-50 text-cyan-700 px-3 py-1.5 rounded-full text-xs font-bold border border-cyan-200/50 flex flex-nowrap items-center gap-1.5 w-max shadow-sm"><div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></div> Término de Cirugía</span>;
             case 'patient_exit':
