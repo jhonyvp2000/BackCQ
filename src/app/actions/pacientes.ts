@@ -75,30 +75,53 @@ export async function lookupPatientByDni(rawId: string) {
     }
 }
 
-export async function createTemporaryPatient(dni: string, fullName: string) {
-    if (!dni || !fullName) return { error: "Datos incompletos" };
-    const cleanDni = dni.trim();
+export async function createTemporaryPatient(searchboxDni: string, rawInput: string) {
+    if (!rawInput) return { error: "Datos incompletos" };
     
+    let parts = rawInput.trim().split(/\s+/);
+    let dniToSave = searchboxDni.trim();
+    let computedSex = null;
+    
+    // 1. Check if the user typed the DNI again at the start of the string
+    if (parts.length > 0 && (/^\d{8,12}$/.test(parts[0]) || /^[A-Z0-9]{8,15}$/i.test(parts[0]))) {
+        dniToSave = parts.shift()!;
+    }
+    
+    // 2. Check if the next word is the Sex (M, F, MASCULINO, FEMENINO)
+    if (parts.length > 0) {
+        const sexChar = parts[0].toUpperCase();
+        if (["M", "MASCULINO", "HOMBRE"].includes(sexChar)) {
+            computedSex = "Masculino";
+            parts.shift();
+        } else if (["F", "FEMENINO", "MUJER"].includes(sexChar)) {
+            computedSex = "Femenino";
+            parts.shift();
+        }
+    }
+    
+    // 3. The rest is Nombres y Apellidos
+    const n = parts.slice(0, Math.ceil(parts.length / 2)).join(' ');
+    const a = parts.slice(Math.ceil(parts.length / 2)).join(' ');
+
     try {
+        // Prevent duplicate insertions
         const existingPii = await db.select().from(cqPatientPii).where(
             or(
-                eq(cqPatientPii.dni, cleanDni),
-                eq(cqPatientPii.historiaClinica, cleanDni),
-                eq(cqPatientPii.carnetExtranjeria, cleanDni),
-                eq(cqPatientPii.pasaporte, cleanDni)
+                eq(cqPatientPii.dni, dniToSave),
+                eq(cqPatientPii.historiaClinica, dniToSave),
+                eq(cqPatientPii.carnetExtranjeria, dniToSave),
+                eq(cqPatientPii.pasaporte, dniToSave)
             )
         );
         if (existingPii.length > 0) return { error: "Ya existe" };
 
-        const parts = fullName.trim().split(/\s+/);
-        const n = parts.slice(0, Math.ceil(parts.length / 2)).join(' ');
-        const a = parts.slice(Math.ceil(parts.length / 2)).join(' ');
-
-        const newPat = await db.insert(cqPatients).values({}).returning({ id: cqPatients.id });
+        const newPat = await db.insert(cqPatients).values({
+            sexo: computedSex
+        }).returning({ id: cqPatients.id });
         
         await db.insert(cqPatientPii).values({
             patientId: newPat[0].id,
-            dni: cleanDni,
+            dni: dniToSave,
             nombres: n || "NO IDENTIFICADO",
             apellidos: a || "NO IDENTIFICADO"
         });

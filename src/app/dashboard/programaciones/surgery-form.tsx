@@ -388,13 +388,13 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                         <AlertCircle className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400" />
                                                         <div className="flex flex-col">
                                                             <span className="font-semibold text-red-800 dark:text-red-300">Paciente No Encontrado.</span>
-                                                            <span className="text-xs text-red-700/80 dark:text-red-300/80 mt-0.5">Ingresa su nombre para registrarlo temporalmente al instante.</span>
+                                                            <span className="text-xs text-red-700/80 dark:text-red-300/80 mt-0.5">Ingresa DNI Sexo Nombres y Apellidos para registrarlo al instante.</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2 pr-1">
                                                         <input 
                                                             type="text" 
-                                                            placeholder="Nombres y Apellidos..." 
+                                                            placeholder="Ej. 12345678 M Jhony Vela Paredes" 
                                                             value={manualPatientName}
                                                             onChange={e => setManualPatientName(e.target.value)}
                                                             className="flex-1 px-3 py-2 text-sm rounded-lg border border-red-200 dark:border-red-800/50 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-1 focus:ring-red-400 placeholder:text-red-300 dark:placeholder:text-red-500/50 shadow-sm"
