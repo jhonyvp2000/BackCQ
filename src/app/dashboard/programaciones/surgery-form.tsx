@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Plus, User, AlertCircle, CheckCircle, Search, Loader2, AlertTriangle, X, Shield, Users, CalendarDays, ChevronDown } from "lucide-react";
-import { createSurgery } from "@/app/actions/cirugias";
+import { createSurgery, createCustomDiagnosis, createCustomProcedure } from "@/app/actions/cirugias";
 import { lookupPatientByDni } from "@/app/actions/pacientes";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -40,6 +40,45 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
     // Accordion State Manager
     const [openSection, setOpenSection] = useState<'patient' | 'classification' | 'team' | 'schedule'>('patient');
+
+    // Local Mapped Arrays Strategy for Hybrid Catalog
+    const [localDiagnoses, setLocalDiagnoses] = useState<any[]>(diagnoses);
+    const [localProcedures, setLocalProcedures] = useState<any[]>(procedures);
+    const [isCreatingDx, setIsCreatingDx] = useState(false);
+    const [isCreatingProc, setIsCreatingProc] = useState(false);
+
+    useEffect(() => { setLocalDiagnoses(diagnoses); }, [diagnoses]);
+    useEffect(() => { setLocalProcedures(procedures); }, [procedures]);
+
+    const handleCreateDx = async () => {
+        if (!dxSearchTerm) return;
+        setIsCreatingDx(true);
+        try {
+            const newDx = await createCustomDiagnosis(dxSearchTerm);
+            setLocalDiagnoses(prev => [newDx, ...prev]);
+            setSelectedDxIds(prev => new Set([...Array.from(prev), newDx.id]));
+            setDxSearchTerm("");
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsCreatingDx(false);
+        }
+    };
+
+    const handleCreateProc = async () => {
+        if (!procSearchTerm) return;
+        setIsCreatingProc(true);
+        try {
+            const newProc = await createCustomProcedure(procSearchTerm);
+            setLocalProcedures(prev => [newProc, ...prev]);
+            setSelectedProcIds(prev => new Set([...Array.from(prev), newProc.id]));
+            setProcSearchTerm("");
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsCreatingProc(false);
+        }
+    };
 
     useEffect(() => {
         const handleClone = (e: any) => {
@@ -80,8 +119,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         .split(/\s+/)
         .filter(Boolean);
 
-    const selectedDxList = diagnoses.filter(dx => selectedDxIds.has(dx.id));
-    const filteredUnselectedDx = diagnoses
+    const selectedDxList = localDiagnoses.filter(dx => selectedDxIds.has(dx.id));
+    const filteredUnselectedDx = localDiagnoses
         .filter(dx => !selectedDxIds.has(dx.id))
         .filter(dx => {
             if (searchTerms.length === 0) return true;
@@ -101,8 +140,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         .split(/\s+/)
         .filter(Boolean);
 
-    const selectedProcList = procedures.filter(proc => selectedProcIds.has(proc.id));
-    const filteredUnselectedProc = procedures
+    const selectedProcList = localProcedures.filter(proc => selectedProcIds.has(proc.id));
+    const filteredUnselectedProc = localProcedures
         .filter(proc => !selectedProcIds.has(proc.id))
         .filter(proc => {
             if (procSearchTerms.length === 0) return true;
@@ -378,7 +417,20 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         </label>
                                     ))}
                                     {filteredUnselectedDx.length === 0 && selectedDxList.length === 0 && (
-                                        <p className="text-sm text-zinc-500 p-4 text-center">No se encontraron diagnósticos que coincidan con la búsqueda.</p>
+                                        <div className="p-4 text-center">
+                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron diagnósticos que coincidan con la búsqueda.</p>
+                                            {dxSearchTerm && (
+                                                <button 
+                                                    type="button" 
+                                                    onClick={handleCreateDx} 
+                                                    disabled={isCreatingDx || !canSchedule}
+                                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-[11px] font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
+                                                >
+                                                    {isCreatingDx ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                    ✨ Añadir rápidamente "{dxSearchTerm}" al sistema
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
                                     {diagnoses.length > 0 && filteredUnselectedDx.length === 50 && (
                                         <p className="text-[10px] text-zinc-400 p-2 text-center uppercase tracking-widest font-bold">Mostrando los primeros 50 resultados. Continúa escribiendo para afinar.</p>
@@ -430,7 +482,20 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         </label>
                                     ))}
                                     {filteredUnselectedProc.length === 0 && selectedProcList.length === 0 && (
-                                        <p className="text-sm text-zinc-500 p-4 text-center">No se encontraron procedimientos que coincidan con la búsqueda.</p>
+                                        <div className="p-4 text-center">
+                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron procedimientos que coincidan con la búsqueda.</p>
+                                            {procSearchTerm && (
+                                                <button 
+                                                    type="button" 
+                                                    onClick={handleCreateProc} 
+                                                    disabled={isCreatingProc || !canSchedule}
+                                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-[11px] font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
+                                                >
+                                                    {isCreatingProc ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                    ✨ Añadir rápidamente "{procSearchTerm}" al sistema
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
                                     {procedures.length > 0 && filteredUnselectedProc.length === 50 && (
                                         <p className="text-[10px] text-zinc-400 p-2 text-center uppercase tracking-widest font-bold">Mostrando los primeros 50 resultados.</p>

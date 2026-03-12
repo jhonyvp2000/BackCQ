@@ -146,6 +146,7 @@ export const cqDiagnoses = pgTable("cq_diagnoses", {
   code: varchar("code", { length: 20 }).unique(), // e.g. 'K35', 'C34.9'
   name: text("name").notNull(), // e.g. 'Apendicitis aguda', 'Tumor maligno de los bronquios'
   isActive: boolean("is_active").default(true).notNull(),
+  isVerifiedMinsa: boolean("is_verified_minsa").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -163,6 +164,7 @@ export const cqProcedures = pgTable("cq_procedures", {
   code: varchar("code", { length: 20 }).unique(), // e.g. '47562', '44970'
   name: text("name").notNull(), // e.g. 'Colecistectomía laparoscópica'
   isActive: boolean("is_active").default(true).notNull(),
+  isVerifiedMinsa: boolean("is_verified_minsa").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

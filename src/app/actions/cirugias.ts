@@ -13,6 +13,28 @@ export async function getActiveProcedures() {
     return await db.select().from(cqProcedures).where(eq(cqProcedures.isActive, true)).orderBy(asc(cqProcedures.name));
 }
 
+export async function createCustomDiagnosis(name: string) {
+    const code = `D-TMP-${Math.floor(Math.random() * 10000)}`;
+    const [inserted] = await db.insert(cqDiagnoses).values({
+        code,
+        name: name.trim().toUpperCase(),
+        isActive: true,
+        isVerifiedMinsa: false,
+    }).returning();
+    return inserted;
+}
+
+export async function createCustomProcedure(name: string) {
+    const code = `P-TMP-${Math.floor(Math.random() * 10000)}`;
+    const [inserted] = await db.insert(cqProcedures).values({
+        code,
+        name: name.trim().toUpperCase(),
+        isActive: true,
+        isVerifiedMinsa: false,
+    }).returning();
+    return inserted;
+}
+
 export async function getSurgeries(startDate?: Date, endDate?: Date) {
     let query = db.select({
         surgery: cqSurgeries,
