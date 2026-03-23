@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { cqPatientPii, cqPatients, cqSurgeries } from "@/db/schema";
-import { eq, or } from "drizzle-orm";
+import { eq, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function lookupPatientByDni(rawId: string) {
@@ -23,7 +23,7 @@ export async function lookupPatientByDni(rawId: string) {
         let localPatient = result.length > 0 ? result[0] : null;
 
         // Si ya está en la bóveda y NO se llama "No Identificado", lo devolvemos rápido.
-        if (localPatient && localPatient.nombres !== 'No Identificado') {
+        if (localPatient && localPatient.nombres.toUpperCase() !== 'NO IDENTIFICADO') {
             return {
                 found: true,
                 fullName: `${localPatient.nombres} ${localPatient.apellidos}`,
@@ -31,47 +31,225 @@ export async function lookupPatientByDni(rawId: string) {
             };
         }
 
-        // --- Mocking Llamada a RENIEC / MIGRACIONES (o API real en el futuro) ---
-        await new Promise(resolve => setTimeout(resolve, 600));
+        // --- Llamada a la API externa ApiNetHos ---
+        let externalPatientData = null;
+        let isApiError = false;
 
-        let reniecName: string | null = null;
-        if (dni === "09791568") {
-            reniecName = "Jhony Vela Paredes";
-        } else if (dni === "12345678") {
-            reniecName = "Paciente de Prueba RENIEC";
-        }
+        try {
+            // Utilizamos la URL base configurada o la IP de tu servidor
+            const apiUrl = process.env.API_NETHOS_URL || "http://192.168.41.25:3010";
+            const response = await fetch(`${apiUrl}/api/pacientes/search?documento=${dni}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
 
-        // Si la API externa lo encontró, podemos auto-actualizar la Bóveda si era "No Identificado" 
-        // o si simplemente no existía y queremos devolver el nombre para el form.
-        if (reniecName) {
-            if (localPatient) {
-                // Actualización silenciosa de identidad disociada
-                const parts = reniecName.split(' ');
-                const n = parts.slice(0, Math.ceil(parts.length / 2)).join(' ');
-                const a = parts.slice(Math.ceil(parts.length / 2)).join(' ');
-                await db.update(cqPatientPii).set({
-                    nombres: n,
-                    apellidos: a
-                }).where(eq(cqPatientPii.patientId, localPatient.patientId));
-                revalidatePath("/dashboard/pacientes");
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Mapear según la estructura de tu API: data.data es un array
+                if (data.success && data.data && data.data.length > 0) {
+                    externalPatientData = data.data[0]; 
+                } else if (data && !data.success && data.data && data.data.nombres) {
+                    // Por si la estructura viniera directamente envuelta en otra forma
+                    externalPatientData = data.data;
+                }
             }
-            return { found: true, fullName: reniecName, source: 'RENIEC API' };
+        } catch (err) {
+            console.error("Error contactando ApiNetHos:", err);
+            isApiError = true;
         }
 
-        // Si la API externa falló pero sí estaba en local (ej. como "No Identificado") 
-        // devolvemos la información local para no crear duplicados y reconocer que el paciente existe.
+        // Parseamos lo obtenido o definimos por defecto
+        let pName = "NO IDENTIFICADO";
+        let pLastName = "NO IDENTIFICADO";
+        let sexo = null;
+        let fechaNac = null;
+        let ubi = null;
+        let pDireccion = null;
+        let pHistoriaClinica = dni; // Placeholder provisional para HC si no viene observacion
+        let pFoundInApi = false;
+
+        if (externalPatientData && (externalPatientData.nombres || externalPatientData.apellidoPaterno)) {
+            pName = (externalPatientData.nombres || "").trim() || "NO IDENTIFICADO";
+            // Juntamos apellido paterno y materno
+            pLastName = [
+                (externalPatientData.apellidoPaterno || "").trim(),
+                (externalPatientData.apellidoMaterno || "").trim()
+            ].filter(Boolean).join(" ") || "NO IDENTIFICADO";
+            
+            // Evaluamos el sexo
+            if (externalPatientData.sexo === "M" || externalPatientData.sexo === "Masculino") sexo = "Masculino";
+            else if (externalPatientData.sexo === "F" || externalPatientData.sexo === "Femenino") sexo = "Femenino";
+            
+            // Evaluamos fecha de nacimiento
+            if (externalPatientData.fechaNacimiento) {
+                fechaNac = new Date(externalPatientData.fechaNacimiento);
+            }
+
+            // Evaluamos observacion (Historia Clínica en NetHos)
+            if (externalPatientData.observacion) {
+                pHistoriaClinica = (externalPatientData.observacion || "").trim();
+            }
+
+            // Evaluamos ubigeo
+            if (externalPatientData.ubigeoinei) {
+                ubi = (externalPatientData.ubigeoinei || "").toString().trim();
+            }
+
+            // Evaluamos direccion
+            if (externalPatientData.direccion) {
+                pDireccion = (externalPatientData.direccion || "").trim();
+            }
+
+            pFoundInApi = true;
+        }
+
+        const fullName = `${pName} ${pLastName}`;
+
         if (localPatient) {
+            // Ya existía en Bóveda (posiblemente como "No Identificado")
+            if (pFoundInApi) {
+                // Return flag to update lightly if needed, but no auto updates here either
+                // The prompt says "que solo inyecte si encontro un PACIENTE". Wait, if it exists locally, it's already there! We should update it if it was temporary, but let's just return it.
+                // Wait! To keep it 100% deferred: 
+                return { found: true, fullName, source: 'Registro Local CQ (Bóveda / API Sync)', apiData: null };
+            }
+
+            // Si la API falló y ya lo teníamos como "NO IDENTIFICADO" o similar
             return {
                 found: true,
                 fullName: `${localPatient.nombres} ${localPatient.apellidos}`,
-                source: 'Registro Local CQ (Bóveda)'
+                source: 'Registro Local CQ (Bóveda)',
+                apiData: null
             };
+        } else {
+            // NO existía localmente, transferimos la decisión visual
+            if (pFoundInApi) {
+                // Retornamos la info para que sea guardada al "Confirmar Cirugía"
+                return { 
+                    found: true, 
+                    fullName, 
+                    source: 'ApiNetHos (Virtual)',
+                    apiData: JSON.stringify({
+                        sexo,
+                        fechaNacimiento: fechaNac ? fechaNac.toISOString() : null,
+                        ubigeo: ubi,
+                        nombres: pName,
+                        apellidos: pLastName,
+                        historiaClinica: pHistoriaClinica,
+                        direccion: pDireccion,
+                        dni: dni
+                    })
+                };
+            } else {
+                return { found: false, source: null, apiData: null };
+            }
         }
-
-        return { found: false, source: null };
     } catch (error) {
         console.error("Error looking up DNI:", error);
-        return { found: false, source: null };
+        return { found: false, source: null, apiData: null };
+    }
+}
+
+export async function lookupPatientsInApi(query: string) {
+    if (!query || query.trim().length < 3) return [];
+    
+    try {
+        const apiUrl = process.env.API_NETHOS_URL || "http://192.168.41.25:3010";
+        // Reemplazar espacios por '+' ya que API MINSA no admite %20 correctamente
+        const parsedQuery = query.trim().split(/\s+/).join('+');
+        const response = await fetch(`${apiUrl}/api/pacientes/search?q=${parsedQuery}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        if (!response.ok) return [];
+        const data = await response.json();
+        
+        if (data.success && data.data && Array.isArray(data.data)) {
+            return data.data.map((externalPatientData: any) => {
+                const dni = externalPatientData.documentoNumero || "";
+                const pName = (externalPatientData.nombres || "").trim() || "NO IDENTIFICADO";
+                const pLastName = [
+                    (externalPatientData.apellidoPaterno || "").trim(),
+                    (externalPatientData.apellidoMaterno || "").trim()
+                ].filter(Boolean).join(" ") || "NO IDENTIFICADO";
+                let sexo = null;
+                if (externalPatientData.sexo === "M" || externalPatientData.sexo === "Masculino") sexo = "Masculino";
+                else if (externalPatientData.sexo === "F" || externalPatientData.sexo === "Femenino") sexo = "Femenino";
+                
+                const fechaNac = externalPatientData.fechaNacimiento ? new Date(externalPatientData.fechaNacimiento) : null;
+                const pHistoriaClinica = (externalPatientData.observacion || "").trim() || dni;
+                const ubi = externalPatientData.ubigeoinei ? externalPatientData.ubigeoinei.toString().trim() : null;
+                const pDireccion = (externalPatientData.direccion || "").trim();
+
+                const apiDataStr = JSON.stringify({
+                    sexo,
+                    fechaNacimiento: fechaNac ? fechaNac.toISOString() : null,
+                    ubigeo: ubi,
+                    nombres: pName,
+                    apellidos: pLastName,
+                    historiaClinica: pHistoriaClinica,
+                    direccion: pDireccion,
+                    dni: dni
+                });
+
+                return {
+                    id: `__api_pat__${dni}`,
+                    pii: {
+                        dni: dni,
+                        nombres: pName,
+                        apellidos: pLastName
+                    },
+                    apiData: apiDataStr
+                };
+            }).filter((p: any) => p.pii.dni); // Ensure they have a DNI
+        }
+        return [];
+    } catch (e) {
+        console.error("Error contactando ApiNetHos (Patients Array):", e);
+        return [];
+    }
+}
+
+export async function importMultiplePatients(apiDataList: string[]) {
+    let importedCount = 0;
+    try {
+        for (const dataStr of apiDataList) {
+            if (!dataStr) continue;
+            const parsed = JSON.parse(dataStr);
+            const dni = parsed.dni;
+            if (!dni) continue;
+
+            const existingPii = await db.select().from(cqPatientPii).where(eq(cqPatientPii.dni, dni));
+            if (existingPii.length > 0) continue; // Skip existing
+
+            // 1. Insert Profile (cqPatients) to generate ID
+            const [newPatient] = await db.insert(cqPatients).values({
+                fechaNacimiento: parsed.fechaNacimiento ? new Date(parsed.fechaNacimiento) : null,
+                sexo: parsed.sexo || null,
+                ubigeo: parsed.ubigeo || null,
+            }).returning({ id: cqPatients.id });
+
+            if (newPatient && newPatient.id) {
+                // 2. Insert PII (cqPatientPii)
+                await db.insert(cqPatientPii).values({
+                    patientId: newPatient.id,
+                    dni: parsed.dni,
+                    nombres: parsed.nombres?.trim() || "NO IDENTIFICADO",
+                    apellidos: parsed.apellidos?.trim() || "NO IDENTIFICADO",
+                    historiaClinica: parsed.historiaClinica || null,
+                    direccion: parsed.direccion || null,
+                });
+                importedCount++;
+            }
+        }
+        revalidatePath('/dashboard/pacientes');
+        revalidatePath('/dashboard/programaciones');
+        return { success: true, count: importedCount };
+    } catch (e) {
+        console.error("Error importMultiplePatients:", e);
+        return { success: false, error: "Error en la importación masiva" };
     }
 }
 
@@ -122,9 +300,11 @@ export async function createTemporaryPatient(searchboxDni: string, rawInput: str
         await db.insert(cqPatientPii).values({
             patientId: newPat[0].id,
             dni: dniToSave,
-            nombres: n || "NO IDENTIFICADO",
-            apellidos: a || "NO IDENTIFICADO"
+            nombres: n ? `${n} (TEMP)` : "NO IDENTIFICADO",
+            apellidos: a ? `${a} (TEMP)` : "NO IDENTIFICADO"
         });
+        
+        revalidatePath("/dashboard", "layout");
         
         return { success: true };
     } catch (e) {
@@ -184,8 +364,8 @@ export async function createPaciente(formData: FormData) {
 
             await tx.insert(cqPatientPii).values({
                 patientId: newPatient.id,
-                nombres,
-                apellidos,
+                nombres: `${nombres.trim()} (TEMP)`,
+                apellidos: apellidos.trim(),
                 dni: dni || null,
                 carnetExtranjeria: carnetExtranjeria || null,
                 pasaporte: pasaporte || null,
@@ -270,5 +450,163 @@ export async function deletePaciente(id: string) {
     } catch (error) {
         console.error("Error deleting patient:", error);
         return { success: false, message: "Error interno al intentar eliminar" };
+    }
+}
+
+// ----------------------------------------------------
+// ORPHAN PATIENT RESOLUTION (IDENTITY GOVERNANCE)
+// ----------------------------------------------------
+
+export async function getOrphans() {
+    try {
+        const result = await db
+            .select({
+                patient: cqPatients,
+                pii: cqPatientPii
+            })
+            .from(cqPatients)
+            .innerJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+            .where(
+                or(
+                    eq(cqPatientPii.nombres, 'NO IDENTIFICADO'),
+                    ilike(cqPatientPii.nombres, '%(TEMP)%')
+                )
+            )
+            .orderBy(cqPatients.createdAt);
+
+        return result.map(r => ({
+            ...r.patient,
+            pii: r.pii
+        })).reverse();
+    } catch (error) {
+        console.error("Error fetching orphans:", error);
+        return [];
+    }
+}
+
+export async function syncOrphan(dni: string) {
+    const apiUrl = process.env.API_NETHOS_URL;
+    if (!apiUrl) return { success: false, message: "No API URL Configurada" };
+
+    try {
+        const response = await fetch(`${apiUrl}/api/pacientes/search?documento=${dni}`, { cache: 'no-store' });
+        const data = await response.json();
+        
+        let externalPatientData = null;
+        if (data.success && data.data && data.data.length > 0) {
+            externalPatientData = data.data[0]; 
+        } else if (data && !data.success && data.data && data.data.nombres) {
+            externalPatientData = data.data;
+        }
+
+        if (externalPatientData && (externalPatientData.nombres || externalPatientData.apellidoPaterno)) {
+            let pName = (externalPatientData.nombres || "").trim() || "NO IDENTIFICADO";
+            let pLastName = [
+                (externalPatientData.apellidoPaterno || "").trim(),
+                (externalPatientData.apellidoMaterno || "").trim()
+            ].filter(Boolean).join(" ") || "NO IDENTIFICADO";
+            
+            let sexo = null;
+            if (externalPatientData.sexo === "M" || externalPatientData.sexo === "Masculino") sexo = "Masculino";
+            else if (externalPatientData.sexo === "F" || externalPatientData.sexo === "Femenino") sexo = "Femenino";
+            
+            let fechaNac = externalPatientData.fechaNacimiento ? new Date(externalPatientData.fechaNacimiento) : null;
+            let pHistoriaClinica = (externalPatientData.observacion || "").trim() || dni;
+            let ubi = (externalPatientData.ubigeoinei || "").toString().trim() || null;
+            let pDireccion = (externalPatientData.direccion || "").trim() || null;
+
+            const existingPii = await db.select().from(cqPatientPii).where(eq(cqPatientPii.dni, dni)).limit(1);
+            if (existingPii.length > 0) {
+                await db.update(cqPatients).set({
+                    sexo: sexo,
+                    fechaNacimiento: fechaNac,
+                    ubigeo: ubi
+                }).where(eq(cqPatients.id, existingPii[0].patientId));
+
+                await db.update(cqPatientPii).set({
+                    nombres: pName,
+                    apellidos: pLastName,
+                    historiaClinica: pHistoriaClinica,
+                    direccion: pDireccion
+                }).where(eq(cqPatientPii.patientId, existingPii[0].patientId));
+                
+                revalidatePath("/dashboard/pacientes/huerfanos");
+                return { success: true, message: "¡Sincronización Mágica completada! Identidad recuperada de NetHos." };
+            }
+        }
+        return { success: false, message: "La API aún no retorna datos funcionales para este documento." };
+    } catch (e) {
+        console.error("Error validando", e);
+        return { success: false, message: "Error interno al contactar API" };
+    }
+}
+
+export async function mergeOrphan(orphanPatientId: string, realDniToMergeWith: string) {
+    try {
+        // 1. Validar que el paciente huérfano exista
+        const orphanPiiQuery = await db.select().from(cqPatientPii).where(eq(cqPatientPii.patientId, orphanPatientId)).limit(1);
+        if (orphanPiiQuery.length === 0) return { success: false, message: "El paciente huérfano no existe." };
+
+        // 2. Buscar el paciente REAL
+        const realPiiQuery = await db.select().from(cqPatientPii).where(eq(cqPatientPii.dni, realDniToMergeWith)).limit(1);
+        
+        if (realPiiQuery.length > 0) {
+            // ESCENARIO A: EL PACIENTE DESTINO YA EXISTE LOCALMENTE
+            const realPatientId = realPiiQuery[0].patientId;
+            if (realPatientId === orphanPatientId) return { success: false, message: "No puedes fusionar al paciente consigo mismo." };
+
+            // 3. Reasignar todas las cirugías del huérfano al paciente real
+            await db.update(cqSurgeries)
+                .set({ patientId: realPatientId })
+                .where(eq(cqSurgeries.patientId, orphanPatientId));
+
+            // 4. Eliminar el huérfano (cascade borrará el registro PII)
+            await db.delete(cqPatients).where(eq(cqPatients.id, orphanPatientId));
+
+        } else {
+            // ESCENARIO B: EL PACIENTE DESTINO NO EXISTE EN BACKCQ.
+            // Primero consultamos directamente con NetHos si ese DNI es auténtico.
+            const apiUrl = process.env.API_NETHOS_URL;
+            let pFoundInApi = false;
+            
+            if (apiUrl) {
+                try {
+                    const response = await fetch(`${apiUrl}/api/pacientes/search?documento=${realDniToMergeWith}`, { cache: 'no-store' });
+                    const data = await response.json();
+                    
+                    if (data.success && data.data && data.data.length > 0) {
+                        pFoundInApi = true;
+                    } else if (data && !data.success && data.data && data.data.nombres) {
+                        pFoundInApi = true; // Por estructura variada del API NetHos
+                    }
+                } catch (e) {
+                    console.error("Error conectando a API NetHos para Merge", e);
+                }
+            }
+
+            if (!pFoundInApi) {
+               return { success: false, message: `El DNI ${realDniToMergeWith} no existe en nuestro sistema ni en la base de datos central de NetHos. Búscalo o regístralo primero.` }; 
+            }
+
+            // Si NetHos tiene data, MUAMOS al paciente fantasma localmente
+            // A que su nuevo Identidad provisoria sea el DNI Real.
+            await db.update(cqPatientPii)
+                .set({ dni: realDniToMergeWith, historiaClinica: realDniToMergeWith })
+                .where(eq(cqPatientPii.patientId, orphanPatientId));
+
+            // Hecho esto, como el paciente fantasma ahora tiene el DNI correcto, 
+            // podemos lanzar la poderosa "Sincronización Mágica" programada anteriormente
+            // para que se descargue sola toda la meta-data de NetHos encima del fantasma!
+            await syncOrphan(realDniToMergeWith);
+        }
+
+        revalidatePath("/dashboard/pacientes");
+        revalidatePath("/dashboard/pacientes/huerfanos");
+        revalidatePath("/dashboard/programaciones");
+        
+        return { success: true, message: "¡Operación Magistral! Identidad mapeada y transferida con éxito hacia los datos maestros." };
+    } catch (error) {
+        console.error("Error merging orphans:", error);
+        return { success: false, message: "Error crítico interno durante la fusión." };
     }
 }

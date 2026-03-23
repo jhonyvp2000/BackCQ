@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ReactNode } from "react";
 
 import { SidebarNav } from "./sidebar-nav";
+import { getOrphans } from "@/app/actions/pacientes";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
     const session = await getServerSession(authOptions);
@@ -15,6 +16,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     }
 
     const user = session.user as any;
+    const orphans = await getOrphans();
+    const orphanCount = orphans.length;
 
     return (
         <div className="min-h-screen bg-[var(--color-hospital-bg)] flex flex-col md:flex-row">
@@ -30,7 +33,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                     </div>
                 </div>
 
-                <SidebarNav />
+                <SidebarNav orphanCount={orphanCount} />
 
                 <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center">

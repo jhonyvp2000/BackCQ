@@ -82,6 +82,7 @@ export const cqPatientPii = pgTable("cq_patient_pii", {
   nombres: text("nombres").notNull(),
   apellidos: text("apellidos").notNull(),
   historiaClinica: varchar("historia_clinica", { length: 50 }).unique(),
+  direccion: text("direccion"),
 });
 
 export const cqSpecialties = pgTable("cq_specialties", {

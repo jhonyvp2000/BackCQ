@@ -83,7 +83,7 @@ export function UbigeoSelector({
             </button>
 
             {open && (
-                <div className="absolute z-50 w-full mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-xl overflow-hidden flex flex-col animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute bottom-full mb-2 z-50 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-200 origin-bottom">
                     <div className="p-2 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-zinc-400 ml-2 shrink-0" />
                         <input

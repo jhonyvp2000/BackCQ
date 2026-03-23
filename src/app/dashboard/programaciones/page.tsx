@@ -2,6 +2,7 @@ import { getSurgeriesByDateDesc, updateSurgeryStatus, getActiveDiagnoses, getAct
 import { getOperatingRooms } from "@/app/actions/salas";
 import { getSpecialties } from "@/app/actions/especialidades";
 import { getMedicalStaffByProfession } from "@/app/actions/personal";
+import { getPacientes } from "@/app/actions/pacientes";
 import { Plus, Calendar, Clock, User, CheckCircle2, XCircle, AlertCircle, FileText, Activity, Hourglass, ArrowUp, ArrowDown, LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
 import { SurgeryViewToggle } from "./surgery-view-toggle";
@@ -17,10 +18,11 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
     const specialties = await getSpecialties();
     const diagnoses = await getActiveDiagnoses();
     const procedures = await getActiveProcedures();
+    const patients = await getPacientes();
 
     const surgeons = await getMedicalStaffByProfession('MEDICO CIRUJANO');
     const anesthesiologists = await getMedicalStaffByProfession('ANESTESIOLOGO');
-    const nurses = await getMedicalStaffByProfession(['ENFERMERO INSTRUMENTISTA', 'ENFERMERO CIRCULANTE']);
+    const nurses = await getMedicalStaffByProfession('ENFERMERO');
     const staff = { surgeons, anesthesiologists, nurses };
 
     const getStatusBadge = (status: string) => {
@@ -50,7 +52,7 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
                     <h2 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
                         Programación Quirúrgica
@@ -59,18 +61,15 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
                         Agenda central de intervenciones y asignación de quirófanos
                     </p>
                 </div>
+                
+                <div className="shrink-0 w-full sm:w-auto">
+                    <SurgerySchedulerForm salas={salas} specialties={specialties} staff={staff} canSchedule={canSchedule} diagnoses={diagnoses} procedures={procedures} patients={patients} />
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-                {/* Formulario de Agendamiento Cliente */}
-                <div className="xl:col-span-1">
-                    <SurgerySchedulerForm salas={salas} specialties={specialties} staff={staff} canSchedule={canSchedule} diagnoses={diagnoses} procedures={procedures} />
-                </div>
-
-                {/* Lista / Timeline de Agenda (Envuelto en Client Component) */}
-                <div className="xl:col-span-3">
-                    <SurgeryViewToggle surgeriesData={surgeriesData} salas={salas} sortParams={sortParams} specialties={specialties} staff={staff} />
-                </div>
+            <div className="w-full">
+                {/* Lista / Timeline de Agenda (Envuelto en Client Component)  Expandido a ancho total */}
+                <SurgeryViewToggle surgeriesData={surgeriesData} salas={salas} sortParams={sortParams} specialties={specialties} staff={staff} />
             </div>
         </div>
     );
