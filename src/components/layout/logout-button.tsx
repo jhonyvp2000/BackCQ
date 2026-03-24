@@ -5,12 +5,13 @@ import { signOut } from "next-auth/react";
 
 export function LogoutButton() {
     const handleLogout = async () => {
-        // Obtenemos dinámicamente el origen (localhost o IP de red)
-        const callbackUrl = window.location.origin + "/login";
-        
+        // Evitamos que NextAuth use NEXTAUTH_URL del .env para redirigir
         await signOut({ 
-            callbackUrl 
+            redirect: false 
         });
+        
+        // Redirigimos manualmente usando la URL del navegador actual
+        window.location.href = window.location.origin + "/login";
     };
 
     return (
