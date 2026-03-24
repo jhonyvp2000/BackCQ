@@ -7,6 +7,7 @@ import { ReactNode } from "react";
 
 import { SidebarNav } from "./sidebar-nav";
 import { getOrphans } from "@/app/actions/pacientes";
+import { LogoutButton } from "@/components/layout/logout-button";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
     const session = await getServerSession(authOptions);
@@ -58,10 +59,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                         <h1 className="text-[17px] font-semibold text-zinc-800 dark:text-white">Panel Principal</h1>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link href="/api/auth/signout" className="flex items-center text-sm font-medium text-zinc-500 hover:text-red-500 transition-colors">
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Cerrar sesión
-                        </Link>
+                        <LogoutButton />
                     </div>
                 </header>
 
