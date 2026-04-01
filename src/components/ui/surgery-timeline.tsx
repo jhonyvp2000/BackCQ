@@ -5,22 +5,47 @@ import { format, parseISO, addDays, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, Clock, User, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
+import { formatPatientDemographics } from "@/app/dashboard/programaciones/surgery-view-toggle";
 
-export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayDate }: { surgeriesData: any[], salas: any[], displayDate: string, setDisplayDate: (d: string) => void }) {
+export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayDate, diagnoses = [], procedures = [], interventions = [] }: { surgeriesData: any[], salas: any[], displayDate: string, setDisplayDate: (d: string) => void, diagnoses?: any[], procedures?: any[], interventions?: any[] }) {
     const parsedDate = displayDate ? new Date(displayDate + "T12:00:00") : new Date();
     const [isFullscreen, setIsFullscreen] = useState(false);
+
+    // Helper to get consistent hours ignoring browser local timezone cache
+    const getLimaTime = (d: Date) => {
+        const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }).format(d).split(':');
+        return { h: parseInt(parts[0], 10), m: parseInt(parts[1], 10) };
+    };
 
     const nextDay = () => setDisplayDate(format(addDays(parsedDate, 1), 'yyyy-MM-dd'));
     const prevDay = () => setDisplayDate(format(addDays(parsedDate, -1), 'yyyy-MM-dd'));
     const today = () => setDisplayDate(format(new Date(), 'yyyy-MM-dd'));
 
+    // Tiempo actual para la línea rastreadora en vivo
+    const [currentTime, setCurrentTime] = useState(new Date());
+    useEffect(() => {
+        // Actualiza la línea de tiempo cada minuto (60000ms) UX Premium
+        const interval = setInterval(() => setCurrentTime(new Date()), 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Determinar si el día mostrado en el canvas es hoy
+    const isShowingToday = isSameDayStr(parsedDate, new Date());
+    
+    // Calcular altura del indicador rojo según los 10 bloques visuales (08:00 a 18:00)
+    const { h: curH, m: curM } = getLimaTime(currentTime);
+    const currentHour = curH + (curM / 60);
+    const isTimelineActive = currentHour >= 8 && currentHour <= 18.5;
+    const timeIndicatorTop = ((currentHour - 8) / 10) * 100;
+
     // Utilidad para buscar colisiones en el mismo día
-    const isSameDayStr = (d1: Date | string, d2: Date) => {
+    function isSameDayStr(d1: Date | string, d2: Date) {
         const date1 = new Date(d1);
         return date1.getFullYear() === d2.getFullYear() &&
             date1.getMonth() === d2.getMonth() &&
             date1.getDate() === d2.getDate();
-    };
+    }
 
     // Escala de tiempo: 08:00 a 18:00
     const timeSlots = Array.from({ length: 11 }).map((_, i) => i + 8);
@@ -47,7 +72,8 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
     // Helper functions para el canvas
     const getSurgeryPosition = (dateStr: Date | string, durationStr: string) => {
         const date = new Date(dateStr);
-        const startHour = date.getHours() + date.getMinutes() / 60;
+        const { h, m } = getLimaTime(date);
+        const startHour = h + m / 60;
 
         let durationHours = 1;
         if (durationStr?.toLowerCase().includes('30 min')) durationHours = 0.5;
@@ -124,6 +150,22 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                             {timeSlots.map(hour => (
                                 <div key={hour} className="absolute left-0 right-0 border-t border-zinc-200 dark:border-zinc-800/80 w-full" style={{ top: `${((hour - 8) / 10) * 100}%` }}></div>
                             ))}
+                            
+                            {/* LÍNEA DE TIEMPO REAL INDICADORA (TRACKER ROJO) */}
+                            {isShowingToday && isTimelineActive && (
+                                <div 
+                                    className="absolute left-0 right-0 z-40 flex items-center shadow-lg transition-all duration-1000 ease-in-out" 
+                                    style={{ top: `${timeIndicatorTop}%`, transform: 'translateY(-50%)' }}
+                                >
+                                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] -ml-1.5 animate-pulse"></div>
+                                    <div className="h-[2px] bg-red-500/80 w-full relative">
+                                        <div className="absolute -top-4 right-2 text-[10px] font-bold text-red-500 bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900/50 px-1.5 rounded shadow-sm flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping"></span> 
+                                            {`${String(curH).padStart(2, '0')}:${String(curM).padStart(2, '0')}`}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {columnsConfig.map(col => {
@@ -173,8 +215,8 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                     <div className={`w-1.5 absolute left-0 top-0 bottom-0 ${colors.ribbon}`}></div>
 
                                                     <div className="flex justify-between items-start pl-1.5 pr-0.5 w-full gap-1">
-                                                        <span className="text-[10px] font-bold text-zinc-900 leading-none truncate mt-0.5">
-                                                            {s.patientPii?.nombres?.split(' ')[0]} {s.patientPii?.apellidos?.split(' ')[0]}
+                                                        <span className="text-[10px] font-bold text-zinc-900 leading-none mt-0.5 break-words whitespace-normal">
+                                                            {formatPatientDemographics(s.patientPii, s.patient)}
                                                         </span>
                                                         {s.surgery.urgencyType === 'EMERGENCIA' && (
                                                             <span className="bg-rose-500 text-white px-1 py-0.5 rounded-[3px] text-[7px] uppercase tracking-widest animate-pulse shadow-sm shrink-0 leading-none">
@@ -183,17 +225,41 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                         )}
                                                     </div>
 
-                                                    {s.surgery.diagnosis && (
-                                                        <span className="text-[9px] text-zinc-600 truncate block pl-1.5 mt-1.5 leading-none" title={s.surgery.diagnosis}>
-                                                            {s.surgery.diagnosis}
-                                                        </span>
+                                                    {s.diagnoses && s.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
+                                                        <div className="text-[9px] text-blue-800 dark:text-blue-300 font-semibold pl-1.5 mt-1 w-full pr-1 overflow-hidden" title={diagnoses.find(d => d.id === s.diagnoses[0])?.name}>
+                                                            <div className="truncate leading-[1.15]">
+                                                                <span className="opacity-80 font-bold">Dx:</span> {diagnoses.find(d => d.id === s.diagnoses[0])?.code} - {diagnoses.find(d => d.id === s.diagnoses[0])?.name}
+                                                            </div>
+                                                        </div>
+                                                    ) : s.surgery.diagnosis ? (
+                                                        <div className="text-[9px] text-blue-800 dark:text-blue-300 font-semibold pl-1.5 mt-1 w-full pr-1 overflow-hidden" title={s.surgery.diagnosis}>
+                                                            <div className="truncate leading-[1.15]">
+                                                                <span className="opacity-80 font-bold">Dx:</span> {s.surgery.diagnosis.split(',')[0]}
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
+                                                    {s.interventions && s.interventions.length > 0 && typeof interventions !== 'undefined' && (
+                                                        <div className="text-[9px] text-emerald-700 dark:text-emerald-400 font-semibold pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={interventions.find(i => i.id === s.interventions[0])?.name}>
+                                                            <div className="truncate leading-[1.15]">
+                                                                <span className="opacity-80 font-bold">In:</span> {interventions.find(i => i.id === s.interventions[0])?.name}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {s.procedures && s.procedures.length > 0 && typeof procedures !== 'undefined' && (
+                                                        <div className="text-[9px] text-pink-500 dark:text-pink-300 font-medium pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={procedures.find(p => p.id === s.procedures[0])?.name}>
+                                                            <div className="truncate leading-[1.15]">
+                                                                <span className="opacity-80 font-bold">Px:</span> {procedures.find(p => p.id === s.procedures[0])?.code} - {procedures.find(p => p.id === s.procedures[0])?.name}
+                                                            </div>
+                                                        </div>
                                                     )}
 
                                                     {s.team && s.team.length > 0 && (
                                                         <div className="pl-1.5 flex flex-wrap gap-1 opacity-90 group-hover:opacity-100 pt-1.5">
-                                                            {s.team.slice(0, 2).map((t: any) => (
-                                                                <span key={t.staff.id} className="text-[8.5px] bg-white/60 text-zinc-800 px-1 py-0.5 leading-none rounded-[3px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-white/40">
-                                                                    {t.role === 'CIRUJANO' ? 'Cx' : 'An'}: {t.staff.lastname}
+                                                            {s.team.map((t: any) => (
+                                                                <span key={t.staff.id} className={`text-[8.5px] bg-white/70 dark:bg-zinc-800/80 px-1 py-0.5 leading-none rounded-[3px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-white/40 dark:border-zinc-700 max-w-full break-words whitespace-normal ${t.role === 'CIRUJANO' ? 'text-blue-800 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>
+                                                                    <span className="opacity-90">
+                                                                        {t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : 'CI'}:
+                                                                    </span> {`${t.staff.name || ''} ${t.staff.lastname || ''}`.trim().length > 70 ? `${t.staff.name || ''} ${t.staff.lastname || ''}`.trim().substring(0, 70) + '...' : `${t.staff.name || ''} ${t.staff.lastname || ''}`.trim()}
                                                                 </span>
                                                             ))}
                                                         </div>

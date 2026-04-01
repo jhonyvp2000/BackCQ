@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Plus, User, AlertCircle, CheckCircle, Search, Loader2, AlertTriangle, X, Shield, Users, CalendarDays, ChevronDown, ListX, Verified } from "lucide-react";
-import { createSurgery, createCustomDiagnosis, createCustomProcedure, lookupProcedureInApi, lookupDiagnosisInApi } from "@/app/actions/cirugias";
+import { createSurgery, editSurgery, createCustomDiagnosis, createCustomProcedure, lookupProcedureInApi, lookupDiagnosisInApi } from "@/app/actions/cirugias";
+import { useRouter } from "next/navigation";
 import { lookupPatientByDni, createTemporaryPatient, lookupPatientsInApi } from "@/app/actions/pacientes";
 import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 
 const FieldError = ({ msg }: { msg?: string }) => {
     if (!msg) return null;
@@ -16,20 +18,29 @@ const FieldError = ({ msg }: { msg?: string }) => {
     );
 };
 
-export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, diagnoses, procedures, patients }: {
+export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, diagnoses, procedures, interventions = [], patients, editMode, editData, isOpenOverride, onCloseOverride }: {
     salas: any[],
     specialties: any[],
     staff: { surgeons: any[], anesthesiologists: any[], nurses: any[] },
     canSchedule: boolean,
     diagnoses: any[],
     procedures: any[],
-    patients: any[]
+    interventions?: any[],
+    patients: any[],
+    editMode?: boolean,
+    editData?: any,
+    isOpenOverride?: boolean,
+    onCloseOverride?: () => void
 }) {
     const [patSearchTerm, setPatSearchTerm] = useState("");
-    const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
+    const [internalIsOpen, setInternalIsOpen] = useState(false);
+    const isOpen = isOpenOverride !== undefined ? isOpenOverride : internalIsOpen;
+    const handleClose = () => { if(onCloseOverride) onCloseOverride(); else setInternalIsOpen(false); };
     const [keepOpen, setKeepOpen] = useState(false);
     const [selectedPatId, setSelectedPatId] = useState<string | null>(null);
     const [isSearching, setIsSearching] = useState(false);
+    const [apiDownPats, setApiDownPats] = useState(false);
     const [found, setFound] = useState<boolean | null>(null);
     const [source, setSource] = useState<string | null>(null);
     const [apiPatientData, setApiPatientData] = useState<string | null>(null);
@@ -41,15 +52,20 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [dxSearchTerm, setDxSearchTerm] = useState("");
     const [selectedDxIds, setSelectedDxIds] = useState<Set<string>>(new Set());
     const [isSearchingDx, setIsSearchingDx] = useState(false);
+    const [apiDownDx, setApiDownDx] = useState(false);
     const [procSearchTerm, setProcSearchTerm] = useState("");
     const [selectedProcIds, setSelectedProcIds] = useState<Set<string>>(new Set());
     const [isSearchingProc, setIsSearchingProc] = useState(false);
+    const [apiDownProc, setApiDownProc] = useState(false);
     const [surgSearchTerm, setSurgSearchTerm] = useState("");
     const [selectedSurgIds, setSelectedSurgIds] = useState<Set<string>>(new Set());
     const [anesSearchTerm, setAnesSearchTerm] = useState("");
     const [selectedAnesIds, setSelectedAnesIds] = useState<Set<string>>(new Set());
     const [nursSearchTerm, setNursSearchTerm] = useState("");
     const [selectedNursIds, setSelectedNursIds] = useState<Set<string>>(new Set());
+
+    const [intSearchTerm, setIntSearchTerm] = useState("");
+    const [selectedIntIds, setSelectedIntIds] = useState<Set<string>>(new Set());
 
     // Cloning State
     const [clonedData, setClonedData] = useState<any>(null);
@@ -61,14 +77,61 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [localPatients, setLocalPatients] = useState<any[]>(patients || []);
     const [localDiagnoses, setLocalDiagnoses] = useState<any[]>(diagnoses);
     const [localProcedures, setLocalProcedures] = useState<any[]>(procedures);
+    const [localInterventions, setLocalInterventions] = useState<any[]>(interventions || []);
     const [isCreatingDx, setIsCreatingDx] = useState(false);
     const [isCreatingProc, setIsCreatingProc] = useState(false);
     const [isCreatingPat, setIsCreatingPat] = useState(false);
     const [manualPatientName, setManualPatientName] = useState("");
 
-    useEffect(() => { setLocalPatients(patients); }, [patients]);
-    useEffect(() => { setLocalDiagnoses(diagnoses); }, [diagnoses]);
-    useEffect(() => { setLocalProcedures(procedures); }, [procedures]);
+    useEffect(() => {
+        setLocalPatients(prev => {
+            const apiItems = prev.filter(p => !patients.find((dbItem: any) => dbItem.pii?.patientId === p.pii?.patientId || dbItem.pii?.dni === p.pii?.dni));
+            return [...apiItems, ...(patients || [])];
+        });
+    }, [patients]);
+
+    useEffect(() => {
+        setLocalDiagnoses(prev => {
+            const apiItems = prev.filter(p => !diagnoses.find((dbItem: any) => dbItem.id === p.id || dbItem.code === p.code));
+            return [...apiItems, ...(diagnoses || [])];
+        });
+    }, [diagnoses]);
+
+    useEffect(() => {
+        setLocalProcedures(prev => {
+            const apiItems = prev.filter(p => !procedures.find((dbItem: any) => dbItem.id === p.id || dbItem.code === p.code));
+            return [...apiItems, ...(procedures || [])];
+        });
+    }, [procedures]);
+
+    useEffect(() => {
+        setLocalInterventions(prev => {
+            const apiItems = prev.filter(p => !interventions.find((dbItem: any) => dbItem.id === p.id || dbItem.code === p.code));
+            return [...apiItems, ...(interventions || [])];
+        });
+    }, [interventions]);
+
+    useEffect(() => {
+        if(editMode && editData) {
+            setClonedData(editData);
+            if (editData?.patientPii?.patientId) {
+                setSelectedPatId(editData.patientPii.patientId);
+                setPatSearchTerm(editData.patientPii.dni || editData.patientPii.historiaClinica || "");
+            }
+            if (editData?.team) {
+                const surg = editData.team.filter((t: any) => t.role === 'CIRUJANO').map((t: any) => t.staff.id);
+                const anes = editData.team.filter((t: any) => t.role === 'ANESTESIOLOGO').map((t: any) => t.staff.id);
+                const nurs = editData.team.filter((t: any) => t.role === 'ENFERMERO').map((t: any) => t.staff.id);
+                setSelectedSurgIds(new Set(surg));
+                setSelectedAnesIds(new Set(anes));
+                setSelectedNursIds(new Set(nurs));
+            }
+            if (editData?.diagnoses && Object.keys(editData.diagnoses).length) setSelectedDxIds(new Set(editData.diagnoses));
+            if (editData?.procedures && Object.keys(editData.procedures).length) setSelectedProcIds(new Set(editData.procedures));
+            if (editData?.interventions && Object.keys(editData.interventions).length) setSelectedIntIds(new Set(editData.interventions));
+            setFormKey(prev => prev + 1);
+        }
+    }, [editData, editMode]);
 
     const handleCreateDx = async () => {
         if (!dxSearchTerm) return;
@@ -137,7 +200,17 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             setSelectedAnesIds(new Set(anes));
             setSelectedNursIds(new Set(nurs));
 
+            if (row?.diagnoses) Object.keys(row.diagnoses).length ? setSelectedDxIds(new Set(row.diagnoses)) : setSelectedDxIds(new Set());
+            else setSelectedDxIds(new Set());
+            
+            if (row?.procedures) Object.keys(row.procedures).length ? setSelectedProcIds(new Set(row.procedures)) : setSelectedProcIds(new Set());
+            else setSelectedProcIds(new Set());
+
+            if (row?.interventions) Object.keys(row.interventions).length ? setSelectedIntIds(new Set(row.interventions)) : setSelectedIntIds(new Set());
+            else setSelectedIntIds(new Set());
+
             setFormKey(prev => prev + 1); // Remount form with new defaultValues
+            setInternalIsOpen(true); // Abre el modal visualmente para que el usuario proceda
             setOpenSection('patient');
 
             // Scroll to form smoothly
@@ -218,6 +291,27 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         setSelectedProcIds(next);
     };
 
+    const intSearchTerms = removeDiacritics(intSearchTerm.toLowerCase())
+        .split(/\s+/)
+        .filter(Boolean);
+
+    const selectedIntList = localInterventions.filter(int => selectedIntIds.has(int.id));
+    const filteredUnselectedInt = localInterventions
+        .filter(int => !selectedIntIds.has(int.id))
+        .filter(int => {
+            if (intSearchTerms.length === 0) return true;
+            const fullText = removeDiacritics(`${int.code || ""} ${int.name}`.toLowerCase());
+            return intSearchTerms.every(term => fullText.includes(term));
+        })
+        .slice(0, 50);
+
+    const toggleInt = (id: string, checked: boolean) => {
+        const next = new Set(selectedIntIds);
+        if (checked) next.add(id);
+        else next.delete(id);
+        setSelectedIntIds(next);
+    };
+
     const surgSearchTermsArr = removeDiacritics(surgSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
     const selectedSurgList = staff.surgeons.filter(s => selectedSurgIds.has(s.id));
     const filteredUnselectedSurg = staff.surgeons
@@ -280,34 +374,56 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         // Premium UX/UI Frontend Validation
         let newErrors: Record<string, string> = {};
         let firstErrorSection: 'patient' | 'classification' | 'team' | 'schedule' | null = null;
-        
-        if (!selectedPatId) { newErrors.patient_id = "Selecciona un paciente del motor PIDE"; if (!firstErrorSection) firstErrorSection = 'patient'; }
-        if (selectedDxIds.size === 0) { newErrors.diagnoses = "Selecciona al menos un diagnóstico"; if (!firstErrorSection) firstErrorSection = 'patient'; }
-        if (selectedProcIds.size === 0) { newErrors.procedures = "Selecciona al menos un procedimiento"; if (!firstErrorSection) firstErrorSection = 'patient'; }
-        if (!formData.get("surgery_type")) { newErrors.surgery_type = "Requerido"; if (!firstErrorSection) firstErrorSection = 'classification'; }
-        if (!formData.get("urgency_type")) { newErrors.urgency_type = "Requerido"; if (!firstErrorSection) firstErrorSection = 'classification'; }
-        if (!formData.get("specialty_id")) { newErrors.specialty_id = "Requerido"; if (!firstErrorSection) firstErrorSection = 'classification'; }
-        if (!formData.get("origin")) { newErrors.origin = "Requerido"; if (!firstErrorSection) firstErrorSection = 'classification'; }
-        if (!formData.get("insurance_type")) { newErrors.insurance_type = "Requerido"; if (!firstErrorSection) firstErrorSection = 'classification'; }
-        if (selectedSurgIds.size === 0) { newErrors.surgeons = "Asigna al menos un cirujano"; if (!firstErrorSection) firstErrorSection = 'team'; }
-        if (!formData.get("operating_room_id")) { newErrors.operating_room_id = "Requerido"; if (!firstErrorSection) firstErrorSection = 'schedule'; }
-        if (!formData.get("scheduled_date")) { newErrors.scheduled_date = "Requerido"; if (!firstErrorSection) firstErrorSection = 'schedule'; }
-        if (!formData.get("scheduled_time")) { newErrors.scheduled_time = "Requerido"; if (!firstErrorSection) firstErrorSection = 'schedule'; }
-        if (!formData.get("estimated_duration")) { newErrors.estimated_duration = "Requerido"; if (!firstErrorSection) firstErrorSection = 'schedule'; }
+        let firstErrorField: string | null = null;
+
+        const setError = (field: string, msg: string, section: any) => {
+            newErrors[field] = msg;
+            if (!firstErrorSection) {
+                firstErrorSection = section;
+                firstErrorField = field;
+            }
+        };
+
+        if (!selectedPatId && !patSearchTerm) setError('patient_id', "Falta identificador", 'patient');
+        if (selectedDxIds.size === 0) setError('diagnoses', "Selecciona al menos un diagnóstico", 'patient');
+        if (selectedIntIds.size === 0) setError('interventions', "Selecciona al menos una intervención", 'patient');
+        if (!formData.get("surgery_type")) setError('surgery_type', "Requerido", 'classification');
+        if (!formData.get("urgency_type")) setError('urgency_type', "Requerido", 'classification');
+        if (!formData.get("specialty_id")) setError('specialty_id', "Requerido", 'classification');
+        if (!formData.get("origin")) setError('origin', "Requerido", 'classification');
+        if (!formData.get("insurance_type")) setError('insurance_type', "Requerido", 'classification');
+        if (selectedSurgIds.size === 0) setError('surgeons', "Asigna al menos un cirujano", 'team');
+        if (!formData.get("operating_room_id")) setError('operating_room_id', "Requerido", 'schedule');
+        if (!formData.get("scheduled_date")) setError('scheduled_date', "Requerido", 'schedule');
+        if (!formData.get("scheduled_time")) setError('scheduled_time', "Requerido", 'schedule');
+        if (!formData.get("estimated_duration")) setError('estimated_duration', "Requerido", 'schedule');
 
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
-            setErrorModalType('validation');
-            setErrorModalMsg("Existen campos obligatorios sin completar en la programación.\n\nRevisa el formulario y corrige los campos remarcados en rojo.");
-            setIsErrorModalOpen(true);
             if (firstErrorSection) setOpenSection(firstErrorSection);
+            
+            // Allow accordion to open dynamically before searching for the element and scrolling smoothly
+            setTimeout(() => {
+                const els = document.getElementsByName(firstErrorField || "");
+                if (els.length > 0) {
+                    const el = els[0] as HTMLElement;
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    el.focus();
+                    
+                    // Add a highly visible rapid blinking/pulsating red shadow
+                    el.classList.add('animate-pulse', 'ring-4', 'ring-red-500', 'border-red-600');
+                    setTimeout(() => {
+                        el.classList.remove('animate-pulse', 'ring-4', 'ring-red-500', 'border-red-600');
+                    }, 2500);
+                }
+            }, 350);
             return;
         }
 
         setSubmitting(true);
 
-        const res = await createSurgery(formData);
+        const res = editMode ? await editSurgery(formData) : await createSurgery(formData);
 
         if (res?.error) {
             setErrorModalType('conflict');
@@ -321,6 +437,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             setDxSearchTerm("");
             setSelectedProcIds(new Set());
             setProcSearchTerm("");
+            setSelectedIntIds(new Set());
+            setIntSearchTerm("");
             setSelectedSurgIds(new Set());
             setSurgSearchTerm("");
             setSelectedAnesIds(new Set());
@@ -329,9 +447,10 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             setNursSearchTerm("");
             setOpenSection('patient'); // reset accordion
             
-            if (!keepOpen) {
-                setIsOpen(false);
+            if (!keepOpen || editMode) {
+                handleClose();
             }
+            router.refresh();
         }
         setSubmitting(false);
     };
@@ -343,12 +462,19 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             const timeoutId = setTimeout(async () => {
                 const resArray = await lookupPatientsInApi(patSearchTerm.trim());
                 if (resArray && Array.isArray(resArray) && resArray.length > 0) {
-                    setLocalPatients(prev => {
-                        const newPats = resArray.filter(
-                            (apiPat: any) => !prev.find(p => p.pii?.dni === apiPat.pii.dni)
-                        );
-                        return [...newPats, ...prev];
-                    });
+                    if (resArray[0]?.__apiError) {
+                        setApiDownPats(true);
+                    } else {
+                        setApiDownPats(false);
+                        setLocalPatients(prev => {
+                            const newPats = resArray.filter(
+                                (apiPat: any) => !prev.find(p => p.pii?.dni === apiPat.pii.dni)
+                            );
+                            return [...newPats, ...prev];
+                        });
+                    }
+                } else {
+                    setApiDownPats(false);
                 }
                 setIsSearching(false);
             }, 1000);
@@ -365,12 +491,22 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             const timeoutId = setTimeout(async () => {
                 const resArray = await lookupDiagnosisInApi(dxSearchTerm.trim());
                 if (resArray && Array.isArray(resArray) && resArray.length > 0) {
-                    setLocalDiagnoses(prev => {
-                        const newDiagnoses = resArray.filter(
-                            (apiDx: any) => !prev.find(d => d.code === apiDx.code)
-                        );
-                        return [...newDiagnoses, ...prev];
-                    });
+                    if (resArray[0]?.__apiError) {
+                        setApiDownDx(true);
+                        resArray.shift(); // Remove error object to show any fallback local results
+                    } else {
+                        setApiDownDx(false);
+                    }
+                    if (resArray.length > 0) {
+                        setLocalDiagnoses(prev => {
+                            const newDiagnoses = resArray.filter(
+                                (apiDx: any) => !prev.find(d => d.code === apiDx.code)
+                            );
+                            return [...newDiagnoses, ...prev];
+                        });
+                    }
+                } else {
+                    setApiDownDx(false);
                 }
                 setIsSearchingDx(false);
             }, 1000);
@@ -387,12 +523,22 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             const timeoutId = setTimeout(async () => {
                 const resArray = await lookupProcedureInApi(procSearchTerm.trim());
                 if (resArray && Array.isArray(resArray) && resArray.length > 0) {
-                    setLocalProcedures(prev => {
-                        const newProcedures = resArray.filter(
-                            (apiProc: any) => !prev.find(p => p.code === apiProc.code)
-                        );
-                        return [...newProcedures, ...prev];
-                    });
+                    if (resArray[0]?.__apiError) {
+                        setApiDownProc(true);
+                        resArray.shift();
+                    } else {
+                        setApiDownProc(false);
+                    }
+                    if (resArray.length > 0) {
+                        setLocalProcedures(prev => {
+                            const newProcedures = resArray.filter(
+                                (apiProc: any) => !prev.find(p => p.code === apiProc.code)
+                            );
+                            return [...newProcedures, ...prev];
+                        });
+                    }
+                } else {
+                    setApiDownProc(false);
                 }
                 setIsSearchingProc(false);
             }, 1000);
@@ -425,7 +571,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             {/* Botón flotante superior (en la página se colocará junto al título) */}
             <button
                 type="button"
-                onClick={() => setIsOpen(true)}
+                onClick={() => setInternalIsOpen(true)}
                 className="flex items-center text-sm font-semibold justify-center py-2.5 px-6 rounded-xl shadow-[0_2px_12px_rgba(33,121,202,0.3)] text-white bg-[var(--color-hospital-blue)] hover:bg-[#09357a] hover:shadow-[0_6px_20px_rgba(33,121,202,0.4)] transition-all uppercase tracking-wider gap-2 shrink-0"
             >
                 <Plus size={18} /> Nueva Cirugía
@@ -439,7 +585,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={() => setIsOpen(false)}
+                            onClick={() => handleClose()}
                             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                         />
 
@@ -455,13 +601,13 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-t-3xl shrink-0">
                                 <div>
                                     <h3 className="font-bold text-xl text-zinc-900 dark:text-white flex items-center gap-2">
-                                        <Plus size={24} className="text-[var(--color-hospital-blue)] dark:text-blue-400" /> Registrar Cirugía
+                                        <Plus size={24} className="text-[var(--color-hospital-blue)] dark:text-blue-400" /> {editMode ? "Actualizar Cirugía" : "Registrar Cirugía"}
                                     </h3>
-                                    <p className="text-xs text-zinc-500 mt-1 font-medium">Completa los datos preoperatorios y asigna el equipo quirúrgico.</p>
+                                    <p className="text-xs text-zinc-500 mt-1 font-medium">{editMode ? "Verifica y actualiza la planificacion pre-operatoria" : "Completa los datos preoperatorios y asigna el equipo quirúrgico."}</p>
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => setIsOpen(false)}
+                                    onClick={() => handleClose()}
                                     className="p-2 rounded-full text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
                                 >
                                     <X size={24} />
@@ -497,14 +643,16 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('patient')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-semibold ${openSection === 'patient' ? 'bg-blue-50/50 dark:bg-zinc-800/50 text-[#0D47A1] dark:text-blue-400' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'patient' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-[#0D47A1] dark:text-blue-400 border-l-4 border-l-[var(--color-hospital-blue)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
-                            <User size={18} className={openSection === 'patient' ? "text-[#0D47A1] dark:text-blue-400" : "text-zinc-400"} />
-                            <span>1. Detalle del Paciente</span>
+                            <div className={`p-1.5 rounded-lg ${openSection === 'patient' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                <User size={18} />
+                            </div>
+                            <span className="text-sm">1. Detalle del Paciente</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <ChevronDown size={16} className={`transition-transform duration-300 ${openSection === 'patient' ? 'rotate-180' : ''}`} />
+                            <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'patient' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
                         </div>
                     </button>
 
@@ -516,7 +664,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Identificador (DNI / HC)</label>
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Identificador (DNI / HC)</label>
                                 <div className="relative group">
                                     <input
                                         type="text"
@@ -527,8 +675,10 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         placeholder="Filtrar variables (DNI o Nombres)"
                                     />
                                     {/* HIDDEN INPUT FOR SUBMISSION */}
-                                    <input type="hidden" name="patient_id" value={selectedPatList[0]?.pii?.dni || selectedPatList[0]?.id || ""} />
+                                    <input type="hidden" name="patient_uuid" value={selectedPatId || (editMode ? editData?.patientPii?.patientId : "") || ""} />
+                                    <input type="hidden" name="patient_dni" value={patSearchTerm || ""} />
                                     <input type="hidden" name="api_patient_data" value={selectedPatList[0]?.apiData || ""} />
+                                    {editMode && <input type="hidden" name="id" value={editData?.surgery?.id || ""} />}
                                     
                                     <div className="absolute right-3 top-2.5 flex items-center">
                                         {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-[var(--color-hospital-blue)]" /> : <Search className="h-4 w-4 text-zinc-400" />}
@@ -599,11 +749,25 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         )}
                                     </div>
                                 </div>
+                                {selectedPatId && (
+                                    <input 
+                                        type="hidden" 
+                                        name="patient_id" 
+                                        value={selectedPatList[0]?.pii?.dni || selectedPatId.replace('__api_pat__', '')} 
+                                    />
+                                )}
                                 <FieldError msg={errors.patient_id} />
+                                
+                                {apiDownPats && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
+                                        <AlertTriangle size={14} className="shrink-0" />
+                                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                                    </motion.div>
+                                )}
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Catálogo de Diagnósticos (Dx)</label>
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Catálogo de Diagnósticos (Dx)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -688,10 +852,17 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     )}
                                 </div>
                                 <FieldError msg={errors.diagnoses} />
+                                
+                                {apiDownDx && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
+                                        <AlertTriangle size={14} className="shrink-0" />
+                                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                                    </motion.div>
+                                )}
                             </div>
 
-                            <div className="space-y-2 pt-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Catálogo de Procedimientos</label>
+                            <div className="space-y-2 pt-2 hidden">
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Catálogo de Procedimientos (Opcional)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -775,7 +946,74 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <p className="text-[10px] text-zinc-400 p-2 text-center uppercase tracking-widest font-bold">Mostrando los primeros 50 resultados.</p>
                                     )}
                                 </div>
-                                <FieldError msg={errors.diagnoses} />
+                                <FieldError msg={errors.procedures} />
+                            </div>
+
+                            <div className="space-y-2 pt-2">
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Tipo de Intervención</label>
+                                <div className="relative mb-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar tipo de intervención..."
+                                        value={intSearchTerm}
+                                        onChange={e => setIntSearchTerm(e.target.value)}
+                                        className={getInputCls("", "pl-9 py-2")}
+                                        disabled={!canSchedule}
+                                    />
+                                    <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+                                </div>
+                                <div className={`max-h-32 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("interventions")}`}>
+                                    {selectedIntList.map((inty) => (
+                                        <label key={inty.id} className="flex items-start gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
+                                            <input
+                                                type="checkbox"
+                                                name="interventions"
+                                                value={inty.id}
+                                                checked={true}
+                                                onChange={(e) => toggleInt(inty.id, e.target.checked)}
+                                                className="mt-0.5 w-4 h-4 text-emerald-500 rounded border-zinc-300 focus:ring-emerald-500 dark:border-zinc-600 dark:bg-zinc-700"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">{inty.name}</div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{inty.code}</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                    {filteredUnselectedInt.map((inty) => (
+                                        <label key={inty.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer cursor-allowed disabled:opacity-50 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                name="interventions"
+                                                value={inty.id}
+                                                checked={false}
+                                                disabled={!canSchedule}
+                                                onChange={(e) => toggleInt(inty.id, e.target.checked)}
+                                                className="mt-0.5 w-4 h-4 text-emerald-500 rounded border-zinc-300 focus:ring-emerald-500 dark:border-zinc-600 dark:bg-zinc-700"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">{inty.name}</div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{inty.code}</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                    {filteredUnselectedInt.length === 0 && selectedIntList.length === 0 && (
+                                        <div className="p-4 text-center">
+                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron intervenciones que coincidan con la búsqueda.</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <FieldError msg={errors.interventions} />
+
+                                {apiDownProc && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
+                                        <AlertTriangle size={14} className="shrink-0" />
+                                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                                    </motion.div>
+                                )}
                             </div>
 
                             {/* Action button to continue */}
@@ -791,14 +1029,16 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('classification')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-semibold ${openSection === 'classification' ? 'bg-blue-50/50 dark:bg-zinc-800/50 text-[var(--color-hospital-blue)] dark:text-blue-400' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'classification' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-[#0D47A1] dark:text-blue-400 border-l-4 border-l-[var(--color-hospital-blue)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
-                            <Shield size={18} className={openSection === 'classification' ? "text-[var(--color-hospital-blue)] dark:text-blue-400" : "text-zinc-400"} />
-                            <span>2. Clasificación Clínica</span>
+                            <div className={`p-1.5 rounded-lg ${openSection === 'classification' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                <Shield size={18} />
+                            </div>
+                            <span className="text-sm">2. Clasificación Clínica</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <ChevronDown size={16} className={`transition-transform duration-300 ${openSection === 'classification' ? 'rotate-180' : ''}`} />
+                            <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'classification' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
                         </div>
                     </button>
 
@@ -811,7 +1051,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Tipo Operación</label>
+                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Tipo Operación</label>
                                     <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
                                         <option value="">- Tipo -</option>
                                         <option value="Cirugía Menor">Cirugía Menor</option>
@@ -820,7 +1060,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.surgery_type} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Prioridad</label>
+                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Prioridad</label>
                                     <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
                                         <option value="ELECTIVO">Electivo</option>
                                         <option value="EMERGENCIA">Emergencia</option>
@@ -830,7 +1070,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Especialidad</label>
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Especialidad</label>
                                 <select name="specialty_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.specialtyId || ""} className={getSelectCls("specialty_id")}>
                                     <option value="">- Seleccionar -</option>
                                     {specialties.map(spec => (
@@ -842,7 +1082,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Tipo de seguro</label>
+                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Tipo de seguro</label>
                                     <select name="insurance_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.insuranceType || ""} className={getSelectCls("insurance_type")}>
                                         <option value="">- Seguro -</option>
                                         <option value="SIS">SIS</option>
@@ -853,7 +1093,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.insurance_type} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Procedencia</label>
+                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Procedencia</label>
                                     <input
                                         type="text"
                                         name="origin"
@@ -864,6 +1104,21 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     />
                                     <FieldError msg={errors.origin} />
                                 </div>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Tipo de Anestesia</label>
+                                <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>
+                                    <option value="">- Seleccionar Anestesia -</option>
+                                    <option value="RAQ">RAQ - Raquídea (o Subaracnoidea)</option>
+                                    <option value="EPI">EPI - Epidural</option>
+                                    <option value="AGB">AGB - Anestesia General Balanceada</option>
+                                    <option value="AGE">AGE - Anestesia General Endovenosa</option>
+                                    <option value="AGI">AGI - Anestesia General Inhalatoria</option>
+                                    <option value="BLOQ">BLOQ - Bloqueo Regional</option>
+                                    <option value="LOCL">LOCL - Local</option>
+                                </select>
+                                <FieldError msg={errors.anesthesia_type} />
                             </div>
 
                             <div className="pt-2 flex justify-end">
@@ -878,14 +1133,16 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('team')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-semibold ${openSection === 'team' ? 'bg-blue-50/50 dark:bg-zinc-800/50 text-[var(--color-hospital-blue)] dark:text-blue-400' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'team' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-[#0D47A1] dark:text-blue-400 border-l-4 border-l-[var(--color-hospital-blue)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
-                            <Users size={18} className={openSection === 'team' ? "text-[var(--color-hospital-blue)] dark:text-blue-400" : "text-zinc-400"} />
-                            <span>3. Equipo Asistencial</span>
+                            <div className={`p-1.5 rounded-lg ${openSection === 'team' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                <Users size={18} />
+                            </div>
+                            <span className="text-sm">3. Equipo Asistencial</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <ChevronDown size={16} className={`transition-transform duration-300 ${openSection === 'team' ? 'rotate-180' : ''}`} />
+                            <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'team' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
                         </div>
                     </button>
 
@@ -897,7 +1154,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Cirujano(s) Principal(es)</label>
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Cirujano(s) Principal(es)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -947,7 +1204,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Anestesiólogo(s)</label>
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Anestesiólogo(s)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -997,7 +1254,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
 
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Enfermero(s)</label>
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Enfermero(s)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -1058,14 +1315,16 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('schedule')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-semibold ${openSection === 'schedule' ? 'bg-blue-50/50 dark:bg-zinc-800/50 text-[var(--color-hospital-blue)] dark:text-blue-400' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'schedule' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-[#0D47A1] dark:text-blue-400 border-l-4 border-l-[var(--color-hospital-blue)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
-                            <CalendarDays size={18} className={openSection === 'schedule' ? "text-[var(--color-hospital-blue)] dark:text-blue-400" : "text-zinc-400"} />
-                            <span>4. Sala y Horarios</span>
+                            <div className={`p-1.5 rounded-lg ${openSection === 'schedule' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                <CalendarDays size={18} />
+                            </div>
+                            <span className="text-sm">4. Sala y Horarios</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <ChevronDown size={16} className={`transition-transform duration-300 ${openSection === 'schedule' ? 'rotate-180' : ''}`} />
+                            <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'schedule' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
                         </div>
                     </button>
 
@@ -1077,10 +1336,10 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Sala Quirúrgica</label>
-                                <select name="operating_room_id" disabled={!canSchedule} className={getSelectCls("operating_room_id")}>
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Sala Quirúrgica</label>
+                                <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
                                     <option value="">-- Por definir internamente --</option>
-                                    {salas.filter(s => s.status === 'available').map(sala => (
+                                    {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
                                         <option key={sala.id} value={sala.id}>{sala.name}</option>
                                     ))}
                                 </select>
@@ -1088,18 +1347,26 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Fecha de Solicitud</label>
+                                    <input type="date" name="request_date" required disabled={!canSchedule} 
+                                           defaultValue={clonedData?.surgery?.requestDate ? format(new Date(clonedData.surgery.requestDate + 'T00:00:00'), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')} 
+                                           className={getInputCls("request_date")} 
+                                    />
+                                    <FieldError msg={errors.request_date} />
+                                </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Fecha</label>
-                                    <input type="date" name="scheduled_date" required disabled={!canSchedule} className={getInputCls("scheduled_date")} />
+                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Fecha Programación</label>
+                                    <input type="date" name="scheduled_date" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'yyyy-MM-dd') : ""} className={getInputCls("scheduled_date")} />
                                     <FieldError msg={errors.scheduled_date} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Hora</label>
-                                    <input type="time" name="scheduled_time" required disabled={!canSchedule} className={getInputCls("scheduled_time")} />
+                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Hora</label>
+                                    <input type="time" name="scheduled_time" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} className={getInputCls("scheduled_time")} />
                                     <FieldError msg={errors.scheduled_time} />
                                 </div>
                                 <div className="col-span-2 space-y-2 mt-1">
-                                    <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Duración Estimada</label>
+                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Duración Estimada</label>
                                     <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || ""} className={getSelectCls("estimated_duration", "px-2")}>
                                         <option value="">- Lapso -</option>
                                         <option value="30 minutos">30 min (Exp.)</option>
@@ -1113,7 +1380,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Notas Internas</label>
+                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Notas Internas</label>
                                 <textarea
                                     name="notes"
                                     disabled={!canSchedule}
@@ -1130,15 +1397,17 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
                 {/* Footer Actions */}
                 <div className="pt-6 mt-6 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                        <input 
-                            type="checkbox" 
-                            checked={keepOpen} 
-                            onChange={(e) => setKeepOpen(e.target.checked)} 
-                            className="w-4 h-4 rounded border-zinc-300 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)]"
-                        />
-                        <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors select-none">Mantener ventanal abierto para registrar múltiples</span>
-                    </label>
+                    {!editMode && (
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <input 
+                                type="checkbox" 
+                                checked={keepOpen} 
+                                onChange={(e) => setKeepOpen(e.target.checked)} 
+                                className="w-4 h-4 rounded border-zinc-300 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)]"
+                            />
+                            <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors select-none">Mantener ventanal abierto para registrar múltiples</span>
+                        </label>
+                    )}
 
                     <button
                         type="submit"
@@ -1146,7 +1415,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         className="group relative flex justify-center py-3.5 px-8 rounded-xl shadow-[0_4px_14px_0_rgb(13,71,161,0.39)] text-sm font-bold text-white bg-[var(--color-hospital-blue)] hover:bg-[#09357a] hover:shadow-[0_6px_20px_rgba(13,71,161,0.23)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all duration-200 overflow-hidden w-full sm:w-auto"
                     >
                         <div className="absolute inset-0 w-full h-full -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                        <span className="relative">{submitting ? 'Aprobando Agenda...' : 'Confirmar Cirugía'}</span>
+                        <span className="relative">{submitting ? (editMode ? "Actualizando..." : "Aprobando Agenda...") : (editMode ? "Guardar Cambios" : "Confirmar Cirugía")}</span>
                     </button>
                 </div>
             </form>
@@ -1186,7 +1455,11 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         {errorModalType === 'validation' ? <ListX size={24} /> : <AlertTriangle size={24} />}
                                     </div>
                                     <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">
-                                        {errorModalType === 'validation' ? 'Formulario Incompleto' : 'Cruce de Horarios Detectado'}
+                                        {errorModalType === 'validation' ? 'Formulario Incompleto' : (
+                                            errorModalMsg.includes('Cruce') || errorModalMsg.includes('horarios') || errorModalMsg.includes('sala') 
+                                                ? 'Cruce de Horarios Detectado' 
+                                                : (errorModalMsg.includes('Falta') || errorModalMsg.includes('obligatorio') ? 'Datos Incompletos' : 'Error de Sistema')
+                                        )}
                                     </h3>
                                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 text-left w-full mt-2">
                                         {errorModalMsg}

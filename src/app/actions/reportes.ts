@@ -1,8 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { cqSurgicalReports, cqSurgeries, usersTable } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { 
+  cqSurgicalReports, cqSurgeries, usersTable, 
+  cqOperatingRooms, cqSpecialties, cqPatients, cqPatientPii, cqSurgeryTeam, cqSurgeryProcedures, cqProcedures, cqSurgeryDiagnoses, cqDiagnoses,
+  cqInterventionTypes, cqSurgeryInterventions
+} from "@/db/schema";
+import { eq, and, gte, lte, inArray, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { supabase } from "@/lib/supabase";
 
@@ -84,4 +88,138 @@ export async function createSurgicalReport(formData: FormData) {
     });
 
     revalidatePath(`/dashboard/programaciones/${surgeryId}/reporte`);
+}
+
+function getMonthName(date: Date) {
+    const localDateStr = date.toLocaleString("en-US", { timeZone: "America/Lima", month: "long" });
+    const months: Record<string, string> = {
+        "January": "ENERO", "February": "FEBRERO", "March": "MARZO", "April": "ABRIL",
+        "May": "MAYO", "June": "JUNIO", "July": "JULIO", "August": "AGOSTO",
+        "September": "SEPTIEMBRE", "October": "OCTUBRE", "November": "NOVIEMBRE", "December": "DICIEMBRE"
+    };
+    return months[localDateStr] || localDateStr.toUpperCase();
+}
+
+function calculateAge(birthDate: Date | null, targetDate: Date) {
+    if (!birthDate) return "";
+    let age = targetDate.getFullYear() - birthDate.getFullYear();
+    const m = targetDate.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && targetDate.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age.toString();
+}
+
+export async function fetchSurgeryReportData(startDateStr: string, endDateStr: string) {
+    const startDate = new Date(`${startDateStr}T00:00:00-05:00`);
+    const endDate = new Date(`${endDateStr}T23:59:59-05:00`);
+
+    const surgeries = await db.select({
+        surgery: cqSurgeries,
+        room: cqOperatingRooms,
+        specialty: cqSpecialties,
+        patient: cqPatients,
+        pii: cqPatientPii
+    })
+    .from(cqSurgeries)
+    .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
+    .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id))
+    .innerJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
+    .leftJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+    .where(and(
+        gte(cqSurgeries.scheduledDate, startDate),
+        lte(cqSurgeries.scheduledDate, endDate)
+    ))
+    .orderBy(desc(cqSurgeries.scheduledDate));
+
+    if (surgeries.length === 0) return [];
+
+    const surgeryIds = surgeries.map(s => s.surgery.id);
+
+    const teams = await db.select({
+        surgeryId: cqSurgeryTeam.surgeryId,
+        role: cqSurgeryTeam.roleInSurgery,
+        staff: usersTable
+    })
+    .from(cqSurgeryTeam)
+    .innerJoin(usersTable, eq(cqSurgeryTeam.staffUserId, usersTable.id))
+    .where(inArray(cqSurgeryTeam.surgeryId, surgeryIds));
+
+    const diagRecords = await db.select({
+        surgeryId: cqSurgeryDiagnoses.surgeryId,
+        diagnosis: cqDiagnoses
+    })
+    .from(cqSurgeryDiagnoses)
+    .innerJoin(cqDiagnoses, eq(cqSurgeryDiagnoses.diagnosisId, cqDiagnoses.id))
+    .where(inArray(cqSurgeryDiagnoses.surgeryId, surgeryIds));
+
+    const intRecords = await db.select({
+        surgeryId: cqSurgeryInterventions.surgeryId,
+        intervention: cqInterventionTypes
+    })
+    .from(cqSurgeryInterventions)
+    .innerJoin(cqInterventionTypes, eq(cqSurgeryInterventions.interventionId, cqInterventionTypes.id))
+    .where(inArray(cqSurgeryInterventions.surgeryId, surgeryIds));
+
+    return surgeries.map((s, index) => {
+        const surgeryTeam = teams.filter(t => t.surgeryId === s.surgery.id);
+        const surgeryDiags = diagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosis.name);
+        const surgeryInts = intRecords.filter(i => i.surgeryId === s.surgery.id).map(i => i.intervention.name);
+
+        const surgeons = surgeryTeam.filter(t => t.role === 'CIRUJANO').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
+        const anesthesiologists = surgeryTeam.filter(t => t.role === 'ANESTESIOLOGO').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
+        const nurses = surgeryTeam.filter(t => t.role === 'ENFERMERO').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
+
+        const combinedDiagnoses = s.surgery.diagnosis ? (surgeryDiags.length > 0 ? `${s.surgery.diagnosis} | ${surgeryDiags.join(" | ")}` : s.surgery.diagnosis) : surgeryDiags.join(" | ");
+
+        let rawSex = s.patient.sexo || "";
+        let formattedSex = "";
+        if (rawSex.toLowerCase().startsWith('m')) formattedSex = 'M';
+        if (rawSex.toLowerCase().startsWith('f')) formattedSex = 'F';
+
+        let turno = "";
+        if (s.surgery.actualStartTime) {
+            const h = parseInt(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/Lima' }).format(new Date(s.surgery.actualStartTime)), 10);
+            const hour = h === 24 ? 0 : h;
+            if (hour >= 6 && hour < 12) turno = "MAÑANA";
+            else if (hour >= 12 && hour < 18) turno = "TARDE";
+            else if (hour >= 18 && hour <= 23) turno = "NOCHE";
+            else if (hour >= 0 && hour < 6) turno = "MADRUGADA";
+        }
+
+        return {
+            correlativo: index + 1,
+            especialidad: s.specialty?.name || "",
+            sala: s.room?.name || "Sin Asignar",
+            fechaProgramacion: s.surgery.createdAt ? new Date(s.surgery.createdAt).toLocaleDateString("es-PE", {timeZone: 'America/Lima'}) : "",
+            horaProgramada: s.surgery.scheduledDate ? new Date(s.surgery.scheduledDate).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:true, timeZone: 'America/Lima'}) : "",
+            fechaSolicitud: s.surgery.requestDate ? new Date(s.surgery.requestDate + "T00:00:00").toLocaleDateString("es-PE", {timeZone: 'America/Lima'}) : "",
+            edad: calculateAge(s.patient.fechaNacimiento, new Date(s.surgery.scheduledDate)),
+            sexo: formattedSex,
+            historiaClinica: s.pii?.historiaClinica || s.pii?.dni || s.pii?.carnetExtranjeria || "",
+            nombresApellidos: `${s.pii?.nombres || ''} ${s.pii?.apellidos || ''}`.trim(),
+            diagnostico: combinedDiagnoses,
+            tipoDiagnostico: s.surgery.surgeryType || "",
+            tipoIntervencion: surgeryInts.join(" / "),
+            cirujano: surgeons,
+            anestesiologo: anesthesiologists,
+            enfermeria: nurses,
+            tipoSeguro: s.surgery.insuranceType || "",
+            procedencia: s.surgery.origin || "",
+            tipoAnestesia: s.surgery.anesthesiaType || "",
+            horaIngresoPaciente: s.surgery.actualStartTime ? new Date(s.surgery.actualStartTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
+            horaInicioAnestesia: s.surgery.anesthesiaStartTime ? new Date(s.surgery.anesthesiaStartTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
+            horaAntesIncision: s.surgery.preIncisionTime ? new Date(s.surgery.preIncisionTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
+            horaTerminoCirugia: s.surgery.surgeryEndTime ? new Date(s.surgery.surgeryEndTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
+            horaSalidaPaciente: s.surgery.patientExitTime ? new Date(s.surgery.patientExitTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
+            horaSalidaUrpa: s.surgery.urpaExitTime ? new Date(s.surgery.urpaExitTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
+            fechaIntervencionQuirurgica: s.surgery.scheduledDate ? new Date(s.surgery.scheduledDate).toLocaleDateString("es-PE", {timeZone: 'America/Lima'}) : "",
+            fechaRealIntervencion: s.surgery.actualStartTime ? new Date(s.surgery.actualStartTime).toLocaleDateString("es-PE", {timeZone: 'America/Lima'}) : "",
+            horaRealIntervencion: s.surgery.actualStartTime ? new Date(s.surgery.actualStartTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
+            tipoPrioridad: s.surgery.urgencyType || "",
+            mesIntervencion: s.surgery.actualStartTime ? getMonthName(new Date(s.surgery.actualStartTime)) : "",
+            estadoAlerta: s.surgery.status,
+            turno: turno
+        };
+    });
 }

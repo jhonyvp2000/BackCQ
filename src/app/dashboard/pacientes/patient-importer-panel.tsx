@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Loader2, CheckCircle, Verified, Users, Plus } from "lucide-react";
+import { Search, Loader2, CheckCircle, Verified, Users, Plus, AlertTriangle } from "lucide-react";
 import { lookupPatientsInApi, importMultiplePatients } from "@/app/actions/pacientes";
 
 const removeDiacritics = (str: string) => {
@@ -15,6 +15,7 @@ export function PatientImporterPanel({ initialLocalPatients = [] }: { initialLoc
     const [selectedPatIds, setSelectedPatIds] = useState<Set<string>>(new Set());
     const [isImporting, setIsImporting] = useState(false);
     const [importMsg, setImportMsg] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [apiDown, setApiDown] = useState(false);
 
     // Filter Logic
     const patSearchTermsArr = patSearchTerm.toLowerCase().trim().split(/\s+/).filter(Boolean);
@@ -35,12 +36,22 @@ export function PatientImporterPanel({ initialLocalPatients = [] }: { initialLoc
             const timeoutId = setTimeout(async () => {
                 const resArray = await lookupPatientsInApi(patSearchTerm.trim());
                 if (resArray && Array.isArray(resArray) && resArray.length > 0) {
-                    setLocalPatients(prev => {
-                        const newPats = resArray.filter(
-                            (apiPat: any) => !prev.find(p => p.pii?.dni === apiPat.pii.dni)
-                        );
-                        return [...newPats, ...prev];
-                    });
+                    if (resArray[0]?.__apiError) {
+                        setApiDown(true);
+                        resArray.shift();
+                    } else {
+                        setApiDown(false);
+                    }
+                    if (resArray.length > 0) {
+                        setLocalPatients(prev => {
+                            const newPats = resArray.filter(
+                                (apiPat: any) => !prev.find(p => p.pii?.dni === apiPat.pii?.dni)
+                            );
+                            return [...newPats, ...prev];
+                        });
+                    }
+                } else {
+                    setApiDown(false);
                 }
                 setIsSearching(false);
             }, 1000);
@@ -120,6 +131,12 @@ export function PatientImporterPanel({ initialLocalPatients = [] }: { initialLoc
                 <div className="absolute right-4 top-3.5 flex items-center">
                     {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-[#10b981]" /> : <Search className="h-4 w-4 text-zinc-400" />}
                 </div>
+                {apiDown && (
+                    <div className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
+                        <AlertTriangle size={14} className="shrink-0" />
+                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                    </div>
+                )}
             </div>
 
             {/* Lista con Checkboxes */}

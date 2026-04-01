@@ -106,7 +106,7 @@ export function PatientsTable({ pacientes }: { pacientes: any[] }) {
                                                         {p.pii?.apellidos}, {p.pii?.nombres}
                                                     </div>
                                                     <div className="text-[11px] font-semibold text-zinc-400 flex items-center gap-1 mt-0.5">
-                                                        <CalendarDays size={12} /> Creado el {new Date(p.createdAt).toLocaleDateString()}
+                                                        <CalendarDays size={12} /> Creado el {new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', dateStyle: 'short' }).format(new Date(p.createdAt))}
                                                     </div>
                                                 </div>
                                             </div>

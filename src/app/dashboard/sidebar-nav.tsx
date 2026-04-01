@@ -2,22 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, FileText, Users, UserSquare2, MapPin, UserX, Stethoscope, ActivitySquare, SplitSquareHorizontal } from "lucide-react";
+import { Activity, FileText, Users, UserSquare2, MapPin, UserX, Stethoscope, ActivitySquare, SplitSquareHorizontal, BarChart } from "lucide-react";
 
-export function SidebarNav({ orphanCount = 0 }: { orphanCount?: number }) {
+export function SidebarNav({ orphanCount = 0, permissions = [] }: { orphanCount?: number, permissions?: string[] }) {
     const pathname = usePathname();
 
-    const navItems = [
+    let navItems = [
         { name: "Dashboard", href: "/dashboard", icon: Activity },
         { name: "Salas", href: "/dashboard/salas", icon: Users },
         { name: "Pacientes", href: "/dashboard/pacientes", icon: UserSquare2 },
         { name: "Anomalías", href: "/dashboard/pacientes/huerfanos", icon: UserX },
         { name: "Personal", href: "/dashboard/personal", icon: Stethoscope },
         { name: "Diagnósticos", href: "/dashboard/diagnosticos", icon: ActivitySquare },
-        { name: "Procedimientos", href: "/dashboard/procedimientos", icon: SplitSquareHorizontal },
-        { name: "Programaciones", href: "/dashboard/programaciones", icon: FileText },
-        // { name: "Ubigeo", href: "/dashboard/ubigeo", icon: MapPin },
+        { name: "Tipos de Intervención", href: "/dashboard/tipos-intervencion", icon: SplitSquareHorizontal },
+        { name: "Programaciones", href: "/dashboard/programaciones", icon: FileText, requiredPermission: "ver:programacion" },
+        { name: "Reportes", href: "/dashboard/reportes", icon: BarChart },
     ];
+
+    // Filter items based on permissions
+    navItems = navItems.filter(item => {
+        if (item.requiredPermission) {
+            return permissions.includes(item.requiredPermission);
+        }
+        return true;
+    });
 
     return (
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto w-full">

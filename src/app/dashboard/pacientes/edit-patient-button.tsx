@@ -6,6 +6,7 @@ import { updatePaciente } from "@/app/actions/pacientes";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { UbigeoSelector } from "./ubigeo-selector";
+import { format } from "date-fns";
 
 export function EditPatientButton({ patient }: { patient: any }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -173,7 +174,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <input
                                                 type="date"
                                                 name="fechaNacimiento"
-                                                defaultValue={patient.fechaNacimiento ? new Date(patient.fechaNacimiento).toISOString().split('T')[0] : ""}
+                                                defaultValue={patient.fechaNacimiento ? format(new Date(patient.fechaNacimiento), 'yyyy-MM-dd') : ""}
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium [color-scheme:light] dark:[color-scheme:dark]"
                                             />
                                         </div>

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, uuid, varchar, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, date, uuid, varchar, primaryKey } from "drizzle-orm/pg-core";
 
 // Base shared tables (Hetzner Ecosystem, created by BackAdmin)
 export const usersTable = pgTable("users", {
@@ -9,8 +9,8 @@ export const usersTable = pgTable("users", {
   email: text("email").unique(),
   passwordHash: text("password_hash").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const rolesTable = pgTable("roles", {
@@ -39,7 +39,7 @@ export const userSystemRoles = pgTable("user_system_roles", {
   userId: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
   systemId: text("system_id").notNull(), // 'backadmin', 'backrrhh', 'backepi', 'backcq'
   roleId: uuid("role_id").notNull().references(() => rolesTable.id, { onDelete: 'restrict' }),
-  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+  assignedAt: timestamp("assigned_at", { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
   primaryKey({ columns: [t.userId, t.systemId, t.roleId] })
 ]);
@@ -61,17 +61,17 @@ export const cqOperatingRooms = pgTable("cq_operating_rooms", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(), // e.g. 'Sala 1', 'Sala 2'
   status: varchar("status", { length: 50 }).notNull().default('available'), // available, occupied, maintenance
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const cqPatients = pgTable("cq_patients", {
   id: uuid("id").primaryKey().defaultRandom(),
-  fechaNacimiento: timestamp("fecha_nacimiento"),
+  fechaNacimiento: timestamp("fecha_nacimiento", { withTimezone: true }),
   sexo: varchar("sexo", { length: 20 }), // 'Masculino', 'Femenino', etc.
   ubigeo: varchar("ubigeo", { length: 6 }), // 6-digit INEI code (MINSA Standard)
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const cqPatientPii = pgTable("cq_patient_pii", {
@@ -90,8 +90,8 @@ export const cqSpecialties = pgTable("cq_specialties", {
   name: varchar("name", { length: 255 }).notNull().unique(),
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const cqSurgeries = pgTable("cq_surgeries", {
@@ -99,24 +99,26 @@ export const cqSurgeries = pgTable("cq_surgeries", {
   patientId: uuid("patient_id").notNull().references(() => cqPatients.id, { onDelete: 'restrict' }),
   operatingRoomId: uuid("operating_room_id").references(() => cqOperatingRooms.id, { onDelete: 'set null' }),
   specialtyId: uuid("specialty_id").references(() => cqSpecialties.id, { onDelete: 'set null' }),
-  scheduledDate: timestamp("scheduled_date").notNull(),
+  requestDate: date("request_date").notNull().defaultNow(),
+  scheduledDate: timestamp("scheduled_date", { withTimezone: true }).notNull(),
   status: varchar("status", { length: 50 }).notNull().default('scheduled'), // scheduled, in_progress, anesthesia_start, pre_incision, surgery_end, patient_exit, urpa_exit, completed, cancelled
   urgencyType: varchar("urgency_type", { length: 50 }).notNull().default('ELECTIVO'), // 'EMERGENCIA', 'ELECTIVO'
   estimatedDuration: varchar("estimated_duration", { length: 50 }), // e.g. "1 hora", "2 horas"
   diagnosis: text("diagnosis"), // custom text
   surgeryType: varchar("surgery_type", { length: 50 }), // 'Cirugía Menor', 'Cirugía Mayor'
   insuranceType: varchar("insurance_type", { length: 50 }), // 'SIS', 'SOAT', 'PARTICULAR', 'SISPOL'
+  anesthesiaType: varchar("anesthesia_type", { length: 50 }), // 'RAQ', 'EPI', 'AGB', 'AGE', 'AGI', 'BLOQ', 'LOCL'
   origin: varchar("origin", { length: 255 }), // Procedencia: Cama, Ambulatorio, etc.
-  actualStartTime: timestamp("actual_start_time"), // when in_progress
-  anesthesiaStartTime: timestamp("anesthesia_start_time"),
-  preIncisionTime: timestamp("pre_incision_time"),
-  surgeryEndTime: timestamp("surgery_end_time"),
-  patientExitTime: timestamp("patient_exit_time"),
-  urpaExitTime: timestamp("urpa_exit_time"),
-  completedTime: timestamp("completed_time"),
+  actualStartTime: timestamp("actual_start_time", { withTimezone: true }), // when in_progress
+  anesthesiaStartTime: timestamp("anesthesia_start_time", { withTimezone: true }),
+  preIncisionTime: timestamp("pre_incision_time", { withTimezone: true }),
+  surgeryEndTime: timestamp("surgery_end_time", { withTimezone: true }),
+  patientExitTime: timestamp("patient_exit_time", { withTimezone: true }),
+  urpaExitTime: timestamp("urpa_exit_time", { withTimezone: true }),
+  completedTime: timestamp("completed_time", { withTimezone: true }),
   notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const cqSurgeryTeam = pgTable("cq_surgery_team", {
@@ -137,8 +139,8 @@ export const cqSurgicalReports = pgTable("cq_surgical_reports", {
   bloodLoss: varchar("blood_loss", { length: 50 }),
   complications: text("complications"),
   documentUrl: text("document_url"), // URL holding the Supabase PDF attachment
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 // New CIE-10 (or generic) Diagnoses Dictionary
@@ -148,7 +150,7 @@ export const cqDiagnoses = pgTable("cq_diagnoses", {
   name: text("name").notNull(), // e.g. 'Apendicitis aguda', 'Tumor maligno de los bronquios'
   isActive: boolean("is_active").default(true).notNull(),
   isVerifiedMinsa: boolean("is_verified_minsa").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 // Junction table: multiple diagnoses per surgery
@@ -166,7 +168,7 @@ export const cqProcedures = pgTable("cq_procedures", {
   name: text("name").notNull(), // e.g. 'Colecistectomía laparoscópica'
   isActive: boolean("is_active").default(true).notNull(),
   isVerifiedMinsa: boolean("is_verified_minsa").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
 // Junction table: multiple procedures per surgery
@@ -175,6 +177,23 @@ export const cqSurgeryProcedures = pgTable("cq_surgery_procedures", {
   procedureId: uuid("procedure_id").notNull().references(() => cqProcedures.id, { onDelete: 'restrict' }),
 }, (t) => [
   primaryKey({ columns: [t.surgeryId, t.procedureId] })
+]);
+
+// Dictionary for "Tipo de intervención"
+export const cqInterventionTypes = pgTable("cq_intervention_types", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: varchar("code", { length: 20 }).unique(), // Will be injected via CSV seeded sequence
+  name: text("name").notNull().unique(), // e.g. 'ADENECTOMIA PROSTATICA TRANSVESICAL'
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Junction table: multiple intervention types per surgery
+export const cqSurgeryInterventions = pgTable("cq_surgery_interventions", {
+  surgeryId: uuid("surgery_id").notNull().references(() => cqSurgeries.id, { onDelete: 'cascade' }),
+  interventionId: uuid("intervention_id").notNull().references(() => cqInterventionTypes.id, { onDelete: 'restrict' }),
+}, (t) => [
+  primaryKey({ columns: [t.surgeryId, t.interventionId] })
 ]);
 
 // Catálogo Maestro de UBIGEO (INEI/MINSA)
@@ -188,5 +207,5 @@ export const cqUbigeo = pgTable("cq_ubigeo", {
   latitud: varchar("latitud", { length: 50 }),
   longitud: varchar("longitud", { length: 50 }),
   isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });

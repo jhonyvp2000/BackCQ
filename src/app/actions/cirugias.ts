@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqProcedures, cqSurgeryProcedures } from "@/db/schema";
+import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions } from "@/db/schema";
 import { eq, desc, asc, and, gte, lte, ne, inArray, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -11,6 +11,10 @@ export async function getActiveDiagnoses() {
 
 export async function getActiveProcedures() {
     return await db.select().from(cqProcedures).where(eq(cqProcedures.isActive, true)).orderBy(asc(cqProcedures.name));
+}
+
+export async function getActiveInterventions() {
+    return await db.select().from(cqInterventionTypes).where(eq(cqInterventionTypes.isActive, true)).orderBy(asc(cqInterventionTypes.name));
 }
 
 export async function createCustomDiagnosis(name: string) {
@@ -72,8 +76,6 @@ export async function lookupProcedureInApi(query: string) {
                             });
                         }
                     }
-                } else {
-                    apiFailed = true;
                 }
             } else {
                 console.warn(`[lookupProcedure] ApiNetHos falló con status ${res.status}`);
@@ -92,8 +94,12 @@ export async function lookupProcedureInApi(query: string) {
         const localMatches = await db.select().from(cqProcedures)
             .where(or(ilike(cqProcedures.code, `%${query}%`), ilike(cqProcedures.name, `%${query}%`))).limit(20);
         if (localMatches.length > 0) {
-            resolvedList = localMatches;
+            resolvedList.push(...localMatches);
         }
+    }
+
+    if (apiFailed) {
+        resolvedList.unshift({ __apiError: true });
     }
 
     return JSON.parse(JSON.stringify(resolvedList));
@@ -136,8 +142,6 @@ export async function lookupDiagnosisInApi(query: string) {
                             });
                         }
                     }
-                } else {
-                    apiFailed = true;
                 }
             } else {
                 console.warn(`[lookupDiagnosis] ApiNetHos falló con status ${res.status}`);
@@ -156,8 +160,12 @@ export async function lookupDiagnosisInApi(query: string) {
         const localMatches = await db.select().from(cqDiagnoses)
             .where(or(ilike(cqDiagnoses.code, `%${query}%`), ilike(cqDiagnoses.name, `%${query}%`))).limit(20);
         if (localMatches.length > 0) {
-            resolvedList = localMatches;
+            resolvedList.push(...localMatches);
         }
+    }
+
+    if (apiFailed) {
+        resolvedList.unshift({ __apiError: true });
     }
 
     return JSON.parse(JSON.stringify(resolvedList));
@@ -207,11 +215,13 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc') {
         surgery: cqSurgeries,
         operatingRoom: cqOperatingRooms,
         patientPii: cqPatientPii,
+        patient: cqPatients,
         specialty: cqSpecialties,
     })
         .from(cqSurgeries)
         .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
         .leftJoin(cqPatientPii, eq(cqSurgeries.patientId, cqPatientPii.patientId))
+        .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
         .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id))
         .orderBy(orderFn(cqSurgeries.scheduledDate));
 
@@ -233,9 +243,27 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc') {
         .innerJoin(usersTable, eq(cqSurgeryTeam.staffUserId, usersTable.id))
         .where(inArray(cqSurgeryTeam.surgeryId, surgeryIds));
 
+    const diagRecords = await db.select({
+        surgeryId: cqSurgeryDiagnoses.surgeryId,
+        diagnosisId: cqSurgeryDiagnoses.diagnosisId
+    }).from(cqSurgeryDiagnoses).where(inArray(cqSurgeryDiagnoses.surgeryId, surgeryIds));
+
+    const procRecords = await db.select({
+        surgeryId: cqSurgeryProcedures.surgeryId,
+        procedureId: cqSurgeryProcedures.procedureId
+    }).from(cqSurgeryProcedures).where(inArray(cqSurgeryProcedures.surgeryId, surgeryIds));
+
+    const intRecords = await db.select({
+        surgeryId: cqSurgeryInterventions.surgeryId,
+        interventionId: cqSurgeryInterventions.interventionId
+    }).from(cqSurgeryInterventions).where(inArray(cqSurgeryInterventions.surgeryId, surgeryIds));
+
     return surgeries.map(s => ({
         ...s,
-        team: teams.filter(t => t.surgeryId === s.surgery.id)
+        team: teams.filter(t => t.surgeryId === s.surgery.id),
+        diagnoses: diagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosisId),
+        procedures: procRecords.filter(p => p.surgeryId === s.surgery.id).map(p => p.procedureId),
+        interventions: intRecords.filter(i => i.surgeryId === s.surgery.id).map(i => i.interventionId)
     }));
 }
 
@@ -256,13 +284,16 @@ export async function createSurgery(formData: FormData) {
     const operatingRoomId = formData.get("operating_room_id") as string | null;
     const scheduledDateStr = formData.get("scheduled_date") as string;
     const scheduledTimeStr = formData.get("scheduled_time") as string;
+    const requestDateStr = formData.get("request_date") as string;
     const estimatedDuration = formData.get("estimated_duration") as string;
     const notes = formData.get("notes") as string;
     const diagnosesIds = formData.getAll("diagnoses") as string[];
     const proceduresIds = formData.getAll("procedures") as string[];
+    const interventionsIds = formData.getAll("interventions") as string[];
     const surgeryType = formData.get("surgery_type") as string;
     const urgencyType = formData.get("urgency_type") as string;
     const insuranceType = formData.get("insurance_type") as string;
+    const anesthesiaType = formData.get("anesthesia_type") as string;
     const origin = formData.get("origin") as string;
     const specialtyId = formData.get("specialty_id") as string;
 
@@ -270,8 +301,8 @@ export async function createSurgery(formData: FormData) {
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
     const nurseIds = formData.getAll("nurses") as string[];
 
-    if (!patientId || !scheduledDateStr || !scheduledTimeStr || diagnosesIds.length === 0 || proceduresIds.length === 0 || !surgeryType || !insuranceType || !origin || !specialtyId || surgeonIds.length === 0) {
-        return { error: "Faltan campos obligatorios para agendar." };
+    if (!patientId || !scheduledDateStr || !scheduledTimeStr || diagnosesIds.length === 0 || interventionsIds.length === 0 || !surgeryType || !insuranceType || !origin || !specialtyId || surgeonIds.length === 0) {
+        return { error: "Faltan campos obligatorios para agendar (Incluyendo la(s) intervención(es))." };
     }
 
     // Resolve deferred Synthetic IDs for Diagnoses (Late-bound DB Injection)
@@ -424,6 +455,7 @@ export async function createSurgery(formData: FormData) {
     const newSurgery = await db.insert(cqSurgeries).values({
         patientId: finalPatientId,
         operatingRoomId: roomId,
+        requestDate: requestDateStr || new Date().toISOString().split('T')[0],
         scheduledDate,
         status: 'scheduled',
         estimatedDuration,
@@ -431,6 +463,7 @@ export async function createSurgery(formData: FormData) {
         surgeryType,
         urgencyType: finalUrgencyType,
         insuranceType,
+        anesthesiaType,
         origin,
         specialtyId,
         notes,
@@ -462,6 +495,11 @@ export async function createSurgery(formData: FormData) {
     const procInserts = trueProceduresIds.map(pid => ({ surgeryId: surgeryRecordId, procedureId: pid }));
     if (procInserts.length > 0) {
         await db.insert(cqSurgeryProcedures).values(procInserts).onConflictDoNothing();
+    }
+
+    const interInserts = interventionsIds.map(iid => ({ surgeryId: surgeryRecordId, interventionId: iid }));
+    if (interInserts.length > 0) {
+        await db.insert(cqSurgeryInterventions).values(interInserts).onConflictDoNothing();
     }
 
     revalidatePath("/dashboard/programaciones");
@@ -608,22 +646,83 @@ export async function editSurgery(formData: FormData) {
     const operatingRoomId = formData.get("operating_room_id") as string | null;
     const scheduledDateStr = formData.get("scheduled_date") as string;
     const scheduledTimeStr = formData.get("scheduled_time") as string;
+    const requestDateStr = formData.get("request_date") as string;
     const estimatedDuration = formData.get("estimated_duration") as string;
     const notes = formData.get("notes") as string;
-    const diagnosis = formData.get("diagnosis") as string;
     const surgeryType = formData.get("surgery_type") as string;
     const urgencyType = formData.get("urgency_type") as string;
     const insuranceType = formData.get("insurance_type") as string;
     const origin = formData.get("origin") as string;
     const specialtyId = formData.get("specialty_id") as string;
+    const anesthesiaType = formData.get("anesthesia_type") as string;
 
     const surgeonIds = formData.getAll("surgeons") as string[];
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
     const nurseIds = formData.getAll("nurses") as string[];
+    const diagnosesIds = formData.getAll("diagnoses") as string[];
+    const proceduresIds = formData.getAll("procedures") as string[];
+    const interventionsIds = formData.getAll("interventions") as string[];
 
-    if (!id || !patientId || !scheduledDateStr || !scheduledTimeStr || !diagnosis || !surgeryType || !insuranceType || !origin || !specialtyId || surgeonIds.length === 0) {
-        return { error: "Faltan campos obligatorios para agendar (Paciente, Especialidad, Tipo de Seguro, Procedencia, Cirujano, Diagnóstico, Fecha y Hora)." };
+    if (!id || !patientId || !scheduledDateStr || !scheduledTimeStr || diagnosesIds.length === 0 || interventionsIds.length === 0 || !surgeryType || !insuranceType || !origin || !specialtyId || surgeonIds.length === 0) {
+        return { error: "Faltan campos obligatorios para agendar (Paciente, Especialidad, Tipo de Seguro, Procedencia, Cirujano, Diagnóstico, Intervención, Fecha y Hora)." };
     }
+
+    // Resolve deferred Synthetic IDs for Diagnoses (Late-bound DB Injection)
+    const finalDiagnosisIds: string[] = [];
+    for (const did of diagnosesIds) {
+        if (did.startsWith('__api_dx__')) {
+            const parts = did.replace('__api_dx__', '').split('|||');
+            const code = parts[0];
+            const name = parts.slice(1).join('|||');
+            
+            const existing = await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.code, code)).limit(1);
+            if (existing.length > 0) {
+                finalDiagnosisIds.push(existing[0].id);
+            } else {
+                const [inserted] = await db.insert(cqDiagnoses).values({
+                    code: code.substring(0, 20),
+                    name: name,
+                    isActive: true,
+                    isVerifiedMinsa: true
+                }).returning({ id: cqDiagnoses.id });
+                if (inserted) finalDiagnosisIds.push(inserted.id);
+            }
+        } else {
+            finalDiagnosisIds.push(did);
+        }
+    }
+
+    // Resolve deferred Synthetic IDs for Procedures
+    const finalProcedureIds: string[] = [];
+    for (const pid of proceduresIds) {
+        if (pid.startsWith('__api_proc__')) {
+            const parts = pid.replace('__api_proc__', '').split('|||');
+            const code = parts[0];
+            const name = parts.slice(1).join('|||');
+            
+            const existing = await db.select().from(cqProcedures).where(eq(cqProcedures.code, code)).limit(1);
+            if (existing.length > 0) {
+                finalProcedureIds.push(existing[0].id);
+            } else {
+                const [inserted] = await db.insert(cqProcedures).values({
+                    code: code.substring(0, 20),
+                    name: name,
+                    isActive: true,
+                    isVerifiedMinsa: true
+                }).returning({ id: cqProcedures.id });
+                if (inserted) finalProcedureIds.push(inserted.id);
+            }
+        } else {
+            finalProcedureIds.push(pid);
+        }
+    }
+
+    const trueDiagnosesIds = [...new Set(finalDiagnosisIds)];
+    const trueProceduresIds = [...new Set(finalProcedureIds)];
+
+    // Resolve diagnosis details from True IDs to text for legacy/easy reading
+    const selectedDiags = await db.select().from(cqDiagnoses).where(inArray(cqDiagnoses.id, trueDiagnosesIds));
+    const diagnosisText = selectedDiags.map(d => `${d.code} - ${d.name}`).join(", ");
 
     const roomId = operatingRoomId ? operatingRoomId : null;
 
@@ -682,12 +781,14 @@ export async function editSurgery(formData: FormData) {
     await db.update(cqSurgeries).set({
         patientId: finalPatientId,
         operatingRoomId: roomId,
+        requestDate: requestDateStr || new Date().toISOString().split('T')[0],
         scheduledDate,
         estimatedDuration,
-        diagnosis,
+        diagnosis: diagnosisText,
         surgeryType,
         urgencyType: urgencyType || 'ELECTIVO',
         insuranceType,
+        anesthesiaType,
         origin,
         specialtyId,
         notes,
@@ -710,6 +811,27 @@ export async function editSurgery(formData: FormData) {
 
     if (teamInserts.length > 0) {
         await db.insert(cqSurgeryTeam).values(teamInserts);
+    }
+
+    // Clear and Re-insert Diagnoses
+    await db.delete(cqSurgeryDiagnoses).where(eq(cqSurgeryDiagnoses.surgeryId, id));
+    const diagInserts = trueDiagnosesIds.map(did => ({ surgeryId: id, diagnosisId: did }));
+    if (diagInserts.length > 0) {
+        await db.insert(cqSurgeryDiagnoses).values(diagInserts).onConflictDoNothing();
+    }
+
+    // Clear and Re-insert Procedures
+    await db.delete(cqSurgeryProcedures).where(eq(cqSurgeryProcedures.surgeryId, id));
+    const procInserts = trueProceduresIds.map(pid => ({ surgeryId: id, procedureId: pid }));
+    if (procInserts.length > 0) {
+        await db.insert(cqSurgeryProcedures).values(procInserts).onConflictDoNothing();
+    }
+
+    // Clear and Re-insert Interventions
+    await db.delete(cqSurgeryInterventions).where(eq(cqSurgeryInterventions.surgeryId, id));
+    const interInserts = interventionsIds.map(iid => ({ surgeryId: id, interventionId: iid }));
+    if (interInserts.length > 0) {
+        await db.insert(cqSurgeryInterventions).values(interInserts).onConflictDoNothing();
     }
 
     revalidatePath("/dashboard/programaciones");

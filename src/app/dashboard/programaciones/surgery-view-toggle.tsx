@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LayoutGrid, List as ListIcon, Calendar, ArrowUp, ArrowDown, User, Clock, Hourglass, CheckCircle2, XCircle, FileText, Activity, AlertCircle, Pencil, CopyPlus, AlertTriangle, X, Filter, Search } from "lucide-react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { StartSurgeryButton } from "./start-surgery-button";
 import { DeleteSurgeryButton } from "./delete-button";
@@ -17,6 +18,7 @@ function getFormattedDate(dateValue: Date | string | null | undefined): string {
     const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     if (isNaN(date.getTime())) return 'Fecha inválida';
     return new Intl.DateTimeFormat('es-PE', {
+        timeZone: 'America/Lima',
         day: '2-digit',
         month: 'short',
         year: 'numeric',
@@ -25,7 +27,38 @@ function getFormattedDate(dateValue: Date | string | null | undefined): string {
     }).format(date);
 }
 
-export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialties, staff }: { surgeriesData: any[], salas: any[], sortParams: any, specialties?: any[], staff?: any }) {
+export const formatPatientDemographics = (patientPii: any, patient: any) => {
+    const fullName = `${patientPii?.nombres || ''} ${patientPii?.apellidos || ''}`.trim();
+    if (!fullName || fullName === 'Desconocido') return 'Desconocido';
+
+    let sexStr = '?';
+    if (patient?.sexo) {
+        if (patient.sexo.toUpperCase().startsWith('F')) sexStr = 'F';
+        else if (patient.sexo.toUpperCase().startsWith('M')) sexStr = 'M';
+        else sexStr = patient.sexo.substring(0, 1).toUpperCase();
+    }
+
+    let ageStr = '?';
+    if (patient?.fechaNacimiento) {
+        const diff_ms = Date.now() - new Date(patient.fechaNacimiento).getTime();
+        const age = Math.abs(new Date(diff_ms).getUTCFullYear() - 1970);
+        ageStr = String(age).padStart(2, '0');
+    }
+
+    const hcStr = patientPii?.historiaClinica || '?';
+    const combined = `${fullName} (${sexStr} ${ageStr} HC: ${hcStr})`;
+
+    return combined.length > 70 ? combined.substring(0, 70) + '...' : combined;
+};
+
+export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialties, staff, permissions = [], diagnoses = [], procedures = [], interventions = [], patients = [] }: { surgeriesData: any[], salas: any[], sortParams: any, specialties?: any[], staff?: any, permissions?: string[], diagnoses?: any[], procedures?: any[], interventions?: any[], patients?: any[] }) {
+    const canEdit = permissions.includes('editar:programacion');
+    const canCancel = permissions.includes('cancelar:programacion');
+    const canAdvancePhase = permissions.includes('avanzar_fase:programacion');
+    const canDuplicate = permissions.includes('duplicar:programacion');
+    const canDelete = permissions.includes('eliminar:programacion');
+    const canViewReport = permissions.includes('ver:reporte_operatorio');
+    const router = useRouter();
     const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
     const [editingSurgery, setEditingSurgery] = useState<any>(null);
     const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
@@ -33,6 +66,17 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [errorModalMsg, setErrorModalMsg] = useState<string>("");
     const [transitionModal, setTransitionModal] = useState<{ isOpen: boolean, surgeryId: string, targetPhase: string, patientName: string }>({ isOpen: false, surgeryId: '', targetPhase: '', patientName: '' });
     const currentSort = sortParams?.sort === 'asc' ? 'asc' : 'desc';
+
+    // Auto-Refresh Polling Effect (Realtime UX)
+    // Refreshes the server-injected props every 60 seconds to detect updates made by other users,
+    // ensuring the Timeline Canvas and List are always up to date automatically.
+    // Local modifications already trigger instant refreshes via `revalidatePath` in Server Actions.
+    useEffect(() => {
+        const interval = setInterval(() => {
+            router.refresh();
+        }, 60000);
+        return () => clearInterval(interval);
+    }, [router]);
 
     // Estados para Filtros de Lista
     const [filterDate, setFilterDate] = useState<string>("");
@@ -105,6 +149,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
         const res = await updateSurgeryStatus(formData);
         if (res?.error) {
             setErrorModalMsg(res.error);
+        } else {
+            router.refresh();
         }
     };
 
@@ -260,7 +306,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             transition={{ duration: 0.2 }}
                             className="p-6 bg-zinc-50/50 dark:bg-zinc-900 h-full"
                         >
-                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom === "ALL" ? salas : salas.filter(s => s.id === filterRoom)} displayDate={filterDate} setDisplayDate={setFilterDate} />
+                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom === "ALL" ? salas : salas.filter(s => s.id === filterRoom)} displayDate={filterDate} setDisplayDate={setFilterDate} diagnoses={diagnoses} procedures={procedures} interventions={interventions} />
                         </motion.div>
                     ) : (
                         <motion.div
@@ -312,16 +358,54 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             </div>
                                                             <div className="ml-0">
                                                                 <div className="text-sm font-bold text-zinc-900 dark:text-white mb-1 tracking-tight">
-                                                                    DNI: {row.patientPii?.dni || 'Desconocido'}
+                                                                    Doc: {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'Desconocido'}
                                                                 </div>
                                                                 {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' && (
-                                                                    <div className="text-xs text-zinc-500 font-medium mb-1 truncate max-w-[200px]" title={`${row.patientPii.nombres} ${row.patientPii.apellidos}`}>
-                                                                        {row.patientPii.nombres} {row.patientPii.apellidos}
+                                                                    <div className="text-xs text-zinc-500 font-medium mb-1 break-words whitespace-normal" title={`${row.patientPii.nombres} ${row.patientPii.apellidos}`}>
+                                                                        {formatPatientDemographics(row.patientPii, row.patient)}
                                                                     </div>
                                                                 )}
-                                                                {row.surgery.diagnosis && (
-                                                                    <div className="text-xs text-blue-800 dark:text-blue-300 font-semibold mb-1 truncate max-w-[300px]" title={row.surgery.diagnosis}>
-                                                                        Dx: {row.surgery.diagnosis}
+                                                                {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
+                                                                    <div className="flex flex-col gap-0.5 mb-1.5 mt-0.5">
+                                                                        {row.diagnoses.map((did: string) => {
+                                                                            const d = diagnoses.find(dx => dx.id === did);
+                                                                            if (!d) return null;
+                                                                            return (
+                                                                                <div key={d.id} className="text-xs text-blue-800 dark:text-blue-300 font-semibold leading-[1.3] break-words whitespace-normal" title={`${d.code} - ${d.name}`}>
+                                                                                    <span className="opacity-80">Dx:</span> {d.code} - {d.name}
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                ) : row.surgery.diagnosis ? (
+                                                                    <div className="text-xs text-blue-800 dark:text-blue-300 font-semibold leading-[1.3] break-words whitespace-normal mb-1" title={row.surgery.diagnosis}>
+                                                                        <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
+                                                                    </div>
+                                                                ) : null}
+                                                                {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
+                                                                    <div className="flex flex-col gap-0.5 mb-1.5 mt-0.5">
+                                                                        {row.interventions.map((iid: string) => {
+                                                                            const inter = interventions.find(inty => inty.id === iid);
+                                                                            if (!inter) return null;
+                                                                            return (
+                                                                                <div key={inter.id} className="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-[1.3] break-words whitespace-normal" title={inter.name}>
+                                                                                    <span className="opacity-80 font-bold">In:</span> {inter.name}
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                )}
+                                                                {row.procedures && row.procedures.length > 0 && typeof procedures !== 'undefined' && (
+                                                                    <div className="flex flex-col gap-0.5 mb-2">
+                                                                        {row.procedures.map((pid: string) => {
+                                                                            const p = procedures.find(proc => proc.id === pid);
+                                                                            if (!p) return null;
+                                                                            return (
+                                                                                <div key={pid} className="text-xs text-pink-500 dark:text-pink-300 font-medium leading-[1.3] break-words whitespace-normal" title={`${p.code} - ${p.name}`}>
+                                                                                    <span className="opacity-80">Px:</span> {p.code} - {p.name}
+                                                                                </div>
+                                                                            );
+                                                                        })}
                                                                     </div>
                                                                 )}
                                                                 {row.specialty && (
@@ -338,6 +422,16 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                     {row.surgery.urgencyType && (
                                                                         <div className={`text-[10px] inline-block px-2 py-0.5 rounded border font-bold uppercase ${row.surgery.urgencyType === 'EMERGENCIA' ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800/50 animate-pulse' : 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50'}`}>
                                                                             {row.surgery.urgencyType}
+                                                                        </div>
+                                                                    )}
+                                                                    {row.surgery.insuranceType && (
+                                                                        <div className="text-[10px] inline-block px-2 py-0.5 rounded border font-bold uppercase bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/50">
+                                                                            {row.surgery.insuranceType}
+                                                                        </div>
+                                                                    )}
+                                                                    {row.surgery.anesthesiaType && (
+                                                                        <div className="text-[10px] inline-block px-2 py-0.5 rounded border font-bold uppercase bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/50" title="Tipo de Anestesia">
+                                                                            {row.surgery.anesthesiaType}
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -361,11 +455,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 {row.team && row.team.length > 0 && (
                                                                     <div className="mt-2.5 pt-2.5 border-t border-zinc-100 dark:border-zinc-800/50 flex flex-wrap gap-1.5">
                                                                         {row.team.map((t: any) => (
-                                                                            <div key={`${row.surgery.id}-${t.staff.id}`} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-50 dark:bg-zinc-800/80 text-[10px] text-zinc-500 font-medium border border-zinc-200/50 dark:border-zinc-700" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
-                                                                                <span className="font-bold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-900 rounded px-1 shadow-sm">
-                                                                                    {t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : 'En'}
+                                                                            <div key={`${row.surgery.id}-${t.staff.id}`} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-50 dark:bg-zinc-800/80 text-[10px] font-medium border border-zinc-200/50 dark:border-zinc-700 ${t.role === 'CIRUJANO' ? 'text-blue-800 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`} title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
+                                                                                <span className="font-bold bg-white dark:bg-zinc-900 rounded px-1 shadow-sm border border-zinc-100 dark:border-zinc-700/50 opacity-90">
+                                                                                    {t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : 'CI'}
                                                                                 </span>
-                                                                                <span className="truncate max-w-[100px]">{t.staff.name.split(' ')[0]} {t.staff.lastname.split(' ')[0]}</span>
+                                                                                <span className="break-words whitespace-normal max-w-[300px]">
+                                                                                    {`${t.staff.name} ${t.staff.lastname}`.length > 70 ? `${t.staff.name} ${t.staff.lastname}`.substring(0, 70) + '...' : `${t.staff.name} ${t.staff.lastname}`}
+                                                                                </span>
                                                                             </div>
                                                                         ))}
                                                                     </div>
@@ -387,7 +483,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium align-middle">
                                                         <div className="flex justify-end gap-2 items-center opacity-70 group-hover:opacity-100 transition-opacity duration-300">
                                                             {/* Flujo de Estados con Modal de Tiempo */}
-                                                            {row.surgery.status === 'scheduled' && (
+                                                            {row.surgery.status === 'scheduled' && canAdvancePhase && (
                                                                 <button
                                                                     onClick={() => {
                                                                         if (!row.operatingRoom?.id) {
@@ -407,7 +503,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </button>
                                                             )}
 
-                                                            {row.surgery.status === 'in_progress' && (
+                                                            {row.surgery.status === 'in_progress' && canAdvancePhase && (
                                                                 <button
                                                                     onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'anesthesia_start', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
                                                                     className="text-purple-700 hover:text-white hover:bg-purple-600 bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-purple-200/50"
@@ -416,7 +512,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </button>
                                                             )}
 
-                                                            {row.surgery.status === 'anesthesia_start' && (
+                                                            {row.surgery.status === 'anesthesia_start' && canAdvancePhase && (
                                                                 <button
                                                                     onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'pre_incision', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
                                                                     className="text-rose-700 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-rose-200/50"
@@ -425,7 +521,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </button>
                                                             )}
 
-                                                            {row.surgery.status === 'pre_incision' && (
+                                                            {row.surgery.status === 'pre_incision' && canAdvancePhase && (
                                                                 <button
                                                                     onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'surgery_end', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
                                                                     className="text-cyan-700 hover:text-white hover:bg-cyan-600 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-cyan-200/50"
@@ -434,7 +530,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </button>
                                                             )}
 
-                                                            {row.surgery.status === 'surgery_end' && (
+                                                            {row.surgery.status === 'surgery_end' && canAdvancePhase && (
                                                                 <button
                                                                     onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'patient_exit', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
                                                                     className="text-orange-700 hover:text-white hover:bg-orange-600 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-orange-200/50"
@@ -443,7 +539,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </button>
                                                             )}
 
-                                                            {row.surgery.status === 'patient_exit' && (
+                                                            {row.surgery.status === 'patient_exit' && canAdvancePhase && (
                                                                 <div className="flex gap-1.5 items-center">
                                                                     <button
                                                                         onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'urpa_exit', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
@@ -460,7 +556,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </div>
                                                             )}
 
-                                                            {row.surgery.status === 'urpa_exit' && (
+                                                            {row.surgery.status === 'urpa_exit' && canAdvancePhase && (
                                                                 <button
                                                                     onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'completed', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
                                                                     className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-xl transition-all duration-300 border border-emerald-200 hover:scale-[1.02] text-xs font-bold shadow-sm flex items-center gap-1.5 whitespace-nowrap"
@@ -469,32 +565,32 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </button>
                                                             )}
 
-                                                            {row.surgery.status === 'scheduled' && (
+                                                            {row.surgery.status === 'scheduled' && canCancel && (
                                                                 <button type="button" onClick={() => { setCancellingSurgery(row); setCancelConfirmText(""); }} className="text-zinc-400 hover:text-amber-600 hover:bg-amber-50 p-2.5 rounded-xl transition-all" title="Suspender Evento">
                                                                     <XCircle size={18} />
                                                                 </button>
                                                             )}
 
-                                                            {(row.surgery.status === 'scheduled') && specialties && staff && (
+                                                            {(row.surgery.status === 'scheduled') && specialties && staff && canEdit && (
                                                                 <button onClick={() => setEditingSurgery(row)} className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="Editar Programación">
                                                                     <Pencil size={18} />
                                                                 </button>
                                                             )}
 
-                                                            {row.surgery.status === 'cancelled' && (
+                                                            {row.surgery.status === 'cancelled' && canDuplicate && (
                                                                 <button onClick={() => window.dispatchEvent(new CustomEvent('CLONE_SURGERY', { detail: row }))} className="text-zinc-400 hover:text-[var(--color-hospital-blue)] hover:bg-blue-50 p-2.5 rounded-xl transition-all inline-block ml-1" title="Duplicar / Re-Agendar Cirugía">
                                                                     <CopyPlus size={18} />
                                                                 </button>
                                                             )}
 
-                                                            {row.surgery.status === 'completed' && (
+                                                            {row.surgery.status === 'completed' && canViewReport && (
                                                                 <Link href={`/dashboard/programaciones/${row.surgery.id}/reporte`} className="inline-flex items-center text-zinc-500 hover:text-[var(--color-hospital-blue)] hover:bg-blue-50 p-2.5 rounded-xl transition-all tooltip bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700" title="Ver Reporte Operatorio">
                                                                     <FileText size={18} />
                                                                 </Link>
                                                             )}
 
                                                             {/* Modal Seguro de Eliminación */}
-                                                            {['scheduled', 'cancelled'].includes(row.surgery.status) && (
+                                                            {['scheduled'].includes(row.surgery.status) && canDelete && (
                                                                 <div className="inline-block ml-1 border-l border-zinc-200 dark:border-zinc-700 pl-1">
                                                                     <DeleteSurgeryButton id={row.surgery.id} />
                                                                 </div>
@@ -516,10 +612,14 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                 <EditSurgeryModal
                     isOpen={!!editingSurgery}
                     onClose={() => setEditingSurgery(null)}
-                    surgeryData={editingSurgery}
+                    initialData={editingSurgery}
                     salas={salas}
-                    specialties={specialties}
+                    specialties={specialties || []}
                     staff={staff}
+                    diagnoses={diagnoses}
+                    procedures={procedures}
+                    interventions={interventions}
+                    patients={patients}
                 />
             )}
 
@@ -529,7 +629,10 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                 surgeryId={transitionModal.surgeryId}
                 targetPhase={transitionModal.targetPhase}
                 patientName={transitionModal.patientName}
-                onSuccess={() => setTransitionModal({ ...transitionModal, isOpen: false })}
+                onSuccess={() => {
+                    setTransitionModal({ ...transitionModal, isOpen: false });
+                    router.refresh();
+                }}
             />
 
             {typeof document !== "undefined" && createPortal(

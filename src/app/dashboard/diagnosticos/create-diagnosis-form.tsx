@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, PlusCircle, AlertCircle, CheckCircle, Search, Verified, Stethoscope } from "lucide-react";
+import { Loader2, PlusCircle, AlertCircle, CheckCircle, Search, Verified, Stethoscope, AlertTriangle } from "lucide-react";
 import { importDiagnosesFromApi } from "@/app/actions/diagnoses";
 import { lookupDiagnosisInApi } from "@/app/actions/cirugias";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +11,7 @@ export function CreateDiagnosisForm({ initialDiagnoses = [] }: { initialDiagnose
     const [isSearching, setIsSearching] = useState(false);
     const [localDiagnoses, setLocalDiagnoses] = useState<any[]>(initialDiagnoses);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [apiDown, setApiDown] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [actionMsg, setActionMsg] = useState<{type: 'error' | 'success', text: string} | null>(null);
@@ -23,12 +24,22 @@ export function CreateDiagnosisForm({ initialDiagnoses = [] }: { initialDiagnose
                 try {
                     const resArray = await lookupDiagnosisInApi(searchTerm.trim());
                     if (resArray && Array.isArray(resArray) && resArray.length > 0) {
-                        setLocalDiagnoses(prev => {
-                            const newDiagnoses = resArray.filter(
-                                (apiDx: any) => !prev.find(d => d.code === apiDx.code)
-                            );
-                            return [...newDiagnoses, ...prev];
-                        });
+                        if (resArray[0]?.__apiError) {
+                            setApiDown(true);
+                            resArray.shift();
+                        } else {
+                            setApiDown(false);
+                        }
+                        if (resArray.length > 0) {
+                            setLocalDiagnoses(prev => {
+                                const newDiagnoses = resArray.filter(
+                                    (apiDx: any) => !prev.find(d => d.code === apiDx.code)
+                                );
+                                return [...newDiagnoses, ...prev];
+                            });
+                        }
+                    } else {
+                        setApiDown(false);
                     }
                 } catch (e) {
                     console.error(e);
@@ -130,6 +141,12 @@ export function CreateDiagnosisForm({ initialDiagnoses = [] }: { initialDiagnose
                         className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-zinc-200 bg-white dark:bg-zinc-950 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-[var(--color-hospital-blue)] focus:ring-1 focus:ring-[var(--color-hospital-blue)] transition-all shadow-sm"
                     />
                 </div>
+                {apiDown && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
+                        <AlertTriangle size={14} className="shrink-0" />
+                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                    </motion.div>
+                )}
             </div>
 
             <div className={`mt-2 border rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all ${

@@ -2,6 +2,7 @@
 
 import { Trash2, AlertTriangle, X } from "lucide-react";
 import { deleteSurgery } from "@/app/actions/cirugias";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,6 +11,7 @@ export function DeleteSurgeryButton({ id }: { id: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const router = useRouter();
 
     const handleDelete = async () => {
         setIsDeleting(true);
@@ -25,6 +27,7 @@ export function DeleteSurgeryButton({ id }: { id: string }) {
         } else {
             setIsOpen(false);
             setErrorMsg(null);
+            router.refresh();
         }
     };
 

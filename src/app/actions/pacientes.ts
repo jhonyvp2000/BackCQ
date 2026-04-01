@@ -5,6 +5,14 @@ import { cqPatientPii, cqPatients, cqSurgeries } from "@/db/schema";
 import { eq, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+// Helper to reliably parse YYYY-MM-DD into a localized Date 
+// avoiding UTC midnight jumps that push dates a day backwards
+const parseLocalDate = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    const baseDateStr = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+    return new Date(`${baseDateStr}T12:00:00`);
+};
+
 export async function lookupPatientByDni(rawId: string) {
     if (!rawId) return null;
     const dni = rawId.trim();
@@ -83,7 +91,7 @@ export async function lookupPatientByDni(rawId: string) {
             
             // Evaluamos fecha de nacimiento
             if (externalPatientData.fechaNacimiento) {
-                fechaNac = new Date(externalPatientData.fechaNacimiento);
+                fechaNac = parseLocalDate(externalPatientData.fechaNacimiento);
             }
 
             // Evaluamos observacion (Historia Clínica en NetHos)
@@ -163,7 +171,7 @@ export async function lookupPatientsInApi(query: string) {
             headers: { "Content-Type": "application/json" }
         });
 
-        if (!response.ok) return [];
+        if (!response.ok) return [{ __apiError: true }];
         const data = await response.json();
         
         if (data.success && data.data && Array.isArray(data.data)) {
@@ -178,7 +186,7 @@ export async function lookupPatientsInApi(query: string) {
                 if (externalPatientData.sexo === "M" || externalPatientData.sexo === "Masculino") sexo = "Masculino";
                 else if (externalPatientData.sexo === "F" || externalPatientData.sexo === "Femenino") sexo = "Femenino";
                 
-                const fechaNac = externalPatientData.fechaNacimiento ? new Date(externalPatientData.fechaNacimiento) : null;
+                const fechaNac = parseLocalDate(externalPatientData.fechaNacimiento);
                 const pHistoriaClinica = (externalPatientData.observacion || "").trim() || dni;
                 const ubi = externalPatientData.ubigeoinei ? externalPatientData.ubigeoinei.toString().trim() : null;
                 const pDireccion = (externalPatientData.direccion || "").trim();
@@ -208,7 +216,7 @@ export async function lookupPatientsInApi(query: string) {
         return [];
     } catch (e) {
         console.error("Error contactando ApiNetHos (Patients Array):", e);
-        return [];
+        return [{ __apiError: true }];
     }
 }
 
@@ -226,7 +234,7 @@ export async function importMultiplePatients(apiDataList: string[]) {
 
             // 1. Insert Profile (cqPatients) to generate ID
             const [newPatient] = await db.insert(cqPatients).values({
-                fechaNacimiento: parsed.fechaNacimiento ? new Date(parsed.fechaNacimiento) : null,
+                fechaNacimiento: parseLocalDate(parsed.fechaNacimiento),
                 sexo: parsed.sexo || null,
                 ubigeo: parsed.ubigeo || null,
             }).returning({ id: cqPatients.id });
@@ -358,7 +366,7 @@ export async function createPaciente(formData: FormData) {
         await db.transaction(async (tx) => {
             const [newPatient] = await tx.insert(cqPatients).values({
                 sexo: sexo || null,
-                fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+                fechaNacimiento: parseLocalDate(fechaNacimiento),
                 ubigeo: ubigeo || null,
             }).returning();
 
@@ -404,7 +412,7 @@ export async function updatePaciente(id: string, formData: FormData) {
         await db.transaction(async (tx) => {
             await tx.update(cqPatients).set({
                 sexo: sexo || null,
-                fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+                fechaNacimiento: parseLocalDate(fechaNacimiento),
                 ubigeo: ubigeo || null,
                 updatedAt: new Date()
             }).where(eq(cqPatients.id, id));
@@ -510,7 +518,7 @@ export async function syncOrphan(dni: string) {
             if (externalPatientData.sexo === "M" || externalPatientData.sexo === "Masculino") sexo = "Masculino";
             else if (externalPatientData.sexo === "F" || externalPatientData.sexo === "Femenino") sexo = "Femenino";
             
-            let fechaNac = externalPatientData.fechaNacimiento ? new Date(externalPatientData.fechaNacimiento) : null;
+            let fechaNac = parseLocalDate(externalPatientData.fechaNacimiento);
             let pHistoriaClinica = (externalPatientData.observacion || "").trim() || dni;
             let ubi = (externalPatientData.ubigeoinei || "").toString().trim() || null;
             let pDireccion = (externalPatientData.direccion || "").trim() || null;

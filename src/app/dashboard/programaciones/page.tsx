@@ -1,4 +1,4 @@
-import { getSurgeriesByDateDesc, updateSurgeryStatus, getActiveDiagnoses, getActiveProcedures } from "@/app/actions/cirugias";
+import { getSurgeriesByDateDesc, updateSurgeryStatus, getActiveDiagnoses, getActiveProcedures, getActiveInterventions } from "@/app/actions/cirugias";
 import { getOperatingRooms } from "@/app/actions/salas";
 import { getSpecialties } from "@/app/actions/especialidades";
 import { getMedicalStaffByProfession } from "@/app/actions/personal";
@@ -9,8 +9,14 @@ import { SurgeryViewToggle } from "./surgery-view-toggle";
 import { DeleteSurgeryButton } from "./delete-button";
 import { SurgerySchedulerForm } from "./surgery-form";
 import { StartSurgeryButton } from "./start-surgery-button";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function ProgramacionesPage({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
+    const session = await getServerSession(authOptions);
+    const permissions = (session?.user as any)?.permissions || [];
+    const canCreate = permissions.includes('crear:programacion');
+
     const sortParams = await searchParams;
     const currentSort = sortParams?.sort === 'asc' ? 'asc' : 'desc';
     const surgeriesData = await getSurgeriesByDateDesc(currentSort);
@@ -18,6 +24,7 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
     const specialties = await getSpecialties();
     const diagnoses = await getActiveDiagnoses();
     const procedures = await getActiveProcedures();
+    const interventions = await getActiveInterventions();
     const patients = await getPacientes();
 
     const surgeons = await getMedicalStaffByProfession('MEDICO CIRUJANO');
@@ -42,6 +49,7 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
 
     const getFormattedDate = (date: Date) => {
         return new Intl.DateTimeFormat('es-PE', {
+            timeZone: 'America/Lima',
             year: 'numeric', month: 'short', day: '2-digit',
             hour: '2-digit', minute: '2-digit'
         }).format(date);
@@ -63,13 +71,15 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
                 </div>
                 
                 <div className="shrink-0 w-full sm:w-auto">
-                    <SurgerySchedulerForm salas={salas} specialties={specialties} staff={staff} canSchedule={canSchedule} diagnoses={diagnoses} procedures={procedures} patients={patients} />
+                    {canCreate && (
+                        <SurgerySchedulerForm salas={salas} specialties={specialties} staff={staff} canSchedule={canSchedule} diagnoses={diagnoses} procedures={procedures} interventions={interventions} patients={patients} />
+                    )}
                 </div>
             </div>
 
             <div className="w-full">
                 {/* Lista / Timeline de Agenda (Envuelto en Client Component)  Expandido a ancho total */}
-                <SurgeryViewToggle surgeriesData={surgeriesData} salas={salas} sortParams={sortParams} specialties={specialties} staff={staff} />
+                <SurgeryViewToggle surgeriesData={surgeriesData} salas={salas} sortParams={sortParams} specialties={specialties} staff={staff} permissions={permissions} diagnoses={diagnoses} procedures={procedures} interventions={interventions} patients={patients} />
             </div>
         </div>
     );

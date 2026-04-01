@@ -34,7 +34,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                     </div>
                 </div>
 
-                <SidebarNav orphanCount={orphanCount} />
+                <SidebarNav orphanCount={orphanCount} permissions={user.permissions || []} />
 
                 <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center">

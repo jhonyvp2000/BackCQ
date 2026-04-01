@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev -p 3006",
+        "dev": "next dev -p 3106",
         "build": "next build",
         "start": "next start",
         "lint": "eslint"
@@ -14,7 +14,9 @@
         "bcrypt": "^6.0.0",
         "date-fns": "^4.1.0",
         "dotenv": "^17.3.1",
-        "drizzle-orm": "^0.45.1",
+        "drizzle-orm": "^0.45.2",
+        "exceljs": "^4.4.0",
+        "file-saver": "^2.0.5",
         "framer-motion": "^12.35.0",
         "lucide-react": "^0.577.0",
         "mssql": "^12.2.1",
