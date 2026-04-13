@@ -806,6 +806,16 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
                                 <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Especialidad</label>
+                                    <select name="specialty_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.specialtyId || ""} className={getSelectCls("specialty_id")}>
+                                        <option value="">- Seleccionar -</option>
+                                        {specialties.map(spec => (
+                                            <option key={spec.id} value={spec.id}>{spec.name}</option>
+                                        ))}
+                                    </select>
+                                    <FieldError msg={errors.specialty_id} />
+                                </div>
+                                <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
                                     <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
                                         <option value="">- Tipo -</option>
@@ -821,16 +831,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <option value="EMERGENCIA">Emergencia</option>
                                     </select>
                                     <FieldError msg={errors.urgency_type} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Especialidad</label>
-                                    <select name="specialty_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.specialtyId || ""} className={getSelectCls("specialty_id")}>
-                                        <option value="">- Seleccionar -</option>
-                                        {specialties.map(spec => (
-                                            <option key={spec.id} value={spec.id}>{spec.name}</option>
-                                        ))}
-                                    </select>
-                                    <FieldError msg={errors.specialty_id} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de seguro</label>
