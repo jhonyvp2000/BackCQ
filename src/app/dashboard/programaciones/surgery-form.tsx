@@ -1391,7 +1391,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             <div className="space-y-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Anestesia</label>
                                 <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>
-                                    <option value="">- Seleccionar Anestesia -</option>
+                                    <option value="">- Seleccionar -</option>
                                     <option value="RAQ">RAQ - Raquídea (o Subaracnoidea)</option>
                                     <option value="EPI">EPI - Epidural</option>
                                     <option value="AGB">AGB - Anestesia General Balanceada</option>
