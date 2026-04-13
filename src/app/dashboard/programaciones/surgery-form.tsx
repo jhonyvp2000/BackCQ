@@ -817,7 +817,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Especialidad</label>
                                     <select name="specialty_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.specialtyId || ""} className={getSelectCls("specialty_id")}>
-                                        <option value="">- Seleccionar Especialidad -</option>
+                                        <option value="">- Seleccionar -</option>
                                         {specialties.map(spec => (
                                             <option key={spec.id} value={spec.id}>{spec.name}</option>
                                         ))}
