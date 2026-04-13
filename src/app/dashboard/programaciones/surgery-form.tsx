@@ -268,6 +268,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (checked) next.add(id);
         else next.delete(id);
         setSelectedDxIds(next);
+        document.getElementById('diagnoses-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const procSearchTerms = removeDiacritics(procSearchTerm.toLowerCase())
@@ -289,6 +290,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (checked) next.add(id);
         else next.delete(id);
         setSelectedProcIds(next);
+        document.getElementById('procedures-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const intSearchTerms = removeDiacritics(intSearchTerm.toLowerCase())
@@ -310,6 +312,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (checked) next.add(id);
         else next.delete(id);
         setSelectedIntIds(next);
+        document.getElementById('interventions-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const surgSearchTermsArr = removeDiacritics(surgSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
@@ -328,6 +331,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (checked) next.add(id);
         else next.delete(id);
         setSelectedSurgIds(next);
+        document.getElementById('surgeons-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const anesSearchTermsArr = removeDiacritics(anesSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
@@ -346,6 +350,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (checked) next.add(id);
         else next.delete(id);
         setSelectedAnesIds(next);
+        document.getElementById('anesthesiologists-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const nursSearchTermsArr = removeDiacritics(nursSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
@@ -364,6 +369,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (checked) next.add(id);
         else next.delete(id);
         setSelectedNursIds(next);
+        document.getElementById('nurses-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -393,9 +399,9 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (!formData.get("origin")) setError('origin', "Requerido", 'classification');
         if (!formData.get("insurance_type")) setError('insurance_type', "Requerido", 'classification');
         if (selectedSurgIds.size === 0) setError('surgeons', "Asigna al menos un cirujano", 'team');
-        if (!formData.get("operating_room_id")) setError('operating_room_id', "Requerido", 'schedule');
+        if (editMode && !formData.get("operating_room_id")) setError('operating_room_id', "Requerido", 'schedule');
         if (!formData.get("scheduled_date")) setError('scheduled_date', "Requerido", 'schedule');
-        if (!formData.get("scheduled_time")) setError('scheduled_time', "Requerido", 'schedule');
+        if (editMode && !formData.get("scheduled_time")) setError('scheduled_time', "Requerido", 'schedule');
         if (!formData.get("estimated_duration")) setError('estimated_duration', "Requerido", 'schedule');
 
         setErrors(newErrors);
@@ -594,7 +600,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             initial={{ opacity: 0, scale: 0.95, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 30 }}
-                            className="relative w-full max-w-4xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col max-h-[95vh]"
+                            className="relative w-[96vw] max-w-7xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col max-h-[95vh]"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}
@@ -615,7 +621,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             {/* Scrollable Form Content */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pb-3">
             
             {!canSchedule && (
                 <div className="mb-5 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-sm rounded-xl border border-amber-200 dark:border-amber-800/50 flex flex-col gap-1 shadow-sm">
@@ -643,7 +649,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('patient')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'patient' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-[#0D47A1] dark:text-blue-400 border-l-4 border-l-[var(--color-hospital-blue)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left tracking-wide transition-all ${openSection === 'patient' ? 'bg-sky-50/60 dark:bg-sky-900/20 text-sky-500 border-l-4 border-l-sky-500 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${openSection === 'patient' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -783,7 +789,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                                     )}
                                 </div>
-                                <div className={`max-h-52 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("diagnoses")}`}>
+                                <div id="diagnoses-list" className={`max-h-52 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("diagnoses")}`}>
                                     {selectedDxList.map((dx) => (
                                         <label key={dx.id} className="flex items-start gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
                                             <input
@@ -878,7 +884,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                                     )}
                                 </div>
-                                <div className={`max-h-52 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("procedures")}`}>
+                                <div id="procedures-list" className={`max-h-52 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("procedures")}`}>
                                     {selectedProcList.map((proc) => (
                                         <label key={proc.id} className="flex items-start gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
                                             <input
@@ -962,7 +968,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     />
                                     <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                                 </div>
-                                <div className={`max-h-32 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("interventions")}`}>
+                                <div id="interventions-list" className={`max-h-32 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("interventions")}`}>
                                     {selectedIntList.map((inty) => (
                                         <label key={inty.id} className="flex items-start gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
                                             <input
@@ -1029,7 +1035,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('classification')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'classification' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-[#0D47A1] dark:text-blue-400 border-l-4 border-l-[var(--color-hospital-blue)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left tracking-wide transition-all ${openSection === 'classification' ? 'bg-sky-50/60 dark:bg-sky-900/20 text-sky-500 border-l-4 border-l-sky-500 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${openSection === 'classification' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -1133,7 +1139,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('team')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'team' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-[#0D47A1] dark:text-blue-400 border-l-4 border-l-[var(--color-hospital-blue)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left tracking-wide transition-all ${openSection === 'team' ? 'bg-sky-50/60 dark:bg-sky-900/20 text-sky-500 border-l-4 border-l-sky-500 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${openSection === 'team' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -1166,7 +1172,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     />
                                     <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                                 </div>
-                                <div className={`max-h-40 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("surgeons")}`}>
+                                <div id="surgeons-list" className={`max-h-40 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("surgeons")}`}>
                                     {selectedSurgList.map((s) => (
                                         <label key={s.id} className="flex items-center gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
                                             <input
@@ -1315,7 +1321,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('schedule')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'schedule' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-[#0D47A1] dark:text-blue-400 border-l-4 border-l-[var(--color-hospital-blue)] shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left tracking-wide transition-all ${openSection === 'schedule' ? 'bg-sky-50/60 dark:bg-sky-900/20 text-sky-500 border-l-4 border-l-sky-500 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${openSection === 'schedule' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -1362,7 +1368,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Hora</label>
-                                    <input type="time" name="scheduled_time" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} className={getInputCls("scheduled_time")} />
+                                    <input type="time" name="scheduled_time" required={!!editMode} disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} className={getInputCls("scheduled_time")} />
                                     <FieldError msg={errors.scheduled_time} />
                                 </div>
                                 <div className="col-span-2 space-y-2 mt-1">
@@ -1396,7 +1402,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
 
                 {/* Footer Actions */}
-                <div className="pt-6 mt-6 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className={`pt-6 mt-6 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center gap-4 ${editMode ? 'justify-end' : 'justify-between'}`}>
                     {!editMode && (
                         <label className="flex items-center gap-2 cursor-pointer group">
                             <input 
@@ -1405,14 +1411,14 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 onChange={(e) => setKeepOpen(e.target.checked)} 
                                 className="w-4 h-4 rounded border-zinc-300 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)]"
                             />
-                            <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors select-none">Mantener ventanal abierto para registrar múltiples</span>
+                            <span className="text-sm font-normal text-blue-600 dark:text-blue-400 transition-colors select-none">Mantener ventana abierta</span>
                         </label>
                     )}
 
                     <button
                         type="submit"
                         disabled={!canSchedule || submitting}
-                        className="group relative flex justify-center py-3.5 px-8 rounded-xl shadow-[0_4px_14px_0_rgb(13,71,161,0.39)] text-sm font-bold text-white bg-[var(--color-hospital-blue)] hover:bg-[#09357a] hover:shadow-[0_6px_20px_rgba(13,71,161,0.23)] hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all duration-200 overflow-hidden w-full sm:w-auto"
+                        className="group relative flex justify-center py-3.5 px-8 rounded-xl shadow-md text-sm font-normal text-white bg-sky-500 hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all duration-200 overflow-hidden w-full sm:w-auto ml-auto"
                     >
                         <div className="absolute inset-0 w-full h-full -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                         <span className="relative">{submitting ? (editMode ? "Actualizando..." : "Aprobando Agenda...") : (editMode ? "Guardar Cambios" : "Confirmar Cirugía")}</span>

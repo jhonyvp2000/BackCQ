@@ -295,13 +295,15 @@ export async function createSurgery(formData: FormData) {
     const insuranceType = formData.get("insurance_type") as string;
     const anesthesiaType = formData.get("anesthesia_type") as string;
     const origin = formData.get("origin") as string;
+    const bedNumber = formData.get("bed_number") as string;
+    const internalCode = formData.get("internal_code") as string;
     const specialtyId = formData.get("specialty_id") as string;
 
     const surgeonIds = formData.getAll("surgeons") as string[];
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
     const nurseIds = formData.getAll("nurses") as string[];
 
-    if (!patientId || !scheduledDateStr || !scheduledTimeStr || diagnosesIds.length === 0 || interventionsIds.length === 0 || !surgeryType || !insuranceType || !origin || !specialtyId || surgeonIds.length === 0) {
+    if (!patientId || !scheduledDateStr || diagnosesIds.length === 0 || interventionsIds.length === 0 || !surgeryType || !insuranceType || !specialtyId) {
         return { error: "Faltan campos obligatorios para agendar (Incluyendo la(s) intervención(es))." };
     }
 
@@ -366,18 +368,22 @@ export async function createSurgery(formData: FormData) {
     const roomId = operatingRoomId ? operatingRoomId : null;
 
     // Combine date and time
-    const scheduledDate = new Date(`${scheduledDateStr}T${scheduledTimeStr}:00`);
-    const newStartMs = scheduledDate.getTime();
-    const newEndMs = newStartMs + getDurationMs(estimatedDuration);
+    const isTimeDefined = Boolean(scheduledTimeStr);
+    const timeToStore = isTimeDefined ? scheduledTimeStr : "00:00";
+    const scheduledDate = new Date(`${scheduledDateStr}T${timeToStore}:00`);
 
-    if (roomId) {
+    if (roomId && isTimeDefined) {
+        const newStartMs = scheduledDate.getTime();
+        const newEndMs = newStartMs + getDurationMs(estimatedDuration);
+
         // Fetch active surgeries for this specific operating room
         const existingSurgeries = await db.select()
             .from(cqSurgeries)
             .where(
                 and(
                     eq(cqSurgeries.operatingRoomId, roomId),
-                    ne(cqSurgeries.status, 'cancelled')
+                    ne(cqSurgeries.status, 'cancelled'),
+                    eq(cqSurgeries.isTimeDefined, true)
                 )
             );
 
@@ -457,6 +463,7 @@ export async function createSurgery(formData: FormData) {
         operatingRoomId: roomId,
         requestDate: requestDateStr || new Date().toISOString().split('T')[0],
         scheduledDate,
+        isTimeDefined,
         status: 'scheduled',
         estimatedDuration,
         diagnosis,
@@ -465,6 +472,8 @@ export async function createSurgery(formData: FormData) {
         insuranceType,
         anesthesiaType,
         origin,
+        bedNumber: bedNumber || null,
+        internalCode: internalCode || null,
         specialtyId,
         notes,
     }).returning({ id: cqSurgeries.id });
@@ -653,6 +662,8 @@ export async function editSurgery(formData: FormData) {
     const urgencyType = formData.get("urgency_type") as string;
     const insuranceType = formData.get("insurance_type") as string;
     const origin = formData.get("origin") as string;
+    const bedNumber = formData.get("bed_number") as string;
+    const internalCode = formData.get("internal_code") as string;
     const specialtyId = formData.get("specialty_id") as string;
     const anesthesiaType = formData.get("anesthesia_type") as string;
 
@@ -663,8 +674,8 @@ export async function editSurgery(formData: FormData) {
     const proceduresIds = formData.getAll("procedures") as string[];
     const interventionsIds = formData.getAll("interventions") as string[];
 
-    if (!id || !patientId || !scheduledDateStr || !scheduledTimeStr || diagnosesIds.length === 0 || interventionsIds.length === 0 || !surgeryType || !insuranceType || !origin || !specialtyId || surgeonIds.length === 0) {
-        return { error: "Faltan campos obligatorios para agendar (Paciente, Especialidad, Tipo de Seguro, Procedencia, Cirujano, Diagnóstico, Intervención, Fecha y Hora)." };
+    if (!id || !patientId || !scheduledDateStr || diagnosesIds.length === 0 || interventionsIds.length === 0 || !surgeryType || !insuranceType || !specialtyId) {
+        return { error: "Faltan campos obligatorios para agendar (Paciente, Especialidad, Tipo de Seguro, Diagnóstico, Intervención, Fecha)." };
     }
 
     // Resolve deferred Synthetic IDs for Diagnoses (Late-bound DB Injection)
@@ -727,11 +738,14 @@ export async function editSurgery(formData: FormData) {
     const roomId = operatingRoomId ? operatingRoomId : null;
 
     // Combine date and time
-    const scheduledDate = new Date(`${scheduledDateStr}T${scheduledTimeStr}:00`);
-    const newStartMs = scheduledDate.getTime();
-    const newEndMs = newStartMs + getDurationMs(estimatedDuration);
+    const isTimeDefined = Boolean(scheduledTimeStr);
+    const timeToStore = isTimeDefined ? scheduledTimeStr : "00:00";
+    const scheduledDate = new Date(`${scheduledDateStr}T${timeToStore}:00`);
 
-    if (roomId) {
+    if (roomId && isTimeDefined) {
+        const newStartMs = scheduledDate.getTime();
+        const newEndMs = newStartMs + getDurationMs(estimatedDuration);
+
         // Fetch active surgeries for this specific operating room excluding THIS surgery
         const existingSurgeries = await db.select()
             .from(cqSurgeries)
@@ -739,7 +753,8 @@ export async function editSurgery(formData: FormData) {
                 and(
                     eq(cqSurgeries.operatingRoomId, roomId),
                     ne(cqSurgeries.id, id),
-                    ne(cqSurgeries.status, 'cancelled')
+                    ne(cqSurgeries.status, 'cancelled'),
+                    eq(cqSurgeries.isTimeDefined, true)
                 )
             );
 
@@ -783,6 +798,7 @@ export async function editSurgery(formData: FormData) {
         operatingRoomId: roomId,
         requestDate: requestDateStr || new Date().toISOString().split('T')[0],
         scheduledDate,
+        isTimeDefined,
         estimatedDuration,
         diagnosis: diagnosisText,
         surgeryType,
@@ -790,6 +806,8 @@ export async function editSurgery(formData: FormData) {
         insuranceType,
         anesthesiaType,
         origin,
+        bedNumber: bedNumber || null,
+        internalCode: internalCode || null,
         specialtyId,
         notes,
         updatedAt: new Date(),

@@ -62,12 +62,20 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                 salaId: salas[0].id
             };
         })
-        : salas.map(sala => ({
-            id: sala.id,
-            name: sala.name,
-            date: parsedDate,
-            salaId: sala.id
-        }));
+        : [
+            ...salas.map(sala => ({
+                id: sala.id,
+                name: sala.name,
+                date: parsedDate,
+                salaId: sala.id
+            })),
+            {
+                id: "unassigned",
+                name: "Por Asignar",
+                date: parsedDate,
+                salaId: null // special identifier for unassigned
+            }
+        ];
 
     // Helper functions para el canvas
     const getSurgeryPosition = (dateStr: Date | string, durationStr: string) => {
@@ -171,12 +179,13 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                         {columnsConfig.map(col => {
                             // Filtrar cirugías para esta columna específica
                             const colSurgeries = surgeriesData.filter(s =>
-                                s.operatingRoom?.id === col.salaId &&
+                                (col.salaId === null ? !s.operatingRoom?.id : s.operatingRoom?.id === col.salaId) &&
                                 isSameDayStr(s.surgery.scheduledDate, col.date)
                             );
 
+                            const isUnassigned = col.salaId === null;
                             return (
-                                <div key={col.id} className={`flex-1 min-w-[200px] border-r border-dashed border-zinc-200 dark:border-zinc-800/50 relative h-[800px] ${isWeekView && isSameDayStr(col.date, parsedDate) ? 'bg-blue-50/30 dark:bg-blue-900/5' : ''}`}> {/* 10 slots * 80px */}
+                                <div key={col.id} className={`flex-1 min-w-[200px] border-r border-dashed border-zinc-200 dark:border-zinc-800/50 relative h-[800px] ${isWeekView && isSameDayStr(col.date, parsedDate) ? 'bg-blue-50/30 dark:bg-blue-900/5' : ''} ${isUnassigned ? 'bg-zinc-100/50 dark:bg-zinc-900/30' : ''}`}> {/* 10 slots * 80px */}
 
                                     {/* Tarjetas Flotantes */}
                                     <AnimatePresence>
@@ -194,6 +203,7 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                 'cancelled': { bg: 'var(--color-red-50)', border: 'var(--color-red-200)', ribbon: 'bg-red-500' }
                                             };
 
+                                            const isTBD = s.surgery.isTimeDefined === false;
                                             const status = s.surgery.status;
                                             const colors = colorMap[status] || colorMap['scheduled'];
 
@@ -202,8 +212,12 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     key={s.surgery.id}
-                                                    className="absolute left-1 right-1 rounded-lg border shadow-sm py-1.5 px-1.5 overflow-hidden flex flex-col cursor-pointer transition-shadow group z-10"
-                                                    style={{
+                                                    className={`${isTBD ? 'relative mx-1 mt-1 border-dashed border-[2px]' : 'absolute left-1 right-1'} rounded-lg border shadow-sm py-1.5 px-1.5 overflow-hidden flex flex-col cursor-pointer transition-shadow group z-20`}
+                                                    style={isTBD ? {
+                                                        backgroundColor: colors.bg,
+                                                        borderColor: colors.border,
+                                                        minHeight: '60px'
+                                                    } : {
                                                         top,
                                                         height,
                                                         minHeight: 'max-content',
@@ -212,10 +226,15 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                         paddingBottom: '8px'
                                                     }}
                                                 >
-                                                    <div className={`w-1.5 absolute left-0 top-0 bottom-0 ${colors.ribbon}`}></div>
+                                                    <div className={`w-1.5 absolute left-0 top-0 bottom-0 ${colors.ribbon} ${isTBD ? 'opacity-50' : ''}`}></div>
 
                                                     <div className="flex justify-between items-start pl-1.5 pr-0.5 w-full gap-1">
-                                                        <span className="text-[10px] font-bold text-zinc-900 leading-none mt-0.5 break-words whitespace-normal">
+                                                        <span className="text-[10px] font-bold text-zinc-900 leading-none mt-0.5 break-words whitespace-normal relative w-full">
+                                                            {isTBD && (
+                                                                <span className="inline-block bg-amber-100 text-amber-700 px-1 py-0.5 rounded-[3px] text-[7px] uppercase tracking-widest shadow-sm shrink-0 leading-none mr-1 mb-1 border border-amber-200">
+                                                                    TBD
+                                                                </span>
+                                                            )}
                                                             {formatPatientDemographics(s.patientPii, s.patient)}
                                                         </span>
                                                         {s.surgery.urgencyType === 'EMERGENCIA' && (

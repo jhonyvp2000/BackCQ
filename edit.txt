@@ -1,0 +1,233 @@
+export async function editSurgery(formData: FormData) {
+    const session = await getServerSession(authOptions);
+    const permissions = (session?.user as any)?.permissions || [];
+    if (!permissions.includes('editar:programacion')) {
+        return { error: "Acceso Denegado: Tu rol actual no tiene permisos para editar programaciones." };
+    }
+
+    const id = formData.get("id") as string;
+    const patientIdRaw = formData.get("patient_id") as string;
+    const patientId = patientIdRaw ? patientIdRaw.trim() : "";
+    const operatingRoomId = formData.get("operating_room_id") as string | null;
+    const scheduledDateStr = formData.get("scheduled_date") as string;
+    const scheduledTimeStr = formData.get("scheduled_time") as string;
+    const estimatedDuration = formData.get("estimated_duration") as string;
+    const notes = formData.get("notes") as string;
+    const surgeryType = formData.get("surgery_type") as string;
+    const urgencyType = formData.get("urgency_type") as string;
+    const insuranceType = formData.get("insurance_type") as string;
+    const origin = formData.get("origin") as string;
+    const specialtyId = formData.get("specialty_id") as string;
+
+    const surgeonIds = formData.getAll("surgeons") as string[];
+    const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
+    const nurseIds = formData.getAll("nurses") as string[];
+    const diagnosesIds = formData.getAll("diagnoses") as string[];
+    const proceduresIds = formData.getAll("procedures") as string[];
+
+    if (!id || !patientId || !scheduledDateStr || !scheduledTimeStr || !surgeryType || !insuranceType || !origin || !specialtyId || surgeonIds.length === 0) {
+        return { error: "Faltan campos obligatorios para actualizar (Paciente, Especialidad, Tipo de Seguro, Procedencia, Cirujano, Fecha y Hora)." };
+    }
+
+    // Resolve deferred Synthetic IDs for Diagnoses
+    const finalDiagnosisIds: string[] = [];
+    for (const did of diagnosesIds) {
+        if (did.startsWith('__api_dx__')) {
+            const parts = did.replace('__api_dx__', '').split('|||');
+            const code = parts[0];
+            const name = parts.slice(1).join('|||');
+            
+            const existing = await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.code, code)).limit(1);
+            if (existing.length > 0) {
+                finalDiagnosisIds.push(existing[0].id);
+            } else {
+                const [inserted] = await db.insert(cqDiagnoses).values({
+                    code: code.substring(0, 20),
+                    name: name,
+                    isActive: true,
+                    isVerifiedMinsa: true
+                }).returning({ id: cqDiagnoses.id });
+                if (inserted) finalDiagnosisIds.push(inserted.id);
+            }
+        } else {
+            finalDiagnosisIds.push(did);
+        }
+    }
+
+    // Resolve deferred Synthetic IDs for Procedures
+    const finalProcedureIds: string[] = [];
+    for (const pid of proceduresIds) {
+        if (pid.startsWith('__api_proc__')) {
+            const parts = pid.replace('__api_proc__', '').split('|||');
+            const code = parts[0];
+            const name = parts.slice(1).join('|||');
+            
+            const existing = await db.select().from(cqProcedures).where(eq(cqProcedures.code, code)).limit(1);
+            if (existing.length > 0) {
+                finalProcedureIds.push(existing[0].id);
+            } else {
+                const [inserted] = await db.insert(cqProcedures).values({
+                    code: code.substring(0, 20),
+                    name: name,
+                    isActive: true,
+                    isVerifiedMinsa: true
+                }).returning({ id: cqProcedures.id });
+                if (inserted) finalProcedureIds.push(inserted.id);
+            }
+        } else {
+            finalProcedureIds.push(pid);
+        }
+    }
+
+    const trueDiagnosesIds = [...new Set(finalDiagnosisIds)];
+    const trueProceduresIds = [...new Set(finalProcedureIds)];
+
+    // Resolve diagnosis details from True IDs to text for legacy/easy reading
+    let diagnosis = "";
+    if (trueDiagnosesIds.length > 0) {
+        const selectedDiags = await db.select().from(cqDiagnoses).where(inArray(cqDiagnoses.id, trueDiagnosesIds));
+        diagnosis = selectedDiags.map(d => `${d.code} - ${d.name}`).join(", ");
+    }
+    const finalUrgencyType = urgencyType || 'ELECTIVO';
+
+    const roomId = operatingRoomId ? operatingRoomId : null;
+
+    // Combine date and time
+    const scheduledDate = new Date(`${scheduledDateStr}T${scheduledTimeStr}:00`);
+    const newStartMs = scheduledDate.getTime();
+    const newEndMs = newStartMs + getDurationMs(estimatedDuration);
+
+    if (roomId) {
+        // Fetch active surgeries for this specific operating room
+        const existingSurgeries = await db.select()
+            .from(cqSurgeries)
+            .where(
+                and(
+                    eq(cqSurgeries.operatingRoomId, roomId),
+                    ne(cqSurgeries.id, id),
+                    ne(cqSurgeries.status, 'cancelled')
+                )
+            );
+
+        for (const surgery of existingSurgeries) {
+            // Date parsing directly from DB timestamp
+            const existingStartMs = surgery.scheduledDate.getTime();
+            const existingEndMs = existingStartMs + getDurationMs(surgery.estimatedDuration || "1 hora");
+
+            // Validation formula: (StartA < EndB) and (EndA > StartB) means OVERLAP
+            if (newStartMs < existingEndMs && newEndMs > existingStartMs) {
+                const dateStr = surgery.scheduledDate.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const timeStr = surgery.scheduledDate.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+                return { error: `La sala seleccionada sufre un cruce de horarios.\n\nExiste una cirugía programada para el ${dateStr} a las ${timeStr} que durará aprox. ${surgery.estimatedDuration || "1 hora"}. Sus lapsos de ocupación se sobreponen.` };
+            }
+        }
+    }
+
+    // Identidad Disociada (Identity Vault Logic)
+    let finalPatientId: string;
+    const existingPii = await db.select().from(cqPatientPii).where(
+        or(
+            eq(cqPatientPii.dni, patientId),
+            eq(cqPatientPii.historiaClinica, patientId),
+            eq(cqPatientPii.carnetExtranjeria, patientId),
+            eq(cqPatientPii.pasaporte, patientId)
+        )
+    );
+
+    if (existingPii.length > 0) {
+        finalPatientId = existingPii[0].patientId;
+    } else {
+        const apiPatientDataRaw = formData.get("api_patient_data") as string | null;
+        let pName = 'NO IDENTIFICADO';
+        let pLastName = 'NO IDENTIFICADO';
+        let pSexo = null;
+        let pFechaNac = null;
+        let pUbigeo = null;
+        let pHistoriaClinica = patientId;
+        let pDireccion = null;
+
+        if (apiPatientDataRaw) {
+            try {
+                const parsed = JSON.parse(apiPatientDataRaw);
+                pName = parsed.nombres || pName;
+                pLastName = parsed.apellidos || pLastName;
+                pSexo = parsed.sexo || null;
+                pFechaNac = parsed.fechaNacimiento ? new Date(parsed.fechaNacimiento) : null;
+                pUbigeo = parsed.ubigeo || null;
+                pHistoriaClinica = parsed.historiaClinica || pHistoriaClinica;
+                pDireccion = parsed.direccion || null;
+            } catch (e) {
+                console.error("Failed to parse api_patient_data", e);
+            }
+        }
+
+        // Create Demographics entity
+        const newPat = await db.insert(cqPatients).values({
+            sexo: pSexo,
+            fechaNacimiento: pFechaNac,
+            ubigeo: pUbigeo,
+        }).returning({ id: cqPatients.id });
+        finalPatientId = newPat[0].id;
+
+        // Create Identity Vault entity
+        await db.insert(cqPatientPii).values({
+            patientId: finalPatientId,
+            dni: patientId, // saving the DNI text here
+            nombres: pName,
+            apellidos: pLastName,
+            historiaClinica: pHistoriaClinica,
+            direccion: pDireccion
+        });
+    }
+
+    await db.update(cqSurgeries).set({
+        patientId: finalPatientId,
+        operatingRoomId: roomId,
+        scheduledDate,
+        estimatedDuration,
+        diagnosis,
+        surgeryType,
+        urgencyType: finalUrgencyType,
+        insuranceType,
+        origin,
+        specialtyId,
+        notes,
+        updatedAt: new Date(),
+    }).where(eq(cqSurgeries.id, id));
+
+    // Clear and Re-insert team
+    await db.delete(cqSurgeryTeam).where(eq(cqSurgeryTeam.surgeryId, id));
+
+    const teamInserts: any[] = [];
+    for (const sid of surgeonIds) {
+        teamInserts.push({ surgeryId: id, staffUserId: sid, roleInSurgery: 'CIRUJANO' });
+    }
+    for (const aid of anesthesiologistIds) {
+        teamInserts.push({ surgeryId: id, staffUserId: aid, roleInSurgery: 'ANESTESIOLOGO' });
+    }
+    for (const nid of nurseIds) {
+        teamInserts.push({ surgeryId: id, staffUserId: nid, roleInSurgery: 'ENFERMERO' });
+    }
+
+    if (teamInserts.length > 0) {
+        await db.insert(cqSurgeryTeam).values(teamInserts);
+    }
+    
+    // Process DX and Procedures relationships
+    await db.delete(cqSurgeryDiagnoses).where(eq(cqSurgeryDiagnoses.surgeryId, id));
+    if (trueDiagnosesIds.length > 0) {
+        await db.insert(cqSurgeryDiagnoses).values(
+            trueDiagnosesIds.map(did => ({ surgeryId: id, diagnosisId: did }))
+        );
+    }
+
+    await db.delete(cqSurgeryProcedures).where(eq(cqSurgeryProcedures.surgeryId, id));
+    if (trueProceduresIds.length > 0) {
+        await db.insert(cqSurgeryProcedures).values(
+            trueProceduresIds.map(pid => ({ surgeryId: id, procedureId: pid }))
+        );
+    }
+
+    revalidatePath("/dashboard/programaciones");
+    return { success: true };
+}

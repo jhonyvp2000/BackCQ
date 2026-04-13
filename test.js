@@ -1,15 +1,17 @@
-const patSearchTerm = "raul vela amasi";
-const patSearchTermsArr = patSearchTerm.toLowerCase().trim().split(/\s+/).filter(Boolean);
-
-const localPatients = [
-  { pii: { nombres: "JONAS", apellidos: "PAREDES TUANAMA", dni: "92472774" }, id: "__api_pat__92472774" }
-];
-
-let filteredPatList = localPatients.filter(pat => {
-    if (patSearchTermsArr.length === 0) return true;
-    const fullText = (`${pat.pii?.nombres} ${pat.pii?.apellidos} ${pat.pii?.dni}`).toLowerCase();
-    return patSearchTermsArr.every(term => fullText.includes(term));
-});
-
-console.log("Filtered Length:", filteredPatList.length);
-console.log("Filtered Docs:", filteredPatList);
+require('dotenv').config();
+const { db } = require('./src/db');
+const { cqSurgeryTeam } = require('./src/db/schema');
+async function run() {
+    const res = await db.select().from(cqSurgeryTeam);
+    console.log('Total count:', res.length);
+    if(res.length > 0) {
+        const grouped = res.reduce((acc, r) => {
+            acc[r.surgeryId] = acc[r.surgeryId] || { CIRUJANO: 0, ANESTESIOLOGO: 0, ENFERMERO: 0 };
+            acc[r.surgeryId][r.roleInSurgery] = (acc[r.surgeryId][r.roleInSurgery] || 0) + 1;
+            return acc;
+        }, {});
+        console.log(grouped);
+    }
+    process.exit(0);
+}
+run();

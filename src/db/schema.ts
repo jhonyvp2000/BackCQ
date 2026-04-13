@@ -101,6 +101,7 @@ export const cqSurgeries = pgTable("cq_surgeries", {
   specialtyId: uuid("specialty_id").references(() => cqSpecialties.id, { onDelete: 'set null' }),
   requestDate: date("request_date").notNull().defaultNow(),
   scheduledDate: timestamp("scheduled_date", { withTimezone: true }).notNull(),
+  isTimeDefined: boolean("is_time_defined").default(true).notNull(),
   status: varchar("status", { length: 50 }).notNull().default('scheduled'), // scheduled, in_progress, anesthesia_start, pre_incision, surgery_end, patient_exit, urpa_exit, completed, cancelled
   urgencyType: varchar("urgency_type", { length: 50 }).notNull().default('ELECTIVO'), // 'EMERGENCIA', 'ELECTIVO'
   estimatedDuration: varchar("estimated_duration", { length: 50 }), // e.g. "1 hora", "2 horas"
@@ -109,6 +110,8 @@ export const cqSurgeries = pgTable("cq_surgeries", {
   insuranceType: varchar("insurance_type", { length: 50 }), // 'SIS', 'SOAT', 'PARTICULAR', 'SISPOL'
   anesthesiaType: varchar("anesthesia_type", { length: 50 }), // 'RAQ', 'EPI', 'AGB', 'AGE', 'AGI', 'BLOQ', 'LOCL'
   origin: varchar("origin", { length: 255 }), // Procedencia: Cama, Ambulatorio, etc.
+  bedNumber: varchar("bed_number", { length: 50 }),
+  internalCode: varchar("internal_code", { length: 100 }),
   actualStartTime: timestamp("actual_start_time", { withTimezone: true }), // when in_progress
   anesthesiaStartTime: timestamp("anesthesia_start_time", { withTimezone: true }),
   preIncisionTime: timestamp("pre_incision_time", { withTimezone: true }),

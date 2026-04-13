@@ -13,10 +13,26 @@ import { AnimatePresence, motion } from "framer-motion";
 import { EditSurgeryModal } from "./edit-surgery-modal";
 import { PhaseTransitionModal } from "./phase-transition-modal";
 
-function getFormattedDate(dateValue: Date | string | null | undefined): string {
+function getFormattedDate(dateValue: Date | string | null | undefined, isTimeDefined: boolean = true): React.ReactNode {
     if (!dateValue) return 'Fecha no definida';
     const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     if (isNaN(date.getTime())) return 'Fecha inválida';
+
+    if (isTimeDefined === false) {
+        const datePart = new Intl.DateTimeFormat('es-PE', {
+            timeZone: 'America/Lima',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+        }).format(date);
+        return (
+            <span className="flex items-center gap-1.5">
+                {datePart}
+                <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase shadow-sm">TBD</span>
+            </span>
+        );
+    }
+
     return new Intl.DateTimeFormat('es-PE', {
         timeZone: 'America/Lima',
         day: '2-digit',
@@ -25,6 +41,20 @@ function getFormattedDate(dateValue: Date | string | null | undefined): string {
         hour: '2-digit',
         minute: '2-digit',
     }).format(date);
+}
+
+function formatDateOnly(dateValue: Date | string | null | undefined): string {
+    if (!dateValue) return 'N/A';
+    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+    if (isNaN(date.getTime())) return 'Inválida';
+    return new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+}
+
+function formatTimeOnly(dateValue: Date | string | null | undefined): string {
+    if (!dateValue) return 'N/A';
+    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+    if (isNaN(date.getTime())) return 'Inválida';
+    return new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }).format(date);
 }
 
 export const formatPatientDemographics = (patientPii: any, patient: any) => {
@@ -81,8 +111,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     // Estados para Filtros de Lista
     const [filterDate, setFilterDate] = useState<string>("");
     const [filterPatient, setFilterPatient] = useState<string>("");
-    const [filterRoom, setFilterRoom] = useState<string>("ALL");
-    const [filterStatus, setFilterStatus] = useState<string>("ALL");
+    const [filterRoom, setFilterRoom] = useState<string[]>([]);
+    const [filterStatus, setFilterStatus] = useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
 
     // Filtros Universales (Paciente y Estado)
@@ -94,8 +124,29 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             if (!fullName.includes(searchTerms) && !dni.includes(searchTerms)) return false;
         }
 
-        if (filterStatus !== "ALL" && s.surgery.status !== filterStatus) {
-            return false;
+        if (filterStatus.length > 0) {
+            let statusMatches = false;
+            
+            for (const fs of filterStatus) {
+                if (fs === 'completed_incomplete') {
+                    if (s.surgery.status === 'completed' && (!s.surgery.anesthesiaType || s.surgery.anesthesiaType.trim() === '')) {
+                        statusMatches = true;
+                        break;
+                    }
+                } else if (fs === 'completed') {
+                    if (s.surgery.status === 'completed' && s.surgery.anesthesiaType && s.surgery.anesthesiaType.trim() !== '') {
+                        statusMatches = true;
+                        break;
+                    }
+                } else {
+                    if (s.surgery.status === fs) {
+                        statusMatches = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!statusMatches) return false;
         }
 
         return true;
@@ -113,7 +164,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             }
         }
 
-        if (filterRoom !== "ALL" && s.operatingRoom?.id !== filterRoom) {
+        if (filterRoom.length > 0 && (!s.operatingRoom?.id || !filterRoom.includes(s.operatingRoom.id))) {
             return false;
         }
 
@@ -197,9 +248,9 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             <Filter size={16} />
                             Filtros Dinámicos
                         </button>
-                        {(filterDate || filterPatient || filterRoom !== 'ALL' || filterStatus !== 'ALL') && (
+                        {(filterDate || filterPatient || filterRoom.length > 0 || filterStatus.length > 0) && (
                             <button
-                                onClick={() => { setFilterDate(''); setFilterPatient(''); setFilterRoom('ALL'); setFilterStatus('ALL'); }}
+                                onClick={() => { setFilterDate(''); setFilterPatient(''); setFilterRoom([]); setFilterStatus([]); }}
                                 className="text-xs font-semibold text-zinc-500 hover:text-red-500 hover:underline px-2 transition-colors"
                             >
                                 Limpiar Filtros
@@ -230,7 +281,6 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
                         >
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 pb-2">
                                 {/* Buscador de Paciente */}
@@ -248,46 +298,135 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                 </div>
 
                                 {/* Selector de Fecha */}
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Calendar size={14} className="text-zinc-400 group-focus-within:text-[var(--color-hospital-blue)] transition-colors" />
+                                <div className="flex items-center gap-2">
+                                    <div className="relative group flex-1">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Calendar size={14} className="text-zinc-400 group-focus-within:text-[var(--color-hospital-blue)] transition-colors" />
+                                        </div>
+                                        <input
+                                            type="date"
+                                            value={filterDate}
+                                            onChange={(e) => setFilterDate(e.target.value)}
+                                            className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200 [color-scheme:light] dark:[color-scheme:dark]"
+                                        />
                                     </div>
-                                    <input
-                                        type="date"
-                                        value={filterDate}
-                                        onChange={(e) => setFilterDate(e.target.value)}
-                                        className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200 [color-scheme:light] dark:[color-scheme:dark]"
-                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setFilterDate('')}
+                                        className="shrink-0 bg-zinc-100 dark:bg-zinc-800 hover:bg-red-100 hover:text-red-600 text-zinc-500 border border-zinc-200 dark:border-zinc-700 p-[9px] rounded-xl transition-colors shadow-sm"
+                                        title="Limpiar fecha del filtro"
+                                    >
+                                        <X size={16} strokeWidth={2.5} />
+                                    </button>
                                 </div>
 
-                                {/* Selector de Quirófano */}
-                                <select
-                                    value={filterRoom}
-                                    onChange={(e) => setFilterRoom(e.target.value)}
-                                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200"
-                                >
-                                    <option value="ALL">Todas las Salas</option>
-                                    <option value="None" disabled>-- Quirófanos --</option>
-                                    {salas.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
+                                {/* Selector Múltiple de Quirófano */}
+                                <div className="relative group/room-select z-50">
+                                    <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer flex justify-between items-center transition-all bg-white dark:bg-zinc-900 group-hover/room-select:border-blue-500/50">
+                                        <span className="truncate pr-2">
+                                            {filterRoom.length === 0 
+                                                ? "Todas las Salas" 
+                                                : filterRoom.length === 1
+                                                    ? (salas.find(s => s.id === filterRoom[0])?.name || filterRoom[0])
+                                                    : `${filterRoom.length} Salas Seleccionadas`}
+                                        </span>
+                                        <svg className="w-4 h-4 text-zinc-400 group-hover/room-select:text-[var(--color-hospital-blue)] transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                    <div className="absolute top-[calc(100%-8px)] left-0 w-full pt-3 opacity-0 invisible group-hover/room-select:opacity-100 group-hover/room-select:visible transition-all duration-200 z-50">
+                                        <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl flex flex-col overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                                            <div className="p-2 border-b border-zinc-100 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80">
+                                                <div className="flex items-center justify-between px-1">
+                                                    <button type="button" onClick={() => setFilterRoom(salas.map(s => s.id))} className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline mb-0.5 mt-0.5">SEL. TODAS</button>
+                                                    <button type="button" onClick={() => setFilterRoom([])} className="text-[11px] font-bold text-zinc-500 hover:text-red-500 hover:underline mb-0.5 mt-0.5">NINGUNA</button>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-y-auto p-1.5 flex flex-col custom-scrollbar max-h-[250px]">
+                                                {salas.map(s => (
+                                                    <label key={s.id} className="flex items-center gap-3 px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 rounded-lg cursor-pointer transition-colors group/label border-b border-zinc-100/50 last:border-0 dark:border-zinc-700/30">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)] bg-white dark:bg-zinc-900 cursor-pointer"
+                                                            checked={filterRoom.includes(s.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setFilterRoom([...filterRoom, s.id]);
+                                                                } else {
+                                                                    setFilterRoom(filterRoom.filter(id => id !== s.id));
+                                                                }
+                                                            }}
+                                                        />
+                                                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover/label:text-zinc-900 dark:group-hover/label:text-white select-none whitespace-normal leading-tight">{s.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                {/* Selector de Estado */}
-                                <select
-                                    value={filterStatus}
-                                    onChange={(e) => setFilterStatus(e.target.value)}
-                                    className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200"
-                                >
-                                    <option value="ALL">Cualquier Estado</option>
-                                    <option value="scheduled">Programadas</option>
-                                    <option value="in_progress">En Quirófano</option>
-                                    <option value="anesthesia_start">Anestesia Iniciada</option>
-                                    <option value="pre_incision">Pre-Incisión</option>
-                                    <option value="surgery_end">Término Cirugía</option>
-                                    <option value="patient_exit">Salida Paciente</option>
-                                    <option value="urpa_exit">Salida URPA</option>
-                                    <option value="completed">Finalizadas</option>
-                                    <option value="cancelled">Suspendidas</option>
-                                </select>
+                                {/* Selector Múltiple de Estado */}
+                                <div className="relative group/status-select z-40">
+                                    <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer flex justify-between items-center transition-all bg-white dark:bg-zinc-900 group-hover/status-select:border-blue-500/50">
+                                        <span className="truncate pr-2">
+                                            {filterStatus.length === 0 
+                                                ? "Cualquier Estado" 
+                                                : filterStatus.length === 1
+                                                    ? [
+                                                        { id: 'scheduled', name: 'Programadas' },
+                                                        { id: 'in_progress', name: 'En Quirófano' },
+                                                        { id: 'anesthesia_start', name: 'Anestesia Iniciada' },
+                                                        { id: 'pre_incision', name: 'Pre-Incisión' },
+                                                        { id: 'surgery_end', name: 'Término Cirugía' },
+                                                        { id: 'patient_exit', name: 'Salida Paciente' },
+                                                        { id: 'urpa_exit', name: 'Salida URPA' },
+                                                        { id: 'completed', name: 'Finalizadas' },
+                                                        { id: 'completed_incomplete', name: 'Finalizadas (Incompletas)' },
+                                                        { id: 'cancelled', name: 'Suspendidas' }
+                                                      ].find(s => s.id === filterStatus[0])?.name || filterStatus[0]
+                                                    : `${filterStatus.length} Estados Selecc.`}
+                                        </span>
+                                        <svg className="w-4 h-4 text-zinc-400 group-hover/status-select:text-[var(--color-hospital-blue)] transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                    <div className="absolute top-[calc(100%-8px)] left-0 w-full pt-3 opacity-0 invisible group-hover/status-select:opacity-100 group-hover/status-select:visible transition-all duration-200 z-50">
+                                        <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl flex flex-col overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                                            <div className="p-2 border-b border-zinc-100 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80">
+                                                <div className="flex items-center justify-between px-1">
+                                                    <button type="button" onClick={() => setFilterStatus(['scheduled','in_progress','anesthesia_start','pre_incision','surgery_end','patient_exit','urpa_exit','completed','completed_incomplete','cancelled'])} className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline mb-0.5 mt-0.5">SEL. TODOS</button>
+                                                    <button type="button" onClick={() => setFilterStatus([])} className="text-[11px] font-bold text-zinc-500 hover:text-red-500 hover:underline mb-0.5 mt-0.5">NINGUNO</button>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-y-auto p-1.5 flex flex-col custom-scrollbar max-h-[250px]">
+                                                {[
+                                                    { id: 'scheduled', name: 'Programadas' },
+                                                    { id: 'in_progress', name: 'En Quirófano' },
+                                                    { id: 'anesthesia_start', name: 'Anestesia Iniciada' },
+                                                    { id: 'pre_incision', name: 'Pre-Incisión' },
+                                                    { id: 'surgery_end', name: 'Término Cirugía' },
+                                                    { id: 'patient_exit', name: 'Salida Paciente' },
+                                                    { id: 'urpa_exit', name: 'Salida URPA' },
+                                                    { id: 'completed', name: 'Finalizadas' },
+                                                    { id: 'completed_incomplete', name: 'Finalizadas (Datos Incompletos)' },
+                                                    { id: 'cancelled', name: 'Suspendidas' }
+                                                ].map(s => (
+                                                    <label key={s.id} className="flex items-center gap-3 px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 rounded-lg cursor-pointer transition-colors group/label border-b border-zinc-100/50 last:border-0 dark:border-zinc-700/30">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)] bg-white dark:bg-zinc-900 cursor-pointer"
+                                                            checked={filterStatus.includes(s.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setFilterStatus([...filterStatus, s.id]);
+                                                                } else {
+                                                                    setFilterStatus(filterStatus.filter(id => id !== s.id));
+                                                                }
+                                                            }}
+                                                        />
+                                                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover/label:text-zinc-900 dark:group-hover/label:text-white select-none whitespace-normal leading-tight">{s.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
                     )}
@@ -306,7 +445,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             transition={{ duration: 0.2 }}
                             className="p-6 bg-zinc-50/50 dark:bg-zinc-900 h-full"
                         >
-                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom === "ALL" ? salas : salas.filter(s => s.id === filterRoom)} displayDate={filterDate} setDisplayDate={setFilterDate} diagnoses={diagnoses} procedures={procedures} interventions={interventions} />
+                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom.length === 0 ? salas : salas.filter(s => filterRoom.includes(s.id))} displayDate={filterDate} setDisplayDate={setFilterDate} diagnoses={diagnoses} procedures={procedures} interventions={interventions} />
                         </motion.div>
                     ) : (
                         <motion.div
@@ -435,17 +574,29 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         </div>
                                                                     )}
                                                                 </div>
-                                                                <div className="flex items-center gap-2 flex-wrap">
-                                                                    <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg inline-flex items-center border border-zinc-200/50 dark:border-zinc-700 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-                                                                        <Clock size={12} className="mr-1.5 text-zinc-400" />
-                                                                        {getFormattedDate(row.surgery.scheduledDate)}
-                                                                    </div>
-                                                                    {row.surgery.estimatedDuration && (
-                                                                        <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-lg inline-flex items-center border border-amber-200/50 dark:border-amber-800/50 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-                                                                            <Hourglass size={12} className="mr-1.5" />
-                                                                            {row.surgery.estimatedDuration}
+                                                                <div className="flex flex-col gap-1.5 mt-2.5">
+                                                                    <div className="flex items-center gap-2 text-[11px] font-medium">
+                                                                        <div className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded border border-zinc-200/50 dark:border-zinc-700 w-fit flex items-center tooltip" title="Fecha de Solicitud">
+                                                                            <span className="opacity-70 mr-1.5 text-[10px] uppercase">F. Solicitud:</span>
+                                                                            <span className="font-semibold text-zinc-800 dark:text-zinc-200">{formatDateOnly(row.surgery.requestDate)}</span>
                                                                         </div>
-                                                                    )}
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-medium">
+                                                                        <div className="bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded border border-blue-200/50 dark:border-blue-800/50 w-fit flex items-center tooltip" title="Fecha Programada">
+                                                                            <span className="opacity-70 mr-1.5 text-[10px] uppercase">F. Prog:</span>
+                                                                            <span className="font-semibold">{formatDateOnly(row.surgery.scheduledDate)}</span>
+                                                                        </div>
+                                                                        <div className="bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/50 flex items-center w-fit tooltip" title="Hora">
+                                                                            <Clock size={11} className="opacity-70 mr-1.5" />
+                                                                            <span className="font-bold">{row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'TBD'}</span>
+                                                                        </div>
+                                                                        {row.surgery.estimatedDuration && (
+                                                                            <div className="bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50 w-fit flex items-center tooltip" title="Duración Estimada">
+                                                                                <Hourglass size={11} className="opacity-70 mr-1.5" />
+                                                                                <span className="font-bold">{row.surgery.estimatedDuration}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
                                                                 {row.surgery.notes && (
                                                                     <div className="text-xs text-zinc-400 mt-2 mb-2 truncate max-w-[250px] font-medium" title={row.surgery.notes}>
@@ -486,8 +637,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             {row.surgery.status === 'scheduled' && canAdvancePhase && (
                                                                 <button
                                                                     onClick={() => {
-                                                                        if (!row.operatingRoom?.id) {
-                                                                            setErrorModalMsg("No es posible ingresar a quirófano un procedimiento que aún no tiene una sala física asignada. Por favor, edita o asigna una sala previamente.");
+                                                                        if (!row.operatingRoom?.id || row.surgery.isTimeDefined === false) {
+                                                                            setErrorModalMsg("No es posible programar el ingreso a quirófano para una cirugía que mantiene la Sala Física o la Hora de inicio como pendiente (Sin Asignar). Por favor, asigne dichos valores para continuar.");
                                                                             return;
                                                                         }
                                                                         setTransitionModal({
@@ -652,16 +803,16 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                 className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-zinc-200/50 dark:border-zinc-800 z-10 w-full max-w-md overflow-hidden relative"
                             >
-                                <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500"></div>
+                                <div className="absolute top-0 left-0 w-full h-1.5 bg-amber-500"></div>
                                 <div className="p-6 pt-8 text-center sm:text-left flex flex-col sm:flex-row gap-5 items-center sm:items-start">
-                                    <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center shrink-0">
-                                        <AlertTriangle size={24} className="text-red-500" />
+                                    <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center shrink-0">
+                                        <AlertTriangle size={24} className="text-amber-500" />
                                     </div>
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mt-1 mb-2">
-                                            Reactivación Fallida
+                                    <div className="flex-1 mt-1">
+                                        <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+                                            Aviso de Validación
                                         </h3>
-                                        <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium whitespace-pre-wrap">
+                                        <p className="text-[13px] text-zinc-600 dark:text-zinc-400 font-medium whitespace-pre-wrap leading-relaxed">
                                             {errorModalMsg}
                                         </p>
                                     </div>

@@ -57,7 +57,9 @@ export function ReportClientTable() {
         });
     }
 
-    function getRowColorClasses(status: string) {
+    function getRowColorClasses(item: ReportData) {
+        const status = item.estadoAlerta;
+        if (status === 'completed' && (!item.tipoAnestesia || item.tipoAnestesia.trim() === '' || item.tipoAnestesia === '-')) return 'bg-zinc-200 hover:bg-zinc-300 text-zinc-800 border-zinc-400'; // Falta completar datos
         if (status === 'cancelled') return 'bg-red-50 hover:bg-red-100 text-red-900'; // Suspendido
         if (status === 'completed') return 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'; // Terminado
         if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) return 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200'; // En progreso
@@ -98,7 +100,7 @@ export function ReportClientTable() {
         titleRow.font = { name: 'Arial', size: 16, bold: true };
         
         // --- ROW 2: Leyenda ---
-        const legendRow = sheet.addRow(['Programado', 'Terminado', 'Suspendido', 'En proceso']);
+        const legendRow = sheet.addRow(['Programado', 'Terminado', 'Suspendido', 'En proceso', 'Falta completar datos']);
         legendRow.font = { name: 'Arial', size: 10, color: { argb: 'FF000000' } };
         
         // Apply colors to the legend cells
@@ -106,6 +108,7 @@ export function ReportClientTable() {
         legendRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B050' } };
         legendRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF6666' } };
         legendRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } };
+        legendRow.getCell(5).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
         
         // --- ROW 3: Rango de fechas y metadata ---
         const subtitleRow = sheet.addRow([`Reporte de programaciones quirurgicas del ${formattedStart} al ${formattedEnd}    Fecha de impresion: ${printDate} hora: ${printTime}`]);
@@ -122,7 +125,7 @@ export function ReportClientTable() {
             "ANESTESIOLOGO", "CIRCULANTE/INSTRUMENTISTA", "TIPO SEGURO", "PROCEDENCIA", "TIPO ANESTECIA", 
             "HORA INGRESO PACIENTE", "HORA INICIO ANESTECIA", "HORA ANTES DE LA INCISIÓN", 
             "HORA TERMINO CIRUGIA", "HORA SALIDA PACIENTE", "HORA SALIDA DE URPA", 
-            "PRIORIDAD", "MES DE INTERVENCION", "TURNO"
+            "PRIORIDAD", "MES DE INTERVENCION", "TURNO", "INCOMPLETO"
         ];
         const headerRow = sheet.addRow(headers);
         headerRow.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FFFFFFFF' } }; // White text
@@ -141,7 +144,8 @@ export function ReportClientTable() {
                 item.tipoSeguro, item.procedencia, item.tipoAnestesia, item.horaIngresoPaciente, 
                 item.horaInicioAnestesia, item.horaAntesIncision, item.horaTerminoCirugia, 
                 item.horaSalidaPaciente, item.horaSalidaUrpa, 
-                item.tipoPrioridad, item.mesIntervencion, item.turno
+                item.tipoPrioridad, item.mesIntervencion, item.turno,
+                (item.estadoAlerta === 'completed' && (!item.tipoAnestesia || item.tipoAnestesia.trim() === '' || item.tipoAnestesia === '-')) ? 'X' : ''
             ];
             const dataRow = sheet.addRow(rowData);
             dataRow.font = { name: 'Arial', size: 9 };
@@ -150,7 +154,8 @@ export function ReportClientTable() {
             // Asignar color de fila según el estado
             let bgColor = 'FFFFFFFF'; // Default blanco
             const status = item.estadoAlerta;
-            if (status === 'cancelled') bgColor = 'FFFF6666'; // Suspendido (Rojo claro)
+            if (status === 'completed' && (!item.tipoAnestesia || item.tipoAnestesia.trim() === '' || item.tipoAnestesia === '-')) bgColor = 'FFD9D9D9'; // Gris (Falta completar)
+            else if (status === 'cancelled') bgColor = 'FFFF6666'; // Suspendido (Rojo claro)
             else if (status === 'completed') bgColor = 'FF00B050'; // Terminado (Verde)
             else if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) bgColor = 'FFFFFF00'; // En proceso (Amarillo)
             else bgColor = 'FF00B0F0'; // Programado (Azul claro)
@@ -248,6 +253,7 @@ export function ReportClientTable() {
                         <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-amber-400 border border-amber-500"></div> En proceso (Qx)</span>
                         <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-400 border border-emerald-500"></div> Terminado</span>
                         <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-400 border border-red-500"></div> Suspendido / Cancelada</span>
+                        <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-zinc-400 border border-zinc-500"></div> Falta completar datos</span>
                         <span className="ml-auto text-zinc-500">Total resultados: {data.length} cirugías</span>
                     </div>
                 )}
@@ -279,7 +285,7 @@ export function ReportClientTable() {
                         </thead>
                         <tbody className="divide-y divide-zinc-200/50 dark:divide-zinc-800 border-b border-zinc-200 dark:border-zinc-800">
                             {data.map((row) => (
-                                <tr key={row.correlativo} className={`transition-colors border-l-4 ${getRowColorClasses(row.estadoAlerta)}`}>
+                                <tr key={row.correlativo} className={`transition-colors border-l-4 ${getRowColorClasses(row)}`}>
                                     <td className="px-3 py-2.5 font-medium">{row.correlativo}</td>
                                     <td className="px-3 py-2.5 max-w-[200px] truncate" title={row.nombresApellidos}>{row.nombresApellidos}</td>
                                     <td className="px-3 py-2.5">{row.sala}</td>

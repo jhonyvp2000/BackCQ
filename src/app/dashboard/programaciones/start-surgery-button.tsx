@@ -6,12 +6,12 @@ import { useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function StartSurgeryButton({ id, hasRoom }: { id: string, hasRoom: boolean }) {
+export function StartSurgeryButton({ id, hasRoom, hasTime }: { id: string, hasRoom: boolean, hasTime: boolean }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-        if (!hasRoom) {
+        if (!hasRoom || !hasTime) {
             e.preventDefault();
             setIsOpen(true);
         }
@@ -61,10 +61,10 @@ export function StartSurgeryButton({ id, hasRoom }: { id: string, hasRoom: boole
                                         <AlertTriangle className="text-amber-600 dark:text-amber-400" size={24} />
                                     </div>
                                     <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">
-                                        Sala No Asignada
+                                        Información Incompleta
                                     </h3>
                                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 px-2">
-                                        No es posible ingresar a quirófano un procedimiento que aún no tiene una sala física asignada. Por favor, edita o asigna una sala previamente.
+                                        No es posible ingresar a quirófano una cirugía que aún tiene la <b>Sala Física</b> o la <b>Hora</b> pendiente de asignar ("TBD"). Edite la programación primero.
                                     </p>
 
                                     <button
