@@ -1134,7 +1134,92 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     </motion.div>
                 </div>
 
-                {/* --- SECCIÓN 3: EQUIPO ASISTENCIAL --- */}
+                {/* --- SECCIÓN 3: AGENDA Y SALA --- */}
+                <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
+                    <button
+                        type="button"
+                        onClick={() => toggleSection('schedule')}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'schedule' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-l-4 border-l-blue-700 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className={`p-1.5 rounded-lg ${openSection === 'schedule' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                <CalendarDays size={18} />
+                            </div>
+                            <span className="text-sm">3. Sala y Horarios</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'schedule' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
+                        </div>
+                    </button>
+
+                    <motion.div
+                        initial={false}
+                        animate={{ height: openSection === 'schedule' ? 'auto' : 0, opacity: openSection === 'schedule' ? 1 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sala Quirúrgica</label>
+                                <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
+                                    <option value="">-- Por definir internamente --</option>
+                                    {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
+                                        <option key={sala.id} value={sala.id}>{sala.name}</option>
+                                    ))}
+                                </select>
+                                <FieldError msg={errors.operating_room_id} />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="col-span-2 space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Fecha de Solicitud</label>
+                                    <input type="date" name="request_date" required disabled={!canSchedule} 
+                                           defaultValue={clonedData?.surgery?.requestDate ? format(new Date(clonedData.surgery.requestDate + 'T00:00:00'), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')} 
+                                           className={getInputCls("request_date")} 
+                                    />
+                                    <FieldError msg={errors.request_date} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Fecha Programación</label>
+                                    <input type="date" name="scheduled_date" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'yyyy-MM-dd') : ""} className={getInputCls("scheduled_date")} />
+                                    <FieldError msg={errors.scheduled_date} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Hora</label>
+                                    <input type="time" name="scheduled_time" required={!!editMode} disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} className={getInputCls("scheduled_time")} />
+                                    <FieldError msg={errors.scheduled_time} />
+                                </div>
+                                <div className="col-span-2 space-y-2 mt-1">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Duración Estimada</label>
+                                    <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || ""} className={getSelectCls("estimated_duration", "px-2")}>
+                                        <option value="">- Lapso -</option>
+                                        <option value="30 minutos">30 min (Exp.)</option>
+                                        <option value="1 hora">1 hora o menos</option>
+                                        <option value="2 horas">Hasta 2 horas</option>
+                                        <option value="3 horas">Hasta 3 horas</option>
+                                        <option value="4+ horas">4 horas a más</option>
+                                    </select>
+                                    <FieldError msg={errors.estimated_duration} />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 pt-2">
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Notas Internas</label>
+                                <textarea
+                                    name="notes"
+                                    disabled={!canSchedule}
+                                    defaultValue={clonedData?.surgery?.notes || ""}
+                                    className={getInputCls("", "resize-none h-20")}
+                                    placeholder="Procedimiento, insumos especiales o materiales médicos (Opcional)..."
+                                ></textarea>
+                            </div>
+
+                        </div>
+                    </motion.div>
+                </div>
+
+
+                {/* --- SECCIÓN 4: EQUIPO ASISTENCIAL --- */}
                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
                     <button
                         type="button"
@@ -1145,7 +1230,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             <div className={`p-1.5 rounded-lg ${openSection === 'team' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
                                 <Users size={18} />
                             </div>
-                            <span className="text-sm">3. Equipo Asistencial</span>
+                            <span className="text-sm">4. Equipo Asistencial</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'team' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
@@ -1315,91 +1400,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         </div>
                     </motion.div>
                 </div>
-
-                {/* --- SECCIÓN 4: AGENDA Y SALA --- */}
-                <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
-                    <button
-                        type="button"
-                        onClick={() => toggleSection('schedule')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'schedule' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-l-4 border-l-blue-700 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-lg ${openSection === 'schedule' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
-                                <CalendarDays size={18} />
-                            </div>
-                            <span className="text-sm">4. Sala y Horarios</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'schedule' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
-                        </div>
-                    </button>
-
-                    <motion.div
-                        initial={false}
-                        animate={{ height: openSection === 'schedule' ? 'auto' : 0, opacity: openSection === 'schedule' ? 1 : 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                    >
-                        <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sala Quirúrgica</label>
-                                <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
-                                    <option value="">-- Por definir internamente --</option>
-                                    {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
-                                        <option key={sala.id} value={sala.id}>{sala.name}</option>
-                                    ))}
-                                </select>
-                                <FieldError msg={errors.operating_room_id} />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="col-span-2 space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Fecha de Solicitud</label>
-                                    <input type="date" name="request_date" required disabled={!canSchedule} 
-                                           defaultValue={clonedData?.surgery?.requestDate ? format(new Date(clonedData.surgery.requestDate + 'T00:00:00'), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')} 
-                                           className={getInputCls("request_date")} 
-                                    />
-                                    <FieldError msg={errors.request_date} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Fecha Programación</label>
-                                    <input type="date" name="scheduled_date" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'yyyy-MM-dd') : ""} className={getInputCls("scheduled_date")} />
-                                    <FieldError msg={errors.scheduled_date} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Hora</label>
-                                    <input type="time" name="scheduled_time" required={!!editMode} disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} className={getInputCls("scheduled_time")} />
-                                    <FieldError msg={errors.scheduled_time} />
-                                </div>
-                                <div className="col-span-2 space-y-2 mt-1">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Duración Estimada</label>
-                                    <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || ""} className={getSelectCls("estimated_duration", "px-2")}>
-                                        <option value="">- Lapso -</option>
-                                        <option value="30 minutos">30 min (Exp.)</option>
-                                        <option value="1 hora">1 hora o menos</option>
-                                        <option value="2 horas">Hasta 2 horas</option>
-                                        <option value="3 horas">Hasta 3 horas</option>
-                                        <option value="4+ horas">4 horas a más</option>
-                                    </select>
-                                    <FieldError msg={errors.estimated_duration} />
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Notas Internas</label>
-                                <textarea
-                                    name="notes"
-                                    disabled={!canSchedule}
-                                    defaultValue={clonedData?.surgery?.notes || ""}
-                                    className={getInputCls("", "resize-none h-20")}
-                                    placeholder="Procedimiento, insumos especiales o materiales médicos (Opcional)..."
-                                ></textarea>
-                            </div>
-
-                        </div>
-                    </motion.div>
-                </div>
-
 
                 {/* Footer Actions */}
                 <div className={`pt-6 mt-6 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center gap-4 ${editMode ? 'justify-end' : 'justify-between'}`}>
