@@ -804,7 +804,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                     >
-                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
+                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
                                     <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
@@ -870,7 +870,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <FieldError msg={errors.anesthesia_type} />
                             </div>
 
-                            <div className="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2 pt-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos (Dx)</label>
                                 <div className="relative mb-2">
@@ -1123,7 +1123,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
 
-                            <div className="col-span-1 md:col-span-3 pt-2 flex justify-end">
+                            <div className="col-span-full pt-2 flex justify-end">
                                 <button type="button" onClick={() => toggleSection('team')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
                             </div>
                         </div>
