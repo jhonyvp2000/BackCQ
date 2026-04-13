@@ -1124,7 +1124,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
 
                             <div className="col-span-full pt-2 flex justify-end">
-                                <button type="button" onClick={() => toggleSection('team')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
+                                <button type="button" onClick={() => toggleSection('schedule')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
                             </div>
                         </div>
                     </motion.div>
@@ -1208,6 +1208,10 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     className={getInputCls("", "resize-none h-20")}
                                     placeholder="Procedimiento, insumos especiales o materiales médicos (Opcional)..."
                                 ></textarea>
+                            </div>
+
+                            <div className="pt-4 flex justify-end">
+                                <button type="button" onClick={() => toggleSection('team')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
                             </div>
 
                         </div>
@@ -1390,9 +1394,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
 
-                            <div className="pt-2 flex justify-end">
-                                <button type="button" onClick={() => toggleSection('schedule')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
-                            </div>
                         </div>
                     </motion.div>
                 </div>
