@@ -670,7 +670,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Identificador (DNI / HC)</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Paciente (DNI / HC)</label>
                                 <div className="relative group">
                                     <input
                                         type="text"
@@ -773,7 +773,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Catálogo de Diagnósticos (Dx)</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos (Dx)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -1260,7 +1260,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
 
                             <div className="space-y-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Enfermero(s)</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Circulante / Intensivista</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -1487,6 +1487,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         </>
     );
 }
+
 
 
 
