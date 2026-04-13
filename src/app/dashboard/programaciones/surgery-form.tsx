@@ -772,6 +772,104 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 )}
                             </div>
 
+                                                        {/* Action button to continue */}
+                            <div className="pt-2 flex justify-end">
+                                <button type="button" onClick={() => toggleSection('classification')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* --- SECCIÓN 2: CLASIFICACIÓN & SEGURO --- */}
+                <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
+                    <button
+                        type="button"
+                        onClick={() => toggleSection('classification')}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'classification' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-l-4 border-l-blue-700 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className={`p-1.5 rounded-lg ${openSection === 'classification' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
+                                <Shield size={18} />
+                            </div>
+                            <span className="text-sm">2. Clasificación Clínica</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'classification' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
+                        </div>
+                    </button>
+
+                    <motion.div
+                        initial={false}
+                        animate={{ height: openSection === 'classification' ? 'auto' : 0, opacity: openSection === 'classification' ? 1 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
+                                    <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
+                                        <option value="">- Tipo -</option>
+                                        <option value="Cirugía Menor">Cirugía Menor</option>
+                                        <option value="Cirugía Mayor">Cirugía Mayor</option>
+                                    </select>
+                                    <FieldError msg={errors.surgery_type} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Prioridad</label>
+                                    <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
+                                        <option value="ELECTIVO">Electivo</option>
+                                        <option value="EMERGENCIA">Emergencia</option>
+                                    </select>
+                                    <FieldError msg={errors.urgency_type} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Especialidad</label>
+                                    <select name="specialty_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.specialtyId || ""} className={getSelectCls("specialty_id")}>
+                                        <option value="">- Seleccionar -</option>
+                                        {specialties.map(spec => (
+                                            <option key={spec.id} value={spec.id}>{spec.name}</option>
+                                        ))}
+                                    </select>
+                                    <FieldError msg={errors.specialty_id} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de seguro</label>
+                                    <select name="insurance_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.insuranceType || ""} className={getSelectCls("insurance_type")}>
+                                        <option value="">- Seguro -</option>
+                                        <option value="SIS">SIS</option>
+                                        <option value="SOAT">SOAT</option>
+                                        <option value="PARTICULAR">PARTICULAR</option>
+                                        <option value="SISPOL">SISPOL</option>
+                                    </select>
+                                    <FieldError msg={errors.insurance_type} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Procedencia</label>
+                                    <input
+                                        type="text"
+                                        name="origin"
+                                        disabled={!canSchedule}
+                                        defaultValue={clonedData?.surgery?.origin || ""}
+                                        placeholder="Ej. Ambulatorio"
+                                        className={getInputCls("origin")}
+                                    />
+                                    <FieldError msg={errors.origin} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Anestesia</label>
+                                    <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>
+                                        <option value="">- Seleccionar Anestesia -</option>
+                                    <option value="RAQ">RAQ - Raquídea (o Subaracnoidea)</option>
+                                    <option value="EPI">EPI - Epidural</option>
+                                    <option value="AGB">AGB - Anestesia General Balanceada</option>
+                                    <option value="AGE">AGE - Anestesia General Endovenosa</option>
+                                    <option value="AGI">AGI - Anestesia General Inhalatoria</option>
+                                    <option value="BLOQ">BLOQ - Bloqueo Regional</option>
+                                    <option value="LOCL">LOCL - Local</option>
+                                </select>
+                                <FieldError msg={errors.anesthesia_type} />
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2 pt-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos (Dx)</label>
@@ -1024,103 +1122,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
                             </div>
 
-                            {/* Action button to continue */}
-                            <div className="pt-2 flex justify-end">
-                                <button type="button" onClick={() => toggleSection('classification')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* --- SECCIÓN 2: CLASIFICACIÓN & SEGURO --- */}
-                <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
-                    <button
-                        type="button"
-                        onClick={() => toggleSection('classification')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'classification' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-l-4 border-l-blue-700 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className={`p-1.5 rounded-lg ${openSection === 'classification' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
-                                <Shield size={18} />
-                            </div>
-                            <span className="text-sm">2. Clasificación Clínica</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'classification' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
-                        </div>
-                    </button>
-
-                    <motion.div
-                        initial={false}
-                        animate={{ height: openSection === 'classification' ? 'auto' : 0, opacity: openSection === 'classification' ? 1 : 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                    >
-                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
-                                    <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
-                                        <option value="">- Tipo -</option>
-                                        <option value="Cirugía Menor">Cirugía Menor</option>
-                                        <option value="Cirugía Mayor">Cirugía Mayor</option>
-                                    </select>
-                                    <FieldError msg={errors.surgery_type} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Prioridad</label>
-                                    <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
-                                        <option value="ELECTIVO">Electivo</option>
-                                        <option value="EMERGENCIA">Emergencia</option>
-                                    </select>
-                                    <FieldError msg={errors.urgency_type} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Especialidad</label>
-                                    <select name="specialty_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.specialtyId || ""} className={getSelectCls("specialty_id")}>
-                                        <option value="">- Seleccionar -</option>
-                                        {specialties.map(spec => (
-                                            <option key={spec.id} value={spec.id}>{spec.name}</option>
-                                        ))}
-                                    </select>
-                                    <FieldError msg={errors.specialty_id} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de seguro</label>
-                                    <select name="insurance_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.insuranceType || ""} className={getSelectCls("insurance_type")}>
-                                        <option value="">- Seguro -</option>
-                                        <option value="SIS">SIS</option>
-                                        <option value="SOAT">SOAT</option>
-                                        <option value="PARTICULAR">PARTICULAR</option>
-                                        <option value="SISPOL">SISPOL</option>
-                                    </select>
-                                    <FieldError msg={errors.insurance_type} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Procedencia</label>
-                                    <input
-                                        type="text"
-                                        name="origin"
-                                        disabled={!canSchedule}
-                                        defaultValue={clonedData?.surgery?.origin || ""}
-                                        placeholder="Ej. Ambulatorio"
-                                        className={getInputCls("origin")}
-                                    />
-                                    <FieldError msg={errors.origin} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Anestesia</label>
-                                    <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>
-                                        <option value="">- Seleccionar Anestesia -</option>
-                                    <option value="RAQ">RAQ - Raquídea (o Subaracnoidea)</option>
-                                    <option value="EPI">EPI - Epidural</option>
-                                    <option value="AGB">AGB - Anestesia General Balanceada</option>
-                                    <option value="AGE">AGE - Anestesia General Endovenosa</option>
-                                    <option value="AGI">AGI - Anestesia General Inhalatoria</option>
-                                    <option value="BLOQ">BLOQ - Bloqueo Regional</option>
-                                    <option value="LOCL">LOCL - Local</option>
-                                </select>
-                                <FieldError msg={errors.anesthesia_type} />
-                            </div>
 
                             <div className="pt-2 flex justify-end">
                                 <button type="button" onClick={() => toggleSection('team')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
