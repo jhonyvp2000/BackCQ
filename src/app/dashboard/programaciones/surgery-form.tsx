@@ -845,14 +845,13 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Procedencia</label>
-                                    <input
-                                        type="text"
-                                        name="origin"
-                                        disabled={!canSchedule}
-                                        defaultValue={clonedData?.surgery?.origin || ""}
-                                        placeholder="Ej. Ambulatorio"
-                                        className={getInputCls("origin")}
-                                    />
+                                    <select name="origin" disabled={!canSchedule} defaultValue={clonedData?.surgery?.origin || ""} className={getSelectCls("origin")}>
+                                        <option value="">- Origen -</option>
+                                        <option value="Consultorio Externo">Consultorio Externo</option>
+                                        <option value="Hospitalización">Hospitalización</option>
+                                        <option value="Emergencia">Emergencia</option>
+                                        <option value="Urgencia">Urgencia</option>
+                                    </select>
                                     <FieldError msg={errors.origin} />
                                 </div>
 
