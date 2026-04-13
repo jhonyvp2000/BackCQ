@@ -707,7 +707,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <span>Motor PIDE - Resultados</span>
                                         {selectedPatId && <span className="text-[var(--color-hospital-blue)]">Paciente Seleccionado</span>}
                                     </div>
-                                    <div id="patients-list" className="max-h-56 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                                    <div id="patients-list" className="max-h-52 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/50">
                                         {selectedPatList.map((pat) => (
                                             <label key={pat.id} className="flex items-start gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors group">
                                                 <input 
