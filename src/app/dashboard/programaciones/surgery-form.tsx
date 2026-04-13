@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -670,7 +670,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Identificador (DNI / HC)</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Identificador (DNI / HC)</label>
                                 <div className="relative group">
                                     <input
                                         type="text"
@@ -773,7 +773,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Catálogo de Diagnósticos (Dx)</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Catálogo de Diagnósticos (Dx)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -868,7 +868,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2 hidden">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Catálogo de Procedimientos (Opcional)</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Catálogo de Procedimientos (Opcional)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -956,7 +956,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Tipo de Intervención</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Tipo de Intervención</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -1057,7 +1057,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Tipo Operación</label>
+                                    <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Tipo Operación</label>
                                     <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
                                         <option value="">- Tipo -</option>
                                         <option value="Cirugía Menor">Cirugía Menor</option>
@@ -1066,7 +1066,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.surgery_type} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Prioridad</label>
+                                    <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Prioridad</label>
                                     <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
                                         <option value="ELECTIVO">Electivo</option>
                                         <option value="EMERGENCIA">Emergencia</option>
@@ -1076,7 +1076,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Especialidad</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Especialidad</label>
                                 <select name="specialty_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.specialtyId || ""} className={getSelectCls("specialty_id")}>
                                     <option value="">- Seleccionar -</option>
                                     {specialties.map(spec => (
@@ -1088,7 +1088,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Tipo de seguro</label>
+                                    <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Tipo de seguro</label>
                                     <select name="insurance_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.insuranceType || ""} className={getSelectCls("insurance_type")}>
                                         <option value="">- Seguro -</option>
                                         <option value="SIS">SIS</option>
@@ -1099,7 +1099,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.insurance_type} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Procedencia</label>
+                                    <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Procedencia</label>
                                     <input
                                         type="text"
                                         name="origin"
@@ -1113,7 +1113,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
                             
                             <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Tipo de Anestesia</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Tipo de Anestesia</label>
                                 <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>
                                     <option value="">- Seleccionar Anestesia -</option>
                                     <option value="RAQ">RAQ - Raquídea (o Subaracnoidea)</option>
@@ -1160,7 +1160,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Cirujano(s) Principal(es)</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Cirujano(s) Principal(es)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -1210,7 +1210,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Anestesiólogo(s)</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Anestesiólogo(s)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -1260,7 +1260,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
 
                             <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Enfermero(s)</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Enfermero(s)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -1342,7 +1342,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Sala Quirúrgica</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Sala Quirúrgica</label>
                                 <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
                                     <option value="">-- Por definir internamente --</option>
                                     {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
@@ -1354,7 +1354,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="col-span-2 space-y-2">
-                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Fecha de Solicitud</label>
+                                    <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Fecha de Solicitud</label>
                                     <input type="date" name="request_date" required disabled={!canSchedule} 
                                            defaultValue={clonedData?.surgery?.requestDate ? format(new Date(clonedData.surgery.requestDate + 'T00:00:00'), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')} 
                                            className={getInputCls("request_date")} 
@@ -1362,17 +1362,17 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.request_date} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Fecha Programación</label>
+                                    <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Fecha Programación</label>
                                     <input type="date" name="scheduled_date" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'yyyy-MM-dd') : ""} className={getInputCls("scheduled_date")} />
                                     <FieldError msg={errors.scheduled_date} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Hora</label>
+                                    <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Hora</label>
                                     <input type="time" name="scheduled_time" required={!!editMode} disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} className={getInputCls("scheduled_time")} />
                                     <FieldError msg={errors.scheduled_time} />
                                 </div>
                                 <div className="col-span-2 space-y-2 mt-1">
-                                    <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Duración Estimada</label>
+                                    <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Duración Estimada</label>
                                     <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || ""} className={getSelectCls("estimated_duration", "px-2")}>
                                         <option value="">- Lapso -</option>
                                         <option value="30 minutos">30 min (Exp.)</option>
@@ -1386,7 +1386,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-bold text-zinc-800 dark:text-zinc-300 uppercase tracking-widest">Notas Internas</label>
+                                <label className="text-[11px] font-normal text-sky-500 uppercase tracking-widest">Notas Internas</label>
                                 <textarea
                                     name="notes"
                                     disabled={!canSchedule}
@@ -1487,3 +1487,5 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         </>
     );
 }
+
+
