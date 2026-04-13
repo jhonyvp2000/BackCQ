@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -1243,7 +1243,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                     >
-                        <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
+                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Cirujano(s) Principal(es)</label>
                                 <div className="relative mb-2">
