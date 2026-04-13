@@ -1067,7 +1067,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     />
                                     <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                                 </div>
-                                <div id="interventions-list" className={`max-h-32 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("interventions")}`}>
+                                <div id="interventions-list" className={`max-h-52 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("interventions")}`}>
                                     {selectedIntList.map((inty) => (
                                         <label key={inty.id} className="flex items-start gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
                                             <input
