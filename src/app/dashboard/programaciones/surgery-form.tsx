@@ -600,7 +600,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             initial={{ opacity: 0, scale: 0.95, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 30 }}
-                            className="relative w-[96vw] max-w-[1600px] bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col max-h-[95vh]"
+                            className="relative w-[96vw] max-w-[1360px] bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col max-h-[95vh]"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}
