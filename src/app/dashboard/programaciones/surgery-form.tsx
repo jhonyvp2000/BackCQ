@@ -649,7 +649,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('patient')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'patient' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-l-blue-600 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'patient' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-l-4 border-l-blue-700 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${openSection === 'patient' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -1035,7 +1035,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('classification')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'classification' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-l-blue-600 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'classification' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-l-4 border-l-blue-700 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${openSection === 'classification' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -1139,7 +1139,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('team')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'team' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-l-blue-600 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'team' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-l-4 border-l-blue-700 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${openSection === 'team' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -1321,7 +1321,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     <button
                         type="button"
                         onClick={() => toggleSection('schedule')}
-                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'schedule' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-l-blue-600 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
+                        className={`w-full flex items-center justify-between p-4 text-left font-bold tracking-wide transition-all ${openSection === 'schedule' ? 'bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-l-4 border-l-blue-700 dark:border-l-blue-400 shadow-[inset_0_-1px_0_rgba(0,0,0,0.05)]' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-l-4 border-l-transparent'}`}
                     >
                         <div className="flex items-center gap-3">
                             <div className={`p-1.5 rounded-lg ${openSection === 'schedule' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
@@ -1487,6 +1487,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         </>
     );
 }
+
 
 
 
