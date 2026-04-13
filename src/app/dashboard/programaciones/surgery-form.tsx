@@ -804,7 +804,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                     >
-                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
+                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
                                     <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
@@ -855,20 +855,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     />
                                     <FieldError msg={errors.origin} />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Anestesia</label>
-                                    <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>
-                                        <option value="">- Seleccionar Anestesia -</option>
-                                    <option value="RAQ">RAQ - Raquídea (o Subaracnoidea)</option>
-                                    <option value="EPI">EPI - Epidural</option>
-                                    <option value="AGB">AGB - Anestesia General Balanceada</option>
-                                    <option value="AGE">AGE - Anestesia General Endovenosa</option>
-                                    <option value="AGI">AGI - Anestesia General Inhalatoria</option>
-                                    <option value="BLOQ">BLOQ - Bloqueo Regional</option>
-                                    <option value="LOCL">LOCL - Local</option>
-                                </select>
-                                <FieldError msg={errors.anesthesia_type} />
-                            </div>
 
                             <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2 pt-2">
@@ -1393,6 +1379,20 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                             </div>
 
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Anestesia</label>
+                                <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>
+                                    <option value="">- Seleccionar Anestesia -</option>
+                                    <option value="RAQ">RAQ - Raquídea (o Subaracnoidea)</option>
+                                    <option value="EPI">EPI - Epidural</option>
+                                    <option value="AGB">AGB - Anestesia General Balanceada</option>
+                                    <option value="AGE">AGE - Anestesia General Endovenosa</option>
+                                    <option value="AGI">AGI - Anestesia General Inhalatoria</option>
+                                    <option value="BLOQ">BLOQ - Bloqueo Regional</option>
+                                    <option value="LOCL">LOCL - Local</option>
+                                </select>
+                                <FieldError msg={errors.anesthesia_type} />
+                            </div>
 
                         </div>
                     </motion.div>
