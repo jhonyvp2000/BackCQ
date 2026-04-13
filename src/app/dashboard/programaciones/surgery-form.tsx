@@ -827,7 +827,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
                                     <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
-                                        <option value="">- Tipo -</option>
+                                        <option value="">- Seleccionar -</option>
                                         <option value="Cirugía Menor">Cirugía Menor</option>
                                         <option value="Cirugía Mayor">Cirugía Mayor</option>
                                     </select>
@@ -835,7 +835,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Prioridad</label>
-                                    <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
+                                    <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || ""} className={getSelectCls("urgency_type")}>
+                                        <option value="">- Seleccionar -</option>
                                         <option value="ELECTIVO">Electivo</option>
                                         <option value="EMERGENCIA">Emergencia</option>
                                     </select>
@@ -844,7 +845,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de seguro</label>
                                     <select name="insurance_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.insuranceType || ""} className={getSelectCls("insurance_type")}>
-                                        <option value="">- Seguro -</option>
+                                        <option value="">- Seleccionar -</option>
                                         <option value="SIS">SIS</option>
                                         <option value="SOAT">SOAT</option>
                                         <option value="PARTICULAR">PARTICULAR</option>
@@ -855,7 +856,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Procedencia</label>
                                     <select name="origin" disabled={!canSchedule} defaultValue={clonedData?.surgery?.origin || ""} className={getSelectCls("origin")}>
-                                        <option value="">- Origen -</option>
+                                        <option value="">- Seleccionar -</option>
                                         <option value="Consultorio Externo">Consultorio Externo</option>
                                         <option value="Hospitalización">Hospitalización</option>
                                         <option value="Emergencia">Emergencia</option>
@@ -1153,7 +1154,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sala Quirúrgica</label>
                                     <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
-                                        <option value="">-- Por definir internamente --</option>
+                                        <option value="">- Seleccionar -</option>
                                         {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
                                             <option key={sala.id} value={sala.id}>{sala.name}</option>
                                         ))}
@@ -1182,7 +1183,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Duración Estimada</label>
                                     <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || ""} className={getSelectCls("estimated_duration", "px-2")}>
-                                        <option value="">- Lapso -</option>
+                                        <option value="">- Seleccionar -</option>
                                         <option value="30 minutos">30 min (Exp.)</option>
                                         <option value="1 hora">1 hora o menos</option>
                                         <option value="2 horas">Hasta 2 horas</option>
