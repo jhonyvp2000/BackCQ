@@ -352,10 +352,12 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
     const toggleAnes = (id: string, checked: boolean) => {
         const next = new Set(selectedAnesIds);
-        if (checked) next.add(id);
+        if (checked) {
+            next.add(id);
+            setTimeout(() => document.getElementById('anesthesiologists-list')?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+        }
         else next.delete(id);
         setSelectedAnesIds(next);
-        document.getElementById('anesthesiologists-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const nursSearchTermsArr = removeDiacritics(nursSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
@@ -371,10 +373,12 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
     const toggleNurs = (id: string, checked: boolean) => {
         const next = new Set(selectedNursIds);
-        if (checked) next.add(id);
+        if (checked) {
+            next.add(id);
+            setTimeout(() => document.getElementById('nurses-list')?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+        }
         else next.delete(id);
         setSelectedNursIds(next);
-        document.getElementById('nurses-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -1297,7 +1301,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     />
                                     <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                                 </div>
-                                <div className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1">
+                                <div id="anesthesiologists-list" className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1">
                                     {selectedAnesList.map((a) => (
                                         <label key={a.id} className="flex items-center gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
                                             <input
@@ -1347,7 +1351,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     />
                                     <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                                 </div>
-                                <div className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1">
+                                <div id="nurses-list" className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1">
                                     {selectedNursList.map((n) => (
                                         <label key={n.id} className="flex items-center gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
                                             <input
