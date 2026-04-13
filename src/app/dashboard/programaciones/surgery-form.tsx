@@ -772,6 +772,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 )}
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2 pt-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos (Dx)</label>
                                 <div className="relative mb-2">
@@ -1020,6 +1021,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
                                     </motion.div>
                                 )}
+                            </div>
                             </div>
 
                             {/* Action button to continue */}
