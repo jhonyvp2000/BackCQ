@@ -1152,17 +1152,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         <div className="p-4 pt-4 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-5 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sala Quirúrgica</label>
-                                    <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
-                                        <option value="">- Seleccionar -</option>
-                                        {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
-                                            <option key={sala.id} value={sala.id}>{sala.name}</option>
-                                        ))}
-                                    </select>
-                                    <FieldError msg={errors.operating_room_id} />
-                                </div>
-
-                                <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Fecha de Solicitud</label>
                                     <input type="date" name="request_date" required disabled={!canSchedule} 
                                            defaultValue={clonedData?.surgery?.requestDate ? format(new Date(clonedData.surgery.requestDate + 'T00:00:00'), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')} 
@@ -1179,6 +1168,16 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Hora</label>
                                     <input type="time" name="scheduled_time" required={!!editMode} disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} className={getInputCls("scheduled_time")} />
                                     <FieldError msg={errors.scheduled_time} />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sala Quirúrgica</label>
+                                    <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
+                                        <option value="">- Seleccionar -</option>
+                                        {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
+                                            <option key={sala.id} value={sala.id}>{sala.name}</option>
+                                        ))}
+                                    </select>
+                                    <FieldError msg={errors.operating_room_id} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Duración Estimada</label>
