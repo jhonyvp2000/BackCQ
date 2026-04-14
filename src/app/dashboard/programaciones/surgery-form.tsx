@@ -826,7 +826,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
-                                    <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || ""} className={getSelectCls("surgery_type")}>
+                                    <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || "Cirugía Mayor"} className={getSelectCls("surgery_type")}>
                                         <option value="">- Seleccionar -</option>
                                         <option value="Cirugía Menor">Cirugía Menor</option>
                                         <option value="Cirugía Mayor">Cirugía Mayor</option>
@@ -835,7 +835,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Prioridad</label>
-                                    <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || ""} className={getSelectCls("urgency_type")}>
+                                    <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
                                         <option value="">- Seleccionar -</option>
                                         <option value="ELECTIVO">Electivo</option>
                                         <option value="EMERGENCIA">Emergencia</option>
@@ -1182,7 +1182,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Duración Estimada</label>
-                                    <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || ""} className={getSelectCls("estimated_duration", "px-2")}>
+                                    <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || "1 hora"} className={getSelectCls("estimated_duration", "px-2")}>
                                         <option value="">- Seleccionar -</option>
                                         <option value="30 minutos">30 min (Exp.)</option>
                                         <option value="1 hora">1 hora o menos</option>
