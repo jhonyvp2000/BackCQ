@@ -128,13 +128,34 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             let statusMatches = false;
             
             for (const fs of filterStatus) {
+                const isMissingData = (s: any) => {
+                    return (
+                        !s.surgery.patientId ||
+                        !s.diagnoses || s.diagnoses.length === 0 ||
+                        !s.interventions || s.interventions.length === 0 ||
+                        !s.surgery.surgeryType || s.surgery.surgeryType.trim() === '' ||
+                        !s.surgery.urgencyType || s.surgery.urgencyType.trim() === '' ||
+                        !s.surgery.specialtyId ||
+                        !s.surgery.origin || s.surgery.origin.trim() === '' ||
+                        !s.surgery.requestDate ||
+                        !s.surgery.scheduledDate ||
+                        !s.surgery.operatingRoomId ||
+                        s.surgery.isTimeDefined === false ||
+                        !s.surgery.estimatedDuration || s.surgery.estimatedDuration.trim() === '' ||
+                        !s.team || !s.team.some((t: any) => t.role === 'CIRUJANO') ||
+                        !s.team.some((t: any) => t.role === 'ANESTESIOLOGO') ||
+                        !s.team.some((t: any) => t.role === 'ENFERMERO') ||
+                        !s.surgery.anesthesiaType || s.surgery.anesthesiaType.trim() === ''
+                    );
+                };
+
                 if (fs === 'completed_incomplete') {
-                    if (s.surgery.status === 'completed' && (!s.surgery.anesthesiaType || s.surgery.anesthesiaType.trim() === '')) {
+                    if (s.surgery.status === 'completed' && isMissingData(s)) {
                         statusMatches = true;
                         break;
                     }
                 } else if (fs === 'completed') {
-                    if (s.surgery.status === 'completed' && s.surgery.anesthesiaType && s.surgery.anesthesiaType.trim() !== '') {
+                    if (s.surgery.status === 'completed' && !isMissingData(s)) {
                         statusMatches = true;
                         break;
                     }

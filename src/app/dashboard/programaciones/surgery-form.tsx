@@ -406,8 +406,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (!formData.get("urgency_type")) setError('urgency_type', "Requerido", 'classification');
         if (!formData.get("specialty_id")) setError('specialty_id', "Requerido", 'classification');
         if (!formData.get("origin")) setError('origin', "Requerido", 'classification');
-        if (!formData.get("insurance_type")) setError('insurance_type', "Requerido", 'classification');
-        if (selectedSurgIds.size === 0) setError('surgeons', "Asigna al menos un cirujano", 'team');
+        if (!formData.get("request_date")) setError('request_date', "Requerido", 'schedule');
         if (editMode && !formData.get("operating_room_id")) setError('operating_room_id', "Requerido", 'schedule');
         if (!formData.get("scheduled_date")) setError('scheduled_date', "Requerido", 'schedule');
         if (editMode && !formData.get("scheduled_time")) setError('scheduled_time', "Requerido", 'schedule');
