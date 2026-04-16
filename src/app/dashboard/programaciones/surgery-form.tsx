@@ -399,7 +399,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             }
         };
 
-        if (!selectedPatId && !patSearchTerm) setError('patient_id', "Falta identificador", 'patient');
+        if (!selectedPatId) setError('patient_id', "Selecciona un paciente de la lista", 'patient');
         if (selectedDxIds.size === 0) setError('diagnoses', "Selecciona al menos un diagnóstico", 'patient');
         if (selectedIntIds.size === 0) setError('interventions', "Selecciona al menos una intervención", 'patient');
         if (!formData.get("surgery_type")) setError('surgery_type', "Requerido", 'classification');
@@ -409,7 +409,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (!formData.get("request_date")) setError('request_date', "Requerido", 'schedule');
         if (editMode && !formData.get("operating_room_id")) setError('operating_room_id', "Requerido", 'schedule');
         if (!formData.get("scheduled_date")) setError('scheduled_date', "Requerido", 'schedule');
-        if (editMode && !formData.get("scheduled_time")) setError('scheduled_time', "Requerido", 'schedule');
         if (!formData.get("estimated_duration")) setError('estimated_duration', "Requerido", 'schedule');
 
         setErrors(newErrors);

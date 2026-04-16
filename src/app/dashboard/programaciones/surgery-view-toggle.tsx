@@ -140,9 +140,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                         !s.surgery.requestDate ||
                         !s.surgery.scheduledDate ||
                         !s.surgery.operatingRoomId ||
-                        s.surgery.isTimeDefined === false ||
                         !s.surgery.estimatedDuration || s.surgery.estimatedDuration.trim() === '' ||
-                        !s.team || !s.team.some((t: any) => t.role === 'CIRUJANO') ||
+                        !s.team ||
                         !s.team.some((t: any) => t.role === 'ANESTESIOLOGO') ||
                         !s.team.some((t: any) => t.role === 'ENFERMERO') ||
                         !s.surgery.anesthesiaType || s.surgery.anesthesiaType.trim() === ''

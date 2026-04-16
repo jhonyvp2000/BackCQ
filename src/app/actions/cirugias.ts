@@ -303,8 +303,18 @@ export async function createSurgery(formData: FormData) {
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
     const nurseIds = formData.getAll("nurses") as string[];
 
-    if (!patientId || !scheduledDateStr || diagnosesIds.length === 0 || interventionsIds.length === 0 || !surgeryType || !insuranceType || !specialtyId) {
-        return { error: "Faltan campos obligatorios para agendar (Incluyendo la(s) intervención(es))." };
+    let faltantes = [];
+    if (!patientId) faltantes.push("Paciente");
+    if (!scheduledDateStr) faltantes.push("Fecha Programada");
+    if (diagnosesIds.length === 0) faltantes.push("Diagnóstico");
+    if (interventionsIds.length === 0) faltantes.push("Intervención");
+    if (!surgeryType) faltantes.push("Tipo de Cirugía");
+    if (!insuranceType) faltantes.push("Tipo de Seguro");
+    if (!specialtyId) faltantes.push("Especialidad");
+    if (surgeonIds.length === 0) faltantes.push("Cirujanos");
+
+    if (faltantes.length > 0) {
+        return { error: `Faltan campos obligatorios para agendar: ${faltantes.join(", ")}.` };
     }
 
     // Resolve deferred Synthetic IDs for Diagnoses (Late-bound DB Injection)
@@ -674,8 +684,19 @@ export async function editSurgery(formData: FormData) {
     const proceduresIds = formData.getAll("procedures") as string[];
     const interventionsIds = formData.getAll("interventions") as string[];
 
-    if (!id || !patientId || !scheduledDateStr || diagnosesIds.length === 0 || interventionsIds.length === 0 || !surgeryType || !insuranceType || !specialtyId) {
-        return { error: "Faltan campos obligatorios para agendar (Paciente, Especialidad, Tipo de Seguro, Diagnóstico, Intervención, Fecha)." };
+    if (!id) return { error: "ID de cirugía no proporcionado." };
+    let faltantes = [];
+    if (!patientId) faltantes.push("Paciente");
+    if (!scheduledDateStr) faltantes.push("Fecha Programada");
+    if (diagnosesIds.length === 0) faltantes.push("Diagnóstico");
+    if (interventionsIds.length === 0) faltantes.push("Intervención");
+    if (!surgeryType) faltantes.push("Tipo de Cirugía");
+    if (!insuranceType) faltantes.push("Tipo de Seguro");
+    if (!specialtyId) faltantes.push("Especialidad");
+    if (surgeonIds.length === 0) faltantes.push("Cirujanos");
+
+    if (faltantes.length > 0) {
+        return { error: `Faltan campos obligatorios para agendar: ${faltantes.join(", ")}.` };
     }
 
     // Resolve deferred Synthetic IDs for Diagnoses (Late-bound DB Injection)
