@@ -309,9 +309,8 @@ export async function createSurgery(formData: FormData) {
     if (diagnosesIds.length === 0) faltantes.push("Diagnóstico");
     if (interventionsIds.length === 0) faltantes.push("Intervención");
     if (!surgeryType) faltantes.push("Tipo de Cirugía");
-    if (!insuranceType) faltantes.push("Tipo de Seguro");
     if (!specialtyId) faltantes.push("Especialidad");
-    if (surgeonIds.length === 0) faltantes.push("Cirujanos");
+    if (!requestDateStr) faltantes.push("Fecha Solicitud");
 
     if (faltantes.length > 0) {
         return { error: `Faltan campos obligatorios para agendar: ${faltantes.join(", ")}.` };
@@ -691,9 +690,8 @@ export async function editSurgery(formData: FormData) {
     if (diagnosesIds.length === 0) faltantes.push("Diagnóstico");
     if (interventionsIds.length === 0) faltantes.push("Intervención");
     if (!surgeryType) faltantes.push("Tipo de Cirugía");
-    if (!insuranceType) faltantes.push("Tipo de Seguro");
     if (!specialtyId) faltantes.push("Especialidad");
-    if (surgeonIds.length === 0) faltantes.push("Cirujanos");
+    if (!requestDateStr) faltantes.push("Fecha Solicitud");
 
     if (faltantes.length > 0) {
         return { error: `Faltan campos obligatorios para agendar: ${faltantes.join(", ")}.` };

@@ -681,6 +681,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <div className="relative group">
                                     <input
                                         type="text"
+                                        autoFocus
                                         disabled={!canSchedule}
                                         value={patSearchTerm}
                                         onChange={(e) => setPatSearchTerm(e.target.value)}

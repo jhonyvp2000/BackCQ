@@ -69,7 +69,7 @@ export function ReportClientTable() {
 
     function translateStatus(status: string) {
         if (status === 'scheduled') return 'Programado';
-        if (status === 'completed') return 'Terminado';
+        if (status === 'completed') return 'Finalizadas';
         if (status === 'cancelled') return 'Cancelado/Suspendido';
         if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) return 'En proceso (Qx)';
         return status.replace('_', ' ');
@@ -100,7 +100,7 @@ export function ReportClientTable() {
         titleRow.font = { name: 'Arial', size: 16, bold: true };
         
         // --- ROW 2: Leyenda ---
-        const legendRow = sheet.addRow(['Programado', 'Terminado', 'Suspendido', 'En proceso', 'Falta completar datos']);
+        const legendRow = sheet.addRow(['Programado', 'Finalizadas', 'Suspendido', 'En proceso', 'Finalizadas (Datos Incompletos)']);
         legendRow.font = { name: 'Arial', size: 10, color: { argb: 'FF000000' } };
         
         // Apply colors to the legend cells
@@ -251,9 +251,9 @@ export function ReportClientTable() {
                     <div className="mt-6 flex flex-wrap gap-4 text-xs font-semibold px-4 py-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-100 dark:border-zinc-800">
                         <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-blue-100 border border-blue-300"></div> Programado</span>
                         <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-amber-400 border border-amber-500"></div> En proceso (Qx)</span>
-                        <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-400 border border-emerald-500"></div> Terminado</span>
+                        <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-emerald-400 border border-emerald-500"></div> Finalizadas</span>
                         <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-400 border border-red-500"></div> Suspendido / Cancelada</span>
-                        <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-zinc-400 border border-zinc-500"></div> Falta completar datos</span>
+                        <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-zinc-400 border border-zinc-500"></div> Finalizadas (Datos Incompletos)</span>
                         <span className="ml-auto text-zinc-500">Total resultados: {data.length} cirugías</span>
                     </div>
                 )}
