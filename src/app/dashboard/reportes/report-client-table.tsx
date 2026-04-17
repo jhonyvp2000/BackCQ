@@ -104,10 +104,10 @@ export function ReportClientTable() {
         legendRow.font = { name: 'Arial', size: 10, color: { argb: 'FF000000' } };
         
         // Apply colors to the legend cells
-        legendRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B0F0' } };
-        legendRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B050' } };
-        legendRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFF6666' } };
-        legendRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } };
+        legendRow.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFCDE7FB' } }; // Celeste claro
+        legendRow.getCell(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE2EFDA' } }; // Verde claro
+        legendRow.getCell(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC7CE' } }; // Rosado claro
+        legendRow.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } }; // Amarillo ultra claro
         legendRow.getCell(5).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
         
         // --- ROW 3: Rango de fechas y metadata ---
@@ -154,11 +154,11 @@ export function ReportClientTable() {
             // Asignar color de fila según el estado
             let bgColor = 'FFFFFFFF'; // Default blanco
             const status = item.estadoAlerta;
-            if (status === 'completed' && (!item.tipoAnestesia || item.tipoAnestesia.trim() === '' || item.tipoAnestesia === '-')) bgColor = 'FFD9D9D9'; // Gris (Falta completar)
-            else if (status === 'cancelled') bgColor = 'FFFF6666'; // Suspendido (Rojo claro)
-            else if (status === 'completed') bgColor = 'FF00B050'; // Terminado (Verde)
-            else if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) bgColor = 'FFFFFF00'; // En proceso (Amarillo)
-            else bgColor = 'FF00B0F0'; // Programado (Azul claro)
+            if (status === 'completed' && (!item.tipoAnestesia || item.tipoAnestesia.trim() === '' || item.tipoAnestesia === '-')) bgColor = 'FFD9D9D9'; // Gris (Finalizadas incompletas)
+            else if (status === 'cancelled') bgColor = 'FFFFC7CE'; // Suspendido (Rosado claro)
+            else if (status === 'completed') bgColor = 'FFE2EFDA'; // Finalizadas (Verde claro)
+            else if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) bgColor = 'FFFFF2CC'; // En proceso (Amarillo muy claro)
+            else bgColor = 'FFCDE7FB'; // Programado (Celeste claro)
             
             dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };

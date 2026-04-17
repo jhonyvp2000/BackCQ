@@ -657,10 +657,6 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             {row.surgery.status === 'scheduled' && canAdvancePhase && (
                                                                 <button
                                                                     onClick={() => {
-                                                                        if (!row.operatingRoom?.id || row.surgery.isTimeDefined === false) {
-                                                                            setErrorModalMsg("No es posible programar el ingreso a quirófano para una cirugía que mantiene la Sala Física o la Hora de inicio como pendiente (Sin Asignar). Por favor, asigne dichos valores para continuar.");
-                                                                            return;
-                                                                        }
                                                                         setTransitionModal({
                                                                             isOpen: true,
                                                                             surgeryId: row.surgery.id,
