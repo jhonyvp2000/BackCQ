@@ -39,7 +39,7 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
             case 'in_progress':
                 return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-700 border border-amber-500/20 shadow-sm"><Activity size={13} className="animate-pulse" /> En Operación</span>;
             case 'completed':
-                return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 shadow-sm"><CheckCircle2 size={13} /> Finalizada</span>;
+                return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-700 border border-emerald-500/20 shadow-sm"><CheckCircle2 size={13} /> Finalizadas</span>;
             case 'cancelled':
                 return <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-red-500/10 text-red-700 border border-red-500/20 shadow-sm"><XCircle size={13} /> Suspendida</span>;
             default:

@@ -61,8 +61,8 @@ export function ReportClientTable() {
         const status = item.estadoAlerta;
         if (status === 'completed' && (!item.tipoAnestesia || item.tipoAnestesia.trim() === '' || item.tipoAnestesia === '-')) return 'bg-zinc-200 hover:bg-zinc-300 text-zinc-800 border-zinc-400'; // Falta completar datos
         if (status === 'cancelled') return 'bg-red-50 hover:bg-red-100 text-red-900'; // Suspendido
-        if (status === 'completed') return 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'; // Terminado
-        if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) return 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200'; // En progreso
+        if (status === 'completed') return 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200'; // Finalizadas
+        if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) return 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200'; // En proceso (Qx)
         if (status === 'scheduled') return 'bg-blue-50 hover:bg-blue-100 text-blue-900 border-blue-200'; // Programado
         return 'bg-white hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800/80';
     }

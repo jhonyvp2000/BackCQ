@@ -310,7 +310,6 @@ export async function createSurgery(formData: FormData) {
     if (interventionsIds.length === 0) faltantes.push("Intervención");
     if (!surgeryType) faltantes.push("Tipo de Cirugía");
     if (!specialtyId) faltantes.push("Especialidad");
-    if (!requestDateStr) faltantes.push("Fecha Solicitud");
 
     if (faltantes.length > 0) {
         return { error: `Faltan campos obligatorios para agendar: ${faltantes.join(", ")}.` };
