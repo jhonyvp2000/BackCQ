@@ -738,7 +738,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </button>
                                                             )}
 
-                                                            {(row.surgery.status === 'scheduled') && specialties && staff && canEdit && (
+                                                            {specialties && staff && canEdit && (
                                                                 <button onClick={() => setEditingSurgery(row)} className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="Editar Programación">
                                                                     <Pencil size={18} />
                                                                 </button>
