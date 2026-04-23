@@ -46,9 +46,9 @@ export function IndicatorsReportTable() {
         headerRow.eachCell((cell, colNumber) => {
             let bgColor = 'FF602D8B'; // Púrpura base
             
-            // Si el header contiene EMER o EMG, pintar de ROJO
+            // Si el header contiene EMER o EMG o MUERTE, pintar de ROJO
             const headerText = cell.value?.toString().toUpperCase() || '';
-            if (headerText.includes('EMERG') || headerText.includes('EMG')) {
+            if (headerText.includes('EMERG') || headerText.includes('EMG') || headerText.includes('MUERTE')) {
                 bgColor = 'FFFF0000';
             } else if (colNumber === 10) {
                 bgColor = 'FF3D85C6'; // Total Efectivas (Azul)
@@ -181,11 +181,11 @@ export function IndicatorsReportTable() {
                                 <th className="px-2 py-3 bg-[#5B2C6F] border border-zinc-300/30">PROG.</th>
                                 <th className="px-2 py-3 bg-[#5B2C6F] border border-zinc-300/30">SUSP.</th>
                                 <th className="px-2 py-3 bg-red-600 border border-zinc-300/30">EMG.</th>
-                                <th className="px-2 py-3 bg-blue-900 border border-zinc-300/30">MUERTE EMER</th>
+                                <th className="px-2 py-3 bg-red-600 border border-zinc-300/30">MUERTE EMER</th>
                                 <th className="px-2 py-3 bg-[#5B2C6F] border border-zinc-300/30">LU PROG.</th>
-                                <th className="px-2 py-3 bg-[#5B2C6F] border border-zinc-300/30">LU EMERG.</th>
+                                <th className="px-2 py-3 bg-red-600 border border-zinc-300/30">LU EMERG.</th>
                                 <th className="px-2 py-3 bg-[#5B2C6F] border border-zinc-300/30">AMEU PROG.</th>
-                                <th className="px-2 py-3 bg-[#5B2C6F] border border-zinc-300/30">AMEU EMERG.</th>
+                                <th className="px-2 py-3 bg-red-600 border border-zinc-300/30">AMEU EMERG.</th>
                                 <th className="px-2 py-3 bg-indigo-900 border border-zinc-300/30">TOTAL EFECTIVAS</th>
                                 <th className="px-2 py-3 bg-[#5B2C6F] border border-zinc-300/30">TOTAL</th>
                             </tr>
@@ -212,8 +212,8 @@ export function IndicatorsReportTable() {
                                 <td className="px-4 py-3 text-left">TOTAL</td>
                                 <td className="px-2 py-3">{data.reduce((s, i) => s + i.prog, 0)}</td>
                                 <td className="px-2 py-3">{data.reduce((s, i) => s + i.susp, 0)}</td>
-                                <td className="px-2 py-3">{data.reduce((s, i) => s + i.emg, 0)}</td>
-                                <td className="px-2 py-3">{data.reduce((s, i) => s + i.muerteEmer, 0)}</td>
+                                <td className="px-2 py-3 bg-red-600">{data.reduce((s, i) => s + i.emg, 0)}</td>
+                                <td className="px-2 py-3 bg-red-600">{data.reduce((s, i) => s + i.muerteEmer, 0)}</td>
                                 <td colSpan={4}></td>
                                 <td className="px-2 py-3">{data.reduce((s, i) => s + i.totalEfectivas, 0)}</td>
                                 <td className="px-2 py-3">{data.reduce((s, i) => s + i.total, 0)}</td>
