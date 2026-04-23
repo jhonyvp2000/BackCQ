@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { ReportClientTable } from './report-client-table';
+import { IndicatorsReportTable } from './indicators-report-table';
 
 export const metadata: Metadata = {
     title: 'Reportes y Exportación | BackCQ',
@@ -17,7 +18,25 @@ export default function ReportesPage() {
                     </div>
                 </div>
 
-                <ReportClientTable />
+                <div className="space-y-12">
+                    <section>
+                        <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center text-sm">01</span>
+                            Grilla Detallada de Programaciones
+                        </h2>
+                        <ReportClientTable />
+                    </section>
+
+                    <div className="h-px bg-zinc-200 dark:bg-zinc-800 w-full" />
+
+                    <section id="indicadores">
+                        <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-200 mb-4 flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center text-sm">02</span>
+                            Indicadores de Gestión (Estadística)
+                        </h2>
+                        <IndicatorsReportTable />
+                    </section>
+                </div>
             </div>
         </div>
     );

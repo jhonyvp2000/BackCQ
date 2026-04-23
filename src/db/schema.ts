@@ -119,6 +119,7 @@ export const cqSurgeries = pgTable("cq_surgeries", {
   patientExitTime: timestamp("patient_exit_time", { withTimezone: true }),
   urpaExitTime: timestamp("urpa_exit_time", { withTimezone: true }),
   completedTime: timestamp("completed_time", { withTimezone: true }),
+  isDeathByEmergency: boolean("is_death_by_emergency").default(false).notNull(),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

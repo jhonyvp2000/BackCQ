@@ -616,6 +616,10 @@ export async function updateSurgeryStatus(formData: FormData) {
                     return { error: "Error de consistencia temporal:\n\nLa 'Finalización' debe ser igual o posterior a la 'Salida del Paciente'." };
                 }
                 updatePayload.completedTime = transitionDate;
+                
+                // Capturar fallecimiento si se envía en el form
+                const isDeath = formData.get("isDeathByEmergency") === "true";
+                updatePayload.isDeathByEmergency = isDeath;
                 break;
         }
     }

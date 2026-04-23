@@ -111,7 +111,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
     const [cancelConfirmText, setCancelConfirmText] = useState<string>("");
     const [errorModalMsg, setErrorModalMsg] = useState<string>("");
-    const [transitionModal, setTransitionModal] = useState<{ isOpen: boolean, surgeryId: string, targetPhase: string, patientName: string, initialTime?: string }>({ isOpen: false, surgeryId: '', targetPhase: '', patientName: '' });
+    const [transitionModal, setTransitionModal] = useState<{ isOpen: boolean, surgeryId: string, targetPhase: string, patientName: string, initialTime?: string, urgencyType?: string }>({ isOpen: false, surgeryId: '', targetPhase: '', patientName: '' });
     const currentSort = sortParams?.sort === 'asc' ? 'asc' : 'desc';
 
     // Auto-Refresh Polling Effect (Realtime UX)
@@ -678,7 +678,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                             isOpen: true,
                                                                             surgeryId: row.surgery.id,
                                                                             targetPhase: 'in_progress',
-                                                                            patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`.trim() || 'Desconocido'
+                                                                            patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`.trim() || 'Desconocido',
+                                                                            urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                         });
                                                                     }}
                                                                     className="text-amber-700 hover:text-white hover:bg-amber-600 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-xl transition-all duration-300 border border-amber-200 hover:scale-[1.02] text-xs font-bold shadow-sm"
@@ -694,7 +695,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         surgeryId: row.surgery.id, 
                                                                         targetPhase: 'anesthesia_start', 
                                                                         patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.actualStartTime)
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.actualStartTime),
+                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                     })}
                                                                     className="text-purple-700 hover:text-white hover:bg-purple-600 bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-purple-200/50"
                                                                 >
@@ -709,7 +711,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         surgeryId: row.surgery.id, 
                                                                         targetPhase: 'pre_incision', 
                                                                         patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.anesthesiaStartTime)
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.anesthesiaStartTime),
+                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                     })}
                                                                     className="text-rose-700 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-rose-200/50"
                                                                 >
@@ -724,7 +727,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         surgeryId: row.surgery.id, 
                                                                         targetPhase: 'surgery_end', 
                                                                         patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.preIncisionTime)
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.preIncisionTime),
+                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                     })}
                                                                     className="text-cyan-700 hover:text-white hover:bg-cyan-600 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-cyan-200/50"
                                                                 >
@@ -739,7 +743,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         surgeryId: row.surgery.id, 
                                                                         targetPhase: 'patient_exit', 
                                                                         patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.surgeryEndTime)
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.surgeryEndTime),
+                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                     })}
                                                                     className="text-orange-700 hover:text-white hover:bg-orange-600 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-orange-200/50"
                                                                 >
@@ -755,7 +760,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                             surgeryId: row.surgery.id, 
                                                                             targetPhase: 'urpa_exit', 
                                                                             patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                            initialTime: formatForDateTimeLocal(row.surgery.patientExitTime)
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.patientExitTime),
+                                                                            urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                         })}
                                                                         className="text-indigo-700 hover:text-white hover:bg-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1.5 rounded-lg transition-all text-[11px] font-bold shadow-sm whitespace-nowrap border border-indigo-200/50"
                                                                     >
@@ -767,7 +773,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                             surgeryId: row.surgery.id, 
                                                                             targetPhase: 'completed', 
                                                                             patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                            initialTime: formatForDateTimeLocal(row.surgery.patientExitTime)
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.patientExitTime),
+                                                                            urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                         })}
                                                                         className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap flex items-center gap-1 border border-emerald-200/50"
                                                                     >
@@ -783,7 +790,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         surgeryId: row.surgery.id, 
                                                                         targetPhase: 'completed', 
                                                                         patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.urpaExitTime)
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.urpaExitTime),
+                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                     })}
                                                                     className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-xl transition-all duration-300 border border-emerald-200 hover:scale-[1.02] text-xs font-bold shadow-sm flex items-center gap-1.5 whitespace-nowrap"
                                                                 >
@@ -856,6 +864,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                 targetPhase={transitionModal.targetPhase}
                 patientName={transitionModal.patientName}
                 initialTime={transitionModal.initialTime}
+                urgencyType={transitionModal.urgencyType}
                 onSuccess={(nextPhase) => {
                     if (!nextPhase) {
                         setTransitionModal({ ...transitionModal, isOpen: false });

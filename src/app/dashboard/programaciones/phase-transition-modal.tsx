@@ -42,17 +42,20 @@ export function PhaseTransitionModal({
     patientName: string;
     onSuccess: (nextPhase?: string | null) => void;
     initialTime?: string;
+    urgencyType?: string;
 }) {
     const [targetPhase, setTargetPhase] = useState(initialTargetPhase);
     const [transitionTime, setTransitionTime] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
     const [skipUrpa, setSkipUrpa] = useState(false);
+    const [isDeathByEmergency, setIsDeathByEmergency] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setTargetPhase(initialTargetPhase);
             setSkipUrpa(false);
+            setIsDeathByEmergency(false);
 
             if (initialTime) {
                 setTransitionTime(initialTime);
@@ -85,6 +88,9 @@ export function PhaseTransitionModal({
             formData.append('id', surgeryId);
             formData.append('status', targetPhase);
             formData.append('transition_time', transitionTime);
+            if (targetPhase === 'completed') {
+                formData.append('isDeathByEmergency', String(isDeathByEmergency));
+            }
 
             const res = await updateSurgeryStatus(formData);
             if (res?.error) {
@@ -152,6 +158,25 @@ export function PhaseTransitionModal({
                                 <div className="mb-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-xl border border-red-200 dark:border-red-800 flex items-start gap-2 text-sm font-medium">
                                     <AlertCircle size={18} className="shrink-0 mt-0.5" />
                                     <span>{errorMsg}</span>
+                                </div>
+                            )}
+
+                            {targetPhase === 'completed' && urgencyType === 'EMERGENCIA' && (
+                                <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/50">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={isDeathByEmergency}
+                                                onChange={(e) => setIsDeathByEmergency(e.target.checked)}
+                                                className="w-5 h-5 rounded border-rose-300 text-rose-600 focus:ring-rose-500 cursor-pointer"
+                                            />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-rose-900 dark:text-rose-300">¿Fallecimiento en Emergencia?</span>
+                                            <span className="text-[11px] text-rose-700/70 dark:text-rose-400/60 font-medium">Marcar si el acto quirúrgico resultó en el deceso del paciente.</span>
+                                        </div>
+                                    </label>
                                 </div>
                             )}
 
