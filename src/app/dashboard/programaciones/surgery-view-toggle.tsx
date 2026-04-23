@@ -796,8 +796,10 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                 surgeryId={transitionModal.surgeryId}
                 targetPhase={transitionModal.targetPhase}
                 patientName={transitionModal.patientName}
-                onSuccess={() => {
-                    setTransitionModal({ ...transitionModal, isOpen: false });
+                onSuccess={(nextPhase) => {
+                    if (!nextPhase) {
+                        setTransitionModal({ ...transitionModal, isOpen: false });
+                    }
                     router.refresh();
                 }}
             />

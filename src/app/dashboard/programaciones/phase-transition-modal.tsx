@@ -12,15 +12,25 @@ const phaseConfig: Record<string, { title: string, color: string, border: string
     'pre_incision': { title: 'Antes de Incisión', color: 'text-fuchsia-700', border: 'border-fuchsia-200', bg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20', iconColor: 'text-fuchsia-500' },
     'surgery_end': { title: 'Término de Cirugía', color: 'text-cyan-700', border: 'border-cyan-200', bg: 'bg-cyan-50 dark:bg-cyan-900/20', iconColor: 'text-cyan-500' },
     'patient_exit': { title: 'Salida de Paciente', color: 'text-orange-700', border: 'border-orange-200', bg: 'bg-orange-50 dark:bg-orange-900/20', iconColor: 'text-orange-500' },
-    'urpa_exit': { title: 'Pase a URPA', color: 'text-indigo-700', border: 'border-indigo-200', bg: 'bg-indigo-50 dark:bg-indigo-900/20', iconColor: 'text-indigo-500' },
+    'urpa_exit': { title: 'Pase a URPA / Recuperación', color: 'text-indigo-700', border: 'border-indigo-200', bg: 'bg-indigo-50 dark:bg-indigo-900/20', iconColor: 'text-indigo-500' },
     'completed': { title: 'Alta Definitiva', color: 'text-emerald-700', border: 'border-emerald-200', bg: 'bg-emerald-50 dark:bg-emerald-900/20', iconColor: 'text-emerald-500' },
+};
+
+const NEXT_PHASE_MAP: Record<string, string | null> = {
+    'in_progress': 'anesthesia_start',
+    'anesthesia_start': 'pre_incision',
+    'pre_incision': 'surgery_end',
+    'surgery_end': 'patient_exit',
+    'patient_exit': 'urpa_exit', // Se manejará dinámicamente si skipUrpa es true
+    'urpa_exit': 'completed',
+    'completed': null
 };
 
 export function PhaseTransitionModal({
     isOpen,
     onClose,
     surgeryId,
-    targetPhase,
+    targetPhase: initialTargetPhase,
     patientName,
     onSuccess
 }: {
@@ -29,15 +39,18 @@ export function PhaseTransitionModal({
     surgeryId: string;
     targetPhase: string;
     patientName: string;
-    onSuccess: () => void;
+    onSuccess: (nextPhase?: string | null) => void;
 }) {
+    const [targetPhase, setTargetPhase] = useState(initialTargetPhase);
     const [transitionTime, setTransitionTime] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
+    const [skipUrpa, setSkipUrpa] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
-            // Set current time dynamically, formatted for datetime-local
+            setTargetPhase(initialTargetPhase);
+            setSkipUrpa(false);
             const now = new Date();
             const year = now.getFullYear();
             const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -48,11 +61,12 @@ export function PhaseTransitionModal({
             setTransitionTime(`${year}-${month}-${day}T${hours}:${minutes}`);
             setErrorMsg("");
         }
-    }, [isOpen]);
+    }, [isOpen, initialTargetPhase]);
 
     if (!isOpen || !phaseConfig[targetPhase]) return null;
 
     const config = phaseConfig[targetPhase];
+    const nextPhasePossible = targetPhase === 'patient_exit' && skipUrpa ? 'completed' : NEXT_PHASE_MAP[targetPhase];
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,7 +83,15 @@ export function PhaseTransitionModal({
             if (res?.error) {
                 setErrorMsg(res.error);
             } else {
-                onSuccess();
+                if (nextPhasePossible) {
+                    // Si hay una siguiente fase, actualizamos el modal internamente
+                    setTargetPhase(nextPhasePossible);
+                    // Resetear tiempo al actual para el siguiente paso
+                    const now = new Date();
+                    setTransitionTime(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
+                } else {
+                    onSuccess(null);
+                }
             }
         } catch (error: any) {
             setErrorMsg("Ocurrió un error al intentar cambiar el estado.");
@@ -125,13 +147,32 @@ export function PhaseTransitionModal({
                                 </div>
                             )}
 
+                            {targetPhase === 'patient_exit' && (
+                                <div className="mb-6 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/50">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={!skipUrpa}
+                                                onChange={(e) => setSkipUrpa(!e.target.checked)}
+                                                className="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                            />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-bold text-blue-900 dark:text-blue-300">¿Ingresa a URPA / Recuperación?</span>
+                                            <span className="text-[11px] text-blue-700/70 dark:text-blue-400/60 font-medium">Desmarcar si el paciente pasa directamente a sala o alta.</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            )}
+
                             <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2 flex items-center gap-2">
                                 <Clock size={16} className="text-[var(--color-hospital-blue)]" />
                                 Tiempo de Registro (Ajustable)
                             </label>
 
                             <p className="text-xs text-zinc-500 mb-3 font-medium">
-                                Confirma o ajusta la fecha y hora exacta en la que ocurrió este evento. Puedes editarla para regularizar eventos pasados.
+                                Confirma o ajusta la fecha y hora exacta en la que ocurrió este evento.
                             </p>
 
                             <input
@@ -148,14 +189,14 @@ export function PhaseTransitionModal({
                                     onClick={onClose}
                                     className="px-5 py-2.5 w-full rounded-xl font-bold bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition"
                                 >
-                                    Cancelar
+                                    Cerrar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="px-5 py-2.5 w-full rounded-xl font-bold bg-[var(--color-hospital-blue)] text-white shadow hover:bg-blue-800 transition disabled:opacity-50"
+                                    className="px-5 py-2.5 w-full rounded-xl font-bold bg-[var(--color-hospital-blue)] text-white shadow hover:bg-blue-800 transition disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    {isSubmitting ? 'Registrando...' : 'Confirmar Pase'}
+                                    {isSubmitting ? 'Registrando...' : (nextPhasePossible ? 'Confirmar y Siguiente' : 'Finalizar Flujo')}
                                 </button>
                             </div>
                         </form>
