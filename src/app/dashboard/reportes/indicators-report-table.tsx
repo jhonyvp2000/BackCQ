@@ -44,11 +44,15 @@ export function IndicatorsReportTable() {
         headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 9 };
         headerRow.height = 35;
         headerRow.eachCell((cell, colNumber) => {
-            let bgColor = 'FF602D8B'; // Púrpura base (ESPECIALIDADES, PROG, SUSP)
-            if (colNumber === 4) bgColor = 'FFFF0000'; // EMG (Rojo)
-            if (colNumber === 5) bgColor = 'FF3D85C6'; // MUERTE EMER (Azul oscuro)
-            if (colNumber >= 6 && colNumber <= 9) bgColor = 'FFA64D79'; // LU/AMEU (Rosado/Fucsia)
-            if (colNumber >= 10) bgColor = 'FF602D8B'; // Totales
+            let bgColor = 'FF602D8B'; // Púrpura base
+            
+            // Si el header contiene EMER o EMG, pintar de ROJO
+            const headerText = cell.value?.toString().toUpperCase() || '';
+            if (headerText.includes('EMERG') || headerText.includes('EMG')) {
+                bgColor = 'FFFF0000';
+            } else if (colNumber === 10) {
+                bgColor = 'FF3D85C6'; // Total Efectivas (Azul)
+            }
             
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
             cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
@@ -77,6 +81,7 @@ export function IndicatorsReportTable() {
                 if (colNumber === 1) {
                     cell.alignment = { horizontal: 'left', vertical: 'middle' };
                 }
+                // Resaltar celdas de emergencia con un fondo muy suave si tienen valor (opcional UX)
             });
         });
 
@@ -97,7 +102,13 @@ export function IndicatorsReportTable() {
         footerRow.height = 25;
         footerRow.eachCell((cell, colNumber) => {
             let bgColor = 'FF602D8B'; // Púrpura base
-            if (colNumber === 4) bgColor = 'FFFF0000'; // EMG
+            
+            // Mismo criterio para el pie de página
+            if ([4, 5, 7, 9].includes(colNumber)) { // EMG, MUERTE EMER, LU EMER, AMEU EMER
+                bgColor = 'FFFF0000';
+            } else if (colNumber === 10) {
+                bgColor = 'FF3D85C6'; // Total Efectivas
+            }
             
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
             cell.alignment = { horizontal: 'center', vertical: 'middle' };
