@@ -33,7 +33,8 @@ export function PhaseTransitionModal({
     targetPhase: initialTargetPhase,
     patientName,
     onSuccess,
-    initialTime
+    initialTime,
+    urgencyType
 }: {
     isOpen: boolean;
     onClose: () => void;
