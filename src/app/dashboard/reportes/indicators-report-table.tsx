@@ -41,20 +41,43 @@ export function IndicatorsReportTable() {
         // Headers
         const headers = ['ESPECIALIDADES', 'PROG.', 'SUSP.', 'EMG.', 'MUERTE EMER', 'LU PROG.', 'LU EMERG.', 'AMEU PROG.', 'AMEU EMERG.', 'TOTAL EFECTIVAS', 'TOTAL'];
         const headerRow = sheet.addRow(headers);
-        headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 9 };
+        headerRow.height = 35;
         headerRow.eachCell((cell, colNumber) => {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colNumber === 1 ? 'FF4B2C20' : 'FF5B2C6F' } };
-            cell.alignment = { horizontal: 'center' };
+            let bgColor = 'FF602D8B'; // Púrpura base (ESPECIALIDADES, PROG, SUSP)
+            if (colNumber === 4) bgColor = 'FFFF0000'; // EMG (Rojo)
+            if (colNumber === 5) bgColor = 'FF3D85C6'; // MUERTE EMER (Azul oscuro)
+            if (colNumber >= 6 && colNumber <= 9) bgColor = 'FFA64D79'; // LU/AMEU (Rosado/Fucsia)
+            if (colNumber >= 10) bgColor = 'FF602D8B'; // Totales
+            
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
         });
 
         // Data
         data.forEach(item => {
             const row = sheet.addRow([
-                item.especialidad, item.prog, item.susp, item.emg, item.muerteEmer, 
-                item.luProg, item.luEmer, item.ameuProg, item.ameuEmer, 
-                item.totalEfectivas, item.total
+                item.especialidad, 
+                item.prog || '', 
+                item.susp || '', 
+                item.emg || '', 
+                item.muerteEmer || '', 
+                item.luProg || '', 
+                item.luEmer || '', 
+                item.ameuProg || '', 
+                item.ameuEmer || '', 
+                item.totalEfectivas || '', 
+                item.total || ''
             ]);
-            row.getCell(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } }; // Amarillo
+            row.font = { size: 9 };
+            row.eachCell((cell, colNumber) => {
+                cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                if (colNumber === 1) {
+                    cell.alignment = { horizontal: 'left', vertical: 'middle' };
+                }
+            });
         });
 
         // Totals
@@ -62,13 +85,23 @@ export function IndicatorsReportTable() {
         const totalSusp = data.reduce((sum, i) => sum + i.susp, 0);
         const totalEmg = data.reduce((sum, i) => sum + i.emg, 0);
         const totalMuerte = data.reduce((sum, i) => sum + i.muerteEmer, 0);
+        const totalLuProg = data.reduce((sum, i) => sum + i.luProg, 0);
+        const totalLuEmer = data.reduce((sum, i) => sum + i.luEmer, 0);
+        const totalAmeuProg = data.reduce((sum, i) => sum + i.ameuProg, 0);
+        const totalAmeuEmer = data.reduce((sum, i) => sum + i.ameuEmer, 0);
         const totalEfectivas = data.reduce((sum, i) => sum + i.totalEfectivas, 0);
         const totalGral = data.reduce((sum, i) => sum + i.total, 0);
 
-        const footerRow = sheet.addRow(['TOTAL', totalProg, totalSusp, totalEmg, totalMuerte, '', '', '', '', totalEfectivas, totalGral]);
-        footerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        footerRow.eachCell(cell => {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF5B2C6F' } };
+        const footerRow = sheet.addRow(['TOTAL', totalProg, totalSusp, totalEmg, totalMuerte, totalLuProg, totalLuEmer, totalAmeuProg, totalAmeuEmer, totalEfectivas, totalGral]);
+        footerRow.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 };
+        footerRow.height = 25;
+        footerRow.eachCell((cell, colNumber) => {
+            let bgColor = 'FF602D8B'; // Púrpura base
+            if (colNumber === 4) bgColor = 'FFFF0000'; // EMG
+            
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgColor } };
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
         });
 
         sheet.getColumn(1).width = 35;
