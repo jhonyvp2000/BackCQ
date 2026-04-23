@@ -621,9 +621,10 @@ export async function updateSurgeryStatus(formData: FormData) {
     }
 
     await db.update(cqSurgeries).set(updatePayload).where(eq(cqSurgeries.id, id));
+    const updated = await db.select().from(cqSurgeries).where(eq(cqSurgeries.id, id)).limit(1);
 
     revalidatePath("/dashboard/programaciones");
-    return { success: true };
+    return { success: true, surgery: updated[0] };
 }
 
 export async function deleteSurgery(formData: FormData) {

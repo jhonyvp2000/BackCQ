@@ -57,6 +57,23 @@ function formatTimeOnly(dateValue: Date | string | null | undefined): string {
     return new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }).format(date);
 }
 
+function formatForDateTimeLocal(dateValue: Date | string | null | undefined): string {
+    if (!dateValue) return '';
+    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+    if (isNaN(date.getTime())) return '';
+    
+    // Adjust to Lima timezone for consistency
+    const limaDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/Lima' }));
+    
+    const year = limaDate.getFullYear();
+    const month = String(limaDate.getMonth() + 1).padStart(2, '0');
+    const day = String(limaDate.getDate()).padStart(2, '0');
+    const hours = String(limaDate.getHours()).padStart(2, '0');
+    const minutes = String(limaDate.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 export const formatPatientDemographics = (patientPii: any, patient: any) => {
     const fullName = `${patientPii?.nombres || ''} ${patientPii?.apellidos || ''}`.trim();
     if (!fullName || fullName === 'Desconocido') return 'Desconocido';
@@ -94,7 +111,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
     const [cancelConfirmText, setCancelConfirmText] = useState<string>("");
     const [errorModalMsg, setErrorModalMsg] = useState<string>("");
-    const [transitionModal, setTransitionModal] = useState<{ isOpen: boolean, surgeryId: string, targetPhase: string, patientName: string }>({ isOpen: false, surgeryId: '', targetPhase: '', patientName: '' });
+    const [transitionModal, setTransitionModal] = useState<{ isOpen: boolean, surgeryId: string, targetPhase: string, patientName: string, initialTime?: string }>({ isOpen: false, surgeryId: '', targetPhase: '', patientName: '' });
     const currentSort = sortParams?.sort === 'asc' ? 'asc' : 'desc';
 
     // Auto-Refresh Polling Effect (Realtime UX)
@@ -672,7 +689,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
 
                                                             {row.surgery.status === 'in_progress' && canAdvancePhase && (
                                                                 <button
-                                                                    onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'anesthesia_start', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
+                                                                    onClick={() => setTransitionModal({ 
+                                                                        isOpen: true, 
+                                                                        surgeryId: row.surgery.id, 
+                                                                        targetPhase: 'anesthesia_start', 
+                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.actualStartTime)
+                                                                    })}
                                                                     className="text-purple-700 hover:text-white hover:bg-purple-600 bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-purple-200/50"
                                                                 >
                                                                     Inic. Anestesia &rarr;
@@ -681,7 +704,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
 
                                                             {row.surgery.status === 'anesthesia_start' && canAdvancePhase && (
                                                                 <button
-                                                                    onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'pre_incision', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
+                                                                    onClick={() => setTransitionModal({ 
+                                                                        isOpen: true, 
+                                                                        surgeryId: row.surgery.id, 
+                                                                        targetPhase: 'pre_incision', 
+                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.anesthesiaStartTime)
+                                                                    })}
                                                                     className="text-rose-700 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-rose-200/50"
                                                                 >
                                                                     Antes Incisión &rarr;
@@ -690,7 +719,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
 
                                                             {row.surgery.status === 'pre_incision' && canAdvancePhase && (
                                                                 <button
-                                                                    onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'surgery_end', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
+                                                                    onClick={() => setTransitionModal({ 
+                                                                        isOpen: true, 
+                                                                        surgeryId: row.surgery.id, 
+                                                                        targetPhase: 'surgery_end', 
+                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.preIncisionTime)
+                                                                    })}
                                                                     className="text-cyan-700 hover:text-white hover:bg-cyan-600 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-cyan-200/50"
                                                                 >
                                                                     Término Cirugía &rarr;
@@ -699,7 +734,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
 
                                                             {row.surgery.status === 'surgery_end' && canAdvancePhase && (
                                                                 <button
-                                                                    onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'patient_exit', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
+                                                                    onClick={() => setTransitionModal({ 
+                                                                        isOpen: true, 
+                                                                        surgeryId: row.surgery.id, 
+                                                                        targetPhase: 'patient_exit', 
+                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.surgeryEndTime)
+                                                                    })}
                                                                     className="text-orange-700 hover:text-white hover:bg-orange-600 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-orange-200/50"
                                                                 >
                                                                     Salida Paciente &rarr;
@@ -709,13 +750,25 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             {row.surgery.status === 'patient_exit' && canAdvancePhase && (
                                                                 <div className="flex gap-1.5 items-center">
                                                                     <button
-                                                                        onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'urpa_exit', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
+                                                                        onClick={() => setTransitionModal({ 
+                                                                            isOpen: true, 
+                                                                            surgeryId: row.surgery.id, 
+                                                                            targetPhase: 'urpa_exit', 
+                                                                            patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.patientExitTime)
+                                                                        })}
                                                                         className="text-indigo-700 hover:text-white hover:bg-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1.5 rounded-lg transition-all text-[11px] font-bold shadow-sm whitespace-nowrap border border-indigo-200/50"
                                                                     >
                                                                         Pase URPA &rarr;
                                                                     </button>
                                                                     <button
-                                                                        onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'completed', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
+                                                                        onClick={() => setTransitionModal({ 
+                                                                            isOpen: true, 
+                                                                            surgeryId: row.surgery.id, 
+                                                                            targetPhase: 'completed', 
+                                                                            patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.patientExitTime)
+                                                                        })}
                                                                         className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap flex items-center gap-1 border border-emerald-200/50"
                                                                     >
                                                                         <CheckCircle2 size={13} /> Alta
@@ -725,7 +778,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
 
                                                             {row.surgery.status === 'urpa_exit' && canAdvancePhase && (
                                                                 <button
-                                                                    onClick={() => setTransitionModal({ isOpen: true, surgeryId: row.surgery.id, targetPhase: 'completed', patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}` })}
+                                                                    onClick={() => setTransitionModal({ 
+                                                                        isOpen: true, 
+                                                                        surgeryId: row.surgery.id, 
+                                                                        targetPhase: 'completed', 
+                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                        initialTime: formatForDateTimeLocal(row.surgery.urpaExitTime)
+                                                                    })}
                                                                     className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-xl transition-all duration-300 border border-emerald-200 hover:scale-[1.02] text-xs font-bold shadow-sm flex items-center gap-1.5 whitespace-nowrap"
                                                                 >
                                                                     <CheckCircle2 size={14} /> Finalizar
@@ -796,6 +855,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                 surgeryId={transitionModal.surgeryId}
                 targetPhase={transitionModal.targetPhase}
                 patientName={transitionModal.patientName}
+                initialTime={transitionModal.initialTime}
                 onSuccess={(nextPhase) => {
                     if (!nextPhase) {
                         setTransitionModal({ ...transitionModal, isOpen: false });

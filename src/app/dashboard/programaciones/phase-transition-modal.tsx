@@ -32,7 +32,8 @@ export function PhaseTransitionModal({
     surgeryId,
     targetPhase: initialTargetPhase,
     patientName,
-    onSuccess
+    onSuccess,
+    initialTime
 }: {
     isOpen: boolean;
     onClose: () => void;
@@ -40,6 +41,7 @@ export function PhaseTransitionModal({
     targetPhase: string;
     patientName: string;
     onSuccess: (nextPhase?: string | null) => void;
+    initialTime?: string;
 }) {
     const [targetPhase, setTargetPhase] = useState(initialTargetPhase);
     const [transitionTime, setTransitionTime] = useState("");
@@ -51,17 +53,22 @@ export function PhaseTransitionModal({
         if (isOpen) {
             setTargetPhase(initialTargetPhase);
             setSkipUrpa(false);
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
 
-            setTransitionTime(`${year}-${month}-${day}T${hours}:${minutes}`);
+            if (initialTime) {
+                setTransitionTime(initialTime);
+            } else {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+
+                setTransitionTime(`${year}-${month}-${day}T${hours}:${minutes}`);
+            }
             setErrorMsg("");
         }
-    }, [isOpen, initialTargetPhase]);
+    }, [isOpen, initialTargetPhase, initialTime]);
 
     if (!isOpen || !phaseConfig[targetPhase]) return null;
 
@@ -86,9 +93,10 @@ export function PhaseTransitionModal({
                 if (nextPhasePossible) {
                     // Si hay una siguiente fase, actualizamos el modal internamente
                     setTargetPhase(nextPhasePossible);
-                    // Resetear tiempo al actual para el siguiente paso
-                    const now = new Date();
-                    setTransitionTime(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
+                    
+                    // Mantenemos el TIEMPO que el usuario acaba de usar para la siguiente etapa
+                    // (Persistencia heredada según requerimiento)
+                    setTransitionTime(transitionTime);
                 } else {
                     onSuccess(null);
                 }
