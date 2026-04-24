@@ -76,7 +76,7 @@ export const cqPatients = pgTable("cq_patients", {
 
 export const cqPatientPii = pgTable("cq_patient_pii", {
   patientId: uuid("patient_id").primaryKey().references(() => cqPatients.id, { onDelete: 'cascade' }),
-  dni: varchar("dni", { length: 8 }).unique(),
+  dni: varchar("dni", { length: 20 }).unique(),
   carnetExtranjeria: varchar("carnet_extranjeria", { length: 20 }).unique(),
   pasaporte: varchar("pasaporte", { length: 20 }).unique(),
   nombres: text("nombres").notNull(),

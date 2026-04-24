@@ -136,13 +136,13 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                 </div>
 
                 {/* X-Axis Config (Rooms & Days) */}
-                <div className="flex-1 min-w-[800px]">
+                <div className="flex-1 min-w-0">
                     {/* Header Columns: Salas o Dias */}
                     <div className="flex h-12 sticky top-0 z-10 bg-white dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
                         {columnsConfig.map(col => {
                             const isSelectedDay = isWeekView && isSameDayStr(col.date, parsedDate);
                             return (
-                                <div key={col.id} className={`flex-1 min-w-[200px] border-r border-zinc-200/50 dark:border-zinc-800 p-2 flex items-center justify-center transition-colors ${isSelectedDay ? 'bg-blue-50/50 dark:bg-blue-900/20 border-b-2 border-b-blue-500' : ''}`}>
+                                <div key={col.id} className={`flex-1 min-w-0 border-r border-zinc-200/50 dark:border-zinc-800 p-2 flex items-center justify-center transition-colors ${isSelectedDay ? 'bg-blue-50/50 dark:bg-blue-900/20 border-b-2 border-b-blue-500' : ''}`}>
                                     <span className={`font-bold text-xs uppercase ${isWeekView ? 'capitalize' : ''} truncate ${isSelectedDay ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-700 dark:text-zinc-300'}`}>
                                         {col.name}
                                     </span>
@@ -185,7 +185,7 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
 
                             const isUnassigned = col.salaId === null;
                             return (
-                                <div key={col.id} className={`flex-1 min-w-[200px] border-r border-dashed border-zinc-200 dark:border-zinc-800/50 relative h-[800px] ${isWeekView && isSameDayStr(col.date, parsedDate) ? 'bg-blue-50/30 dark:bg-blue-900/5' : ''} ${isUnassigned ? 'bg-zinc-100/50 dark:bg-zinc-900/30' : ''}`}> {/* 10 slots * 80px */}
+                                <div key={col.id} className={`flex-1 min-w-0 border-r border-dashed border-zinc-200 dark:border-zinc-800/50 relative h-[800px] ${isWeekView && isSameDayStr(col.date, parsedDate) ? 'bg-blue-50/30 dark:bg-blue-900/5' : ''} ${isUnassigned ? 'bg-zinc-100/50 dark:bg-zinc-900/30' : ''}`}> {/* 10 slots * 80px */}
 
                                     {/* Tarjetas Flotantes */}
                                     <AnimatePresence>

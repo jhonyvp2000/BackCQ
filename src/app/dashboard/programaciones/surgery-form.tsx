@@ -401,7 +401,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
         if (!selectedPatId) setError('patient_id', "Selecciona un paciente de la lista", 'patient');
         if (selectedDxIds.size === 0) setError('diagnoses', "Selecciona al menos un diagnóstico", 'patient');
-        if (selectedIntIds.size === 0) setError('interventions', "Selecciona al menos una intervención", 'patient');
         if (!formData.get("surgery_type")) setError('surgery_type', "Requerido", 'classification');
         if (!formData.get("urgency_type")) setError('urgency_type', "Requerido", 'classification');
         if (!formData.get("specialty_id")) setError('specialty_id', "Requerido", 'classification');
@@ -605,7 +604,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             initial={{ opacity: 0, scale: 0.95, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 30 }}
-                            className="relative w-[96vw] max-w-[1360px] bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col max-h-[95vh]"
+                            className="relative w-[96vw] max-w-[1632px] bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col max-h-[95vh]"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}
@@ -863,7 +862,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.origin} />
                                 </div>
 
-                            <div className="col-span-full grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2 pt-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos (Dx)</label>
                                 <div className="relative mb-2">
@@ -959,7 +958,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 )}
                             </div>
 
-                            <div className="space-y-2 pt-2 hidden">
+                            <div className="space-y-2 pt-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Catálogo de Procedimientos (Opcional)</label>
                                 <div className="relative mb-2">
                                     <input
@@ -1048,7 +1047,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Intervención</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Intervención (Opcional)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"

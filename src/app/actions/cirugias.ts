@@ -307,7 +307,6 @@ export async function createSurgery(formData: FormData) {
     if (!patientId) faltantes.push("Paciente");
     if (!scheduledDateStr) faltantes.push("Fecha Programada");
     if (diagnosesIds.length === 0) faltantes.push("Diagnóstico");
-    if (interventionsIds.length === 0) faltantes.push("Intervención");
     if (!surgeryType) faltantes.push("Tipo de Cirugía");
     if (!specialtyId) faltantes.push("Especialidad");
 
@@ -410,7 +409,7 @@ export async function createSurgery(formData: FormData) {
     }
 
     // Identidad Disociada (Identity Vault Logic)
-    let finalPatientId: string;
+    let finalPatientId: string | null = null;
     const existingPii = await db.select().from(cqPatientPii).where(
         or(
             eq(cqPatientPii.dni, patientId),
@@ -418,7 +417,7 @@ export async function createSurgery(formData: FormData) {
             eq(cqPatientPii.carnetExtranjeria, patientId),
             eq(cqPatientPii.pasaporte, patientId)
         )
-    );
+    ).limit(1);
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
@@ -447,23 +446,43 @@ export async function createSurgery(formData: FormData) {
             }
         }
 
-        // Create Demographics entity
-        const newPat = await db.insert(cqPatients).values({
-            sexo: pSexo,
-            fechaNacimiento: pFechaNac,
-            ubigeo: pUbigeo,
-        }).returning({ id: cqPatients.id });
-        finalPatientId = newPat[0].id;
+        try {
+            // Demographics
+            const [newPat] = await db.insert(cqPatients).values({
+                sexo: pSexo,
+                fechaNacimiento: pFechaNac,
+                ubigeo: pUbigeo,
+            }).returning({ id: cqPatients.id });
+            
+            finalPatientId = newPat.id;
 
-        // Create Identity Vault entity
-        await db.insert(cqPatientPii).values({
-            patientId: finalPatientId,
-            dni: patientId, // saving the DNI text here
-            nombres: pName,
-            apellidos: pLastName,
-            historiaClinica: pHistoriaClinica,
-            direccion: pDireccion
-        });
+            // Identity Vault
+            await db.insert(cqPatientPii).values({
+                patientId: finalPatientId,
+                dni: patientId,
+                nombres: pName,
+                apellidos: pLastName,
+                historiaClinica: pHistoriaClinica,
+                direccion: pDireccion
+            });
+        } catch (dbErr) {
+            // Fallback total: si algo falló en la inserción (carrera de procesos), buscamos de nuevo
+            const lastHope = await db.select().from(cqPatientPii).where(
+                or(
+                    eq(cqPatientPii.dni, patientId),
+                    eq(cqPatientPii.historiaClinica, patientId)
+                )
+            ).limit(1);
+            if (lastHope.length > 0) {
+                finalPatientId = lastHope[0].patientId;
+            } else {
+                return { error: "No se pudo registrar ni encontrar al paciente. Por favor verifique el DNI." };
+            }
+        }
+    }
+
+    if (!finalPatientId) {
+        return { error: "Error crítico: No se pudo resolver la identidad del paciente." };
     }
 
     const newSurgery = await db.insert(cqSurgeries).values({
