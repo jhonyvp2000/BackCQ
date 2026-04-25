@@ -711,7 +711,6 @@ export async function editSurgery(formData: FormData) {
     if (!patientId) faltantes.push("Paciente");
     if (!scheduledDateStr) faltantes.push("Fecha Programada");
     if (diagnosesIds.length === 0) faltantes.push("Diagnóstico");
-    if (interventionsIds.length === 0) faltantes.push("Intervención");
     if (!surgeryType) faltantes.push("Tipo de Cirugía");
     if (!specialtyId) faltantes.push("Especialidad");
     if (!requestDateStr) faltantes.push("Fecha Solicitud");
