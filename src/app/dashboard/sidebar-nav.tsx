@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, FileText, Users, UserSquare2, MapPin, UserX, Stethoscope, ActivitySquare, SplitSquareHorizontal, BarChart } from "lucide-react";
+import { Activity, FileText, Users, UserSquare2, MapPin, UserX, Stethoscope, ActivitySquare, SplitSquareHorizontal, BarChart, Files } from "lucide-react";
 
 export function SidebarNav({ orphanCount = 0, permissions = [] }: { orphanCount?: number, permissions?: string[] }) {
     const pathname = usePathname();
@@ -17,6 +17,7 @@ export function SidebarNav({ orphanCount = 0, permissions = [] }: { orphanCount?
         { name: "Tipos de Intervención", href: "/dashboard/tipos-intervencion", icon: SplitSquareHorizontal },
         { name: "Programaciones", href: "/dashboard/programaciones", icon: FileText, requiredPermission: "ver:programacion" },
         { name: "Reportes", href: "/dashboard/reportes", icon: BarChart },
+        { name: "Documentos", href: "/dashboard/documentos", icon: Files },
     ];
 
     // Filter items based on permissions
