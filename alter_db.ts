@@ -5,7 +5,7 @@ dotenv.config();
 
 async function main() {
   console.log("Connecting to", process.env.DATABASE_URL);
-  const sql = postgres(process.env.DATABASE_URL);
+  const sql = postgres(process.env.DATABASE_URL!);
   
   try {
     await sql`ALTER TABLE cq_patient_pii ALTER COLUMN dni TYPE varchar(20);`;

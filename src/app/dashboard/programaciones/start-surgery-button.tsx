@@ -64,7 +64,7 @@ export function StartSurgeryButton({ id, hasRoom, hasTime }: { id: string, hasRo
                                         Información Incompleta
                                     </h3>
                                     <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 px-2">
-                                        No es posible ingresar a quirófano una cirugía que aún tiene la <b>Sala Física</b> o la <b>Hora</b> pendiente de asignar ("TBD"). Edite la programación primero.
+                                        No es posible ingresar a quirófano una cirugía que aún tiene la <b>Sala Física</b> o la <b>Hora</b> pendiente de asignar ("Por definir"). Edite la programación primero.
                                     </p>
 
                                     <button

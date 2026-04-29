@@ -230,11 +230,7 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
 
                                                     <div className="flex justify-between items-start pl-1.5 pr-0.5 w-full gap-1">
                                                         <span className="text-[10px] font-bold text-zinc-900 leading-none mt-0.5 break-words whitespace-normal relative w-full">
-                                                            {isTBD && (
-                                                                <span className="inline-block bg-amber-100 text-amber-700 px-1 py-0.5 rounded-[3px] text-[7px] uppercase tracking-widest shadow-sm shrink-0 leading-none mr-1 mb-1 border border-amber-200">
-                                                                    TBD
-                                                                </span>
-                                                            )}
+                                                            {isTBD && <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[9px] font-black px-1 rounded border border-amber-200 dark:border-amber-700/50 uppercase tracking-tighter">Por definir</span>}
                                                             {formatPatientDemographics(s.patientPii, s.patient)}
                                                         </span>
                                                         {s.surgery.urgencyType === 'EMERGENCIA' && (

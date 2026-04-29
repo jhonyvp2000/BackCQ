@@ -28,7 +28,7 @@ function getFormattedDate(dateValue: Date | string | null | undefined, isTimeDef
         return (
             <span className="flex items-center gap-1.5">
                 {datePart}
-                <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase shadow-sm">TBD</span>
+                <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase shadow-sm">Por definir</span>
             </span>
         );
     }
@@ -625,7 +625,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         </div>
                                                                         <div className="bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/50 flex items-center w-fit tooltip" title="Hora">
                                                                             <Clock size={11} className="opacity-70 mr-1.5" />
-                                                                            <span className="font-bold">{row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'TBD'}</span>
+                                                                            <span className="font-bold">{row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'Por definir'}</span>
                                                                         </div>
                                                                         {row.surgery.estimatedDuration && (
                                                                             <div className="bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50 w-fit flex items-center tooltip" title="Duración Estimada">
