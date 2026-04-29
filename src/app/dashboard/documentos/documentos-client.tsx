@@ -1,15 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { generarNotaSiga, generarConformidadServicio } from "@/app/actions/documentos";
+import { generarNotaSiga, generarConformidadServicio, generarNotaGenerica } from "@/app/actions/documentos";
 import { saveAs } from "file-saver";
 import {
     FileText, Loader2, AlertCircle, CheckCircle2, Send, Hash, Calendar,
     Package, FileSearch, ClipboardList, Truck, BarChart3, UserCheck,
-    Briefcase, FileSignature, Award, BookOpen, ArrowLeft, ChevronRight
+    Briefcase, FileSignature, Award, BookOpen, ArrowLeft, ChevronRight,
+    Type, User, GraduationCap
 } from "lucide-react";
 
-type DocType = "siga" | "conformidad" | null;
+type DocType = "siga" | "conformidad" | "generica" | null;
 
 // Definición de las plantillas disponibles
 const TEMPLATES = [
@@ -35,6 +36,17 @@ const TEMPLATES = [
         borderHover: "hover:border-[#4DB6AC]/50",
         ringColor: "ring-[#4DB6AC]/20",
     },
+    {
+        id: "generica" as DocType,
+        title: "Nota Genérica",
+        subtitle: "Cualquier asunto institucional",
+        icon: Type,
+        gradient: "from-[#6A1B9A] via-[#8E24AA] to-[#BA68C8]",
+        iconBg: "bg-[#6A1B9A]/10",
+        iconColor: "text-[#6A1B9A]",
+        borderHover: "hover:border-[#BA68C8]/50",
+        ringColor: "ring-[#BA68C8]/20",
+    },
 ];
 
 export function DocumentosClient() {
@@ -57,6 +69,15 @@ export function DocumentosClient() {
     });
     const [confLoading, setConfLoading] = useState(false);
     const [confMsg, setConfMsg] = useState<{ type: "error" | "success"; text: string } | null>(null);
+
+    // --- Estados Genérica ---
+    const [genParams, setGenParams] = useState({
+        numero_correlativo: "", anio_curso: new Date().getFullYear().toString(),
+        fecha_documento: "", destinatario_nombre: "", destinatario_cargo: "",
+        asunto: "", referencia: "", cuerpo_documento: "", num_seguimiento: ""
+    });
+    const [genLoading, setGenLoading] = useState(false);
+    const [genMsg, setGenMsg] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
     // --- Helpers ---
     const downloadBlob = (base64: string, filename: string) => {
@@ -92,6 +113,19 @@ export function DocumentosClient() {
         finally { setConfLoading(false); }
     };
 
+    const handleGenerateGenerica = async () => {
+        if (!genParams.numero_correlativo || !genParams.asunto || !genParams.destinatario_nombre) {
+            setGenMsg({ type: "error", text: "Completa N° Correlativo, Destinatario y Asunto." }); return;
+        }
+        setGenMsg(null); setGenLoading(true);
+        try {
+            const res = await generarNotaGenerica(genParams);
+            downloadBlob(res.base64, res.filename);
+            setGenMsg({ type: "success", text: `"${res.filename}" generado exitosamente.` });
+        } catch (err: any) { setGenMsg({ type: "error", text: err.message || "Error al generar." }); }
+        finally { setGenLoading(false); }
+    };
+
     // Clases reutilizables
     const inp = "w-full h-11 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder-zinc-400 text-sm transition-all duration-200 focus:bg-white dark:focus:bg-zinc-800 focus:border-[#42A5F5] focus:ring-2 focus:ring-[#42A5F5]/20 focus:outline-none";
     const inpSm = "w-full h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder-zinc-400 text-sm transition-all duration-200 focus:bg-white dark:focus:bg-zinc-800 focus:border-[#42A5F5] focus:ring-2 focus:ring-[#42A5F5]/20 focus:outline-none";
@@ -107,15 +141,14 @@ export function DocumentosClient() {
                     return (
                         <button key={t.id} onClick={() => setActiveDoc(t.id)}
                             className={`group relative text-left bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 ${t.borderHover} rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)] transition-all duration-300 active:scale-[0.98]`}>
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-col gap-4">
                                 <div className={`w-12 h-12 rounded-xl ${t.iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
                                     <Icon size={22} className={t.iconColor} />
                                 </div>
-                                <div className="flex-1 min-w-0">
+                                <div className="min-w-0">
                                     <h3 className="text-[15px] font-bold text-zinc-900 dark:text-white truncate">{t.title}</h3>
                                     <p className="text-xs text-zinc-500 mt-0.5 truncate">{t.subtitle}</p>
                                 </div>
-                                <ChevronRight size={18} className="text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-500 transition-colors shrink-0" />
                             </div>
                             {/* Barra decorativa inferior con gradiente */}
                             <div className={`absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r ${t.gradient} rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
@@ -299,6 +332,89 @@ export function DocumentosClient() {
                             className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#00695C] to-[#00897B] hover:from-[#00695C] hover:to-[#00695C] text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_8px_rgba(0,105,92,0.25)] hover:shadow-[0_4px_16px_rgba(0,105,92,0.35)] active:scale-[0.98]">
                             {confLoading ? <Loader2 className="animate-spin" size={20} /> : <FileSignature size={20} />}
                             {confLoading ? "Generando..." : "Generar Conformidad de Servicio (.docx)"}
+                        </button>
+                    </>)}
+
+                    {/* ======= FORMULARIO GENÉRICA ======= */}
+                    {activeDoc === "generica" && (<>
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                            <div>
+                                <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                    <Hash size={14} className="text-[#6A1B9A]" /> N° Correlativo <span className="text-red-400 text-xs">*</span>
+                                </label>
+                                <input type="text" placeholder="Ej: 060" value={genParams.numero_correlativo}
+                                    onChange={(e) => setGenParams({...genParams, numero_correlativo: e.target.value})} className={inp} />
+                            </div>
+                            <div>
+                                <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                    <Calendar size={14} className="text-[#6A1B9A]" /> Año
+                                </label>
+                                <input type="text" value={genParams.anio_curso}
+                                    onChange={(e) => setGenParams({...genParams, anio_curso: e.target.value})} className={`${inp} font-medium`} />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                    <Calendar size={14} className="text-[#6A1B9A]" /> Fecha del documento
+                                </label>
+                                <input type="text" placeholder="Ej: Tarapoto, 28 de abril del 2026" value={genParams.fecha_documento}
+                                    onChange={(e) => setGenParams({...genParams, fecha_documento: e.target.value})} className={inp} />
+                            </div>
+                        </div>
+                        <div className="border-t border-dashed border-zinc-200 dark:border-zinc-800" />
+                        <div>
+                            <p className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3"><User size={13} /> Destinatario</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                        Nombre <span className="text-red-400 text-xs">*</span>
+                                    </label>
+                                    <input type="text" placeholder="Ej: MC. ANDERSON SOTO MAYOR" value={genParams.destinatario_nombre}
+                                        onChange={(e) => setGenParams({...genParams, destinatario_nombre: e.target.value})} className={inp} />
+                                </div>
+                                <div>
+                                    <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                        Cargo / Dependencia
+                                    </label>
+                                    <input type="text" placeholder="Ej: Jefe de Dpto. de Cirugía" value={genParams.destinatario_cargo}
+                                        onChange={(e) => setGenParams({...genParams, destinatario_cargo: e.target.value})} className={inp} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="border-t border-dashed border-zinc-200 dark:border-zinc-800" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                    <ClipboardList size={14} className="text-[#6A1B9A]" /> Asunto <span className="text-red-400 text-xs">*</span>
+                                </label>
+                                <input type="text" placeholder="Ej: REMITE INFORMACION SOLICITADA" value={genParams.asunto}
+                                    onChange={(e) => setGenParams({...genParams, asunto: e.target.value})} className={inp} />
+                            </div>
+                            <div>
+                                <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                    <BookOpen size={14} className="text-[#6A1B9A]" /> Referencia (Opcional)
+                                </label>
+                                <input type="text" placeholder="Ej: NOTA DE COORDINACION N° 003-2024..." value={genParams.referencia}
+                                    onChange={(e) => setGenParams({...genParams, referencia: e.target.value})} className={inp} />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+                                <FileText size={14} className="text-[#6A1B9A]" /> Cuerpo del documento
+                            </label>
+                            <textarea placeholder="Escribe el contenido de la nota aquí..." value={genParams.cuerpo_documento}
+                                onChange={(e) => setGenParams({...genParams, cuerpo_documento: e.target.value})} rows={6}
+                                className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white placeholder-zinc-400 text-sm leading-relaxed resize-none transition-all duration-200 focus:bg-white dark:focus:bg-zinc-800 focus:border-[#BA68C8] focus:ring-2 focus:ring-[#BA68C8]/20 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label className="flex items-center gap-1.5 text-sm font-medium text-zinc-600 dark:text-zinc-400 mb-2"><BarChart3 size={13} className="text-zinc-400" /> Reg. Seguimiento (Pie de página)</label>
+                            <input type="text" placeholder="Ej: 025-2024" value={genParams.num_seguimiento}
+                                onChange={(e) => setGenParams({...genParams, num_seguimiento: e.target.value})} className={inpSm} />
+                        </div>
+                        <MessageBox msg={genMsg} />
+                        <button onClick={handleGenerateGenerica} disabled={genLoading}
+                            className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#6A1B9A] to-[#8E24AA] hover:from-[#6A1B9A] hover:to-[#6A1B9A] text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_2px_8px_rgba(106,27,154,0.25)] hover:shadow-[0_4px_16px_rgba(106,27,154,0.35)] active:scale-[0.98]">
+                            {genLoading ? <Loader2 className="animate-spin" size={20} /> : <FileText size={20} />}
+                            {genLoading ? "Generando..." : "Generar Nota Genérica (.docx)"}
                         </button>
                     </>)}
                 </div>

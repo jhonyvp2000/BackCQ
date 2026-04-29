@@ -84,3 +84,41 @@ export async function generarConformidadServicio(params: {
         filename: `Conformidad_${params.numero_correlativo}_${safeName}.docx`
     };
 }
+
+export async function generarNotaGenerica(params: {
+    numero_correlativo: string;
+    anio_curso: string;
+    fecha_documento: string;
+    destinatario_nombre: string;
+    destinatario_cargo: string;
+    asunto: string;
+    referencia: string;
+    cuerpo_documento: string;
+    num_seguimiento: string;
+}) {
+    const templatePath = path.join(process.cwd(), "public", "templates", "nota_generica.docx");
+    
+    if (!fs.existsSync(templatePath)) {
+        throw new Error("La plantilla base 'nota_generica.docx' no existe en el directorio public/templates.");
+    }
+
+    const content = fs.readFileSync(templatePath, "binary");
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+    });
+
+    doc.render(params);
+
+    const buf = doc.getZip().generate({
+        type: "nodebuffer",
+        compression: "DEFLATE",
+    });
+
+    const safeAsunto = params.asunto.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 15);
+    return {
+        base64: buf.toString("base64"),
+        filename: `Nota_${params.numero_correlativo}_${safeAsunto}.docx`
+    };
+}
