@@ -98,6 +98,27 @@ export const formatPatientDemographics = (patientPii: any, patient: any) => {
     return combined.length > 70 ? combined.substring(0, 70) + '...' : combined;
 };
 
+export const formatDemographicsOnly = (patientPii: any, patient: any) => {
+    let sexStr = '?';
+    const sexo = patient?.sexo || patientPii?.sexo;
+    if (sexo) {
+        if (sexo.toUpperCase().startsWith('F')) sexStr = 'F';
+        else if (sexo.toUpperCase().startsWith('M')) sexStr = 'M';
+        else sexStr = sexo.substring(0, 1).toUpperCase();
+    }
+
+    let ageStr = '?';
+    const dob = patient?.fechaNacimiento || patientPii?.fecha_nacimiento || patientPii?.fechaNacimiento;
+    if (dob) {
+        const diff_ms = Date.now() - new Date(dob).getTime();
+        const age = Math.abs(new Date(diff_ms).getUTCFullYear() - 1970);
+        ageStr = String(age).padStart(2, '0');
+    }
+
+    const hcStr = patientPii?.historiaClinica || '?';
+    return `(${sexStr} ${ageStr} HC: ${hcStr})`;
+};
+
 export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialties, staff, permissions = [], diagnoses = [], procedures = [], interventions = [], patients = [] }: { surgeriesData: any[], salas: any[], sortParams: any, specialties?: any[], staff?: any, permissions?: string[], diagnoses?: any[], procedures?: any[], interventions?: any[], patients?: any[] }) {
     const canEdit = permissions.includes('editar:programacion');
     const canCancel = permissions.includes('cancelar:programacion');
@@ -547,8 +568,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         <div className="font-bold text-zinc-900 dark:text-white truncate max-w-[180px]" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
                                                             {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii?.apellidos?.split(' ')[0]}, ${row.patientPii?.nombres?.split(' ')[0]}` : 'Desconocido'}
                                                         </div>
-                                                        <div className="text-xs text-zinc-500 font-mono tracking-tight mt-0.5">
-                                                            {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'S/Doc'}
+                                                        <div className="text-[11px] text-zinc-500 font-mono tracking-tight mt-0.5">
+                                                            {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'S/Doc'} <span className="text-zinc-400 font-sans tracking-normal ml-0.5">{formatDemographicsOnly(row.patientPii, row.patient)}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-3 py-3 align-middle">
