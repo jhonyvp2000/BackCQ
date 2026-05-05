@@ -507,168 +507,141 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                     <table className="w-full text-left border-collapse">
                                         <thead>
                                             <tr className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-800/30 backdrop-blur-sm">
-                                                <th scope="col" className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest w-[40%]">
-                                                    Paciente / Agenda
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[40px]">N°</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[180px]">
+                                                    Paciente
                                                     <Link href={`?sort=${currentSort === 'asc' ? 'desc' : 'asc'}`} className="inline-flex items-center ml-2 p-1 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors tooltip" title={`Ordenar cronológicamente (${currentSort === 'asc' ? 'Z-A' : 'A-Z'})`}>
-                                                        {currentSort === 'asc' ? <ArrowUp size={14} className="text-[var(--color-hospital-blue)]" /> : <ArrowDown size={14} className="text-[var(--color-hospital-blue)]" />}
+                                                        {currentSort === 'asc' ? <ArrowUp size={12} className="text-[var(--color-hospital-blue)]" /> : <ArrowDown size={12} className="text-[var(--color-hospital-blue)]" />}
                                                     </Link>
                                                 </th>
-                                                <th scope="col" className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest w-[20%]">
-                                                    Quirófano Asignado
-                                                </th>
-                                                <th scope="col" className="px-6 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest w-[20%]">
-                                                    Estado Acto Médico
-                                                </th>
-                                                <th scope="col" className="px-6 py-4 pl-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-widest">
-                                                    Gestión Rápida
-                                                </th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Especialidad</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[180px]">Diagnóstico / Intervención</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px]">F. Solicitud</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px]">F. Prog.</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px]">Hora</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px]">Duración</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Quirófano</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Tipo / Urg.</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px]">Seguro</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Equipo</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Estado</th>
+                                                <th scope="col" className="px-3 py-4 pl-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Gestión</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                                            {filteredSurgeries.map((row) => (
-                                                <tr key={row.surgery.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-all duration-300 group">
-                                                    <td className="px-6 py-5 whitespace-nowrap">
-                                                        <div className="flex items-start">
-                                                            <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-[var(--color-hospital-blue)] mr-4 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
-                                                                <User size={18} />
-                                                            </div>
-                                                            <div className="ml-0">
-                                                                <div className="text-sm font-bold text-zinc-900 dark:text-white mb-1 tracking-tight">
-                                                                    Doc: {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'Desconocido'}
-                                                                </div>
-                                                                {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' && (
-                                                                    <div className="text-xs text-zinc-500 font-medium mb-1 break-words whitespace-normal" title={`${row.patientPii.nombres} ${row.patientPii.apellidos}`}>
-                                                                        {formatPatientDemographics(row.patientPii, row.patient)}
-                                                                    </div>
-                                                                )}
-                                                                {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
-                                                                    <div className="flex flex-col gap-0.5 mb-1.5 mt-0.5">
-                                                                        {row.diagnoses.map((did: string) => {
-                                                                            const d = diagnoses.find(dx => dx.id === did);
-                                                                            if (!d) return null;
-                                                                            return (
-                                                                                <div key={d.id} className="text-xs text-blue-800 dark:text-blue-300 font-semibold leading-[1.3] break-words whitespace-normal" title={`${d.code} - ${d.name}`}>
-                                                                                    <span className="opacity-80">Dx:</span> {d.code} - {d.name}
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                ) : row.surgery.diagnosis ? (
-                                                                    <div className="text-xs text-blue-800 dark:text-blue-300 font-semibold leading-[1.3] break-words whitespace-normal mb-1" title={row.surgery.diagnosis}>
-                                                                        <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
-                                                                    </div>
-                                                                ) : null}
-                                                                {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
-                                                                    <div className="flex flex-col gap-0.5 mb-1.5 mt-0.5">
-                                                                        {row.interventions.map((iid: string) => {
-                                                                            const inter = interventions.find(inty => inty.id === iid);
-                                                                            if (!inter) return null;
-                                                                            return (
-                                                                                <div key={inter.id} className="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-[1.3] break-words whitespace-normal" title={inter.name}>
-                                                                                    <span className="opacity-80 font-bold">In:</span> {inter.name}
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                )}
-                                                                {row.procedures && row.procedures.length > 0 && typeof procedures !== 'undefined' && (
-                                                                    <div className="flex flex-col gap-0.5 mb-2">
-                                                                        {row.procedures.map((pid: string) => {
-                                                                            const p = procedures.find(proc => proc.id === pid);
-                                                                            if (!p) return null;
-                                                                            return (
-                                                                                <div key={pid} className="text-xs text-pink-500 dark:text-pink-300 font-medium leading-[1.3] break-words whitespace-normal" title={`${p.code} - ${p.name}`}>
-                                                                                    <span className="opacity-80">Px:</span> {p.code} - {p.name}
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                )}
-                                                                {row.specialty && (
-                                                                    <div className="text-xs text-zinc-500 mt-1.5 font-medium truncate max-w-[150px]" title={row.specialty.name}>
-                                                                        {row.specialty.name}
-                                                                    </div>
-                                                                )}
-                                                                <div className="flex gap-2 flex-wrap mt-1.5 mb-2">
-                                                                    {row.surgery.surgeryType && (
-                                                                        <div className={`text-[10px] inline-block px-2 py-0.5 rounded border font-bold uppercase ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50'}`}>
-                                                                            {row.surgery.surgeryType}
-                                                                        </div>
-                                                                    )}
-                                                                    {row.surgery.urgencyType && (
-                                                                        <div className={`text-[10px] inline-block px-2 py-0.5 rounded border font-bold uppercase ${row.surgery.urgencyType === 'EMERGENCIA' ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800/50 animate-pulse' : 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50'}`}>
-                                                                            {row.surgery.urgencyType}
-                                                                        </div>
-                                                                    )}
-                                                                    {row.surgery.insuranceType && (
-                                                                        <div className="text-[10px] inline-block px-2 py-0.5 rounded border font-bold uppercase bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/50">
-                                                                            {row.surgery.insuranceType}
-                                                                        </div>
-                                                                    )}
-                                                                    {row.surgery.anesthesiaType && (
-                                                                        <div className="text-[10px] inline-block px-2 py-0.5 rounded border font-bold uppercase bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800/50" title="Tipo de Anestesia">
-                                                                            {row.surgery.anesthesiaType}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <div className="flex flex-col gap-1.5 mt-2.5">
-                                                                    <div className="flex items-center gap-2 text-[11px] font-medium">
-                                                                        <div className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2 py-0.5 rounded border border-zinc-200/50 dark:border-zinc-700 w-fit flex items-center tooltip" title="Fecha de Solicitud">
-                                                                            <span className="opacity-70 mr-1.5 text-[10px] uppercase">F. Solicitud:</span>
-                                                                            <span className="font-semibold text-zinc-800 dark:text-zinc-200">{formatDateOnly(row.surgery.requestDate)}</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-medium">
-                                                                        <div className="bg-blue-50 dark:bg-blue-900/10 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded border border-blue-200/50 dark:border-blue-800/50 w-fit flex items-center tooltip" title="Fecha Programada">
-                                                                            <span className="opacity-70 mr-1.5 text-[10px] uppercase">F. Prog:</span>
-                                                                            <span className="font-semibold">{formatDateOnly(row.surgery.scheduledDate)}</span>
-                                                                        </div>
-                                                                        <div className="bg-amber-50 dark:bg-amber-900/10 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded border border-amber-200/50 dark:border-amber-800/50 flex items-center w-fit tooltip" title="Hora">
-                                                                            <Clock size={11} className="opacity-70 mr-1.5" />
-                                                                            <span className="font-bold">{row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'Por definir'}</span>
-                                                                        </div>
-                                                                        {row.surgery.estimatedDuration && (
-                                                                            <div className="bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded border border-emerald-200/50 dark:border-emerald-800/50 w-fit flex items-center tooltip" title="Duración Estimada">
-                                                                                <Hourglass size={11} className="opacity-70 mr-1.5" />
-                                                                                <span className="font-bold">{row.surgery.estimatedDuration}</span>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                {row.surgery.notes && (
-                                                                    <div className="text-xs text-zinc-400 mt-2 mb-2 truncate max-w-[250px] font-medium" title={row.surgery.notes}>
-                                                                        <span className="text-zinc-300 mr-1">↳</span> {row.surgery.notes}
-                                                                    </div>
-                                                                )}
-                                                                {row.team && row.team.length > 0 && (
-                                                                    <div className="mt-2.5 pt-2.5 border-t border-zinc-100 dark:border-zinc-800/50 flex flex-wrap gap-1.5">
-                                                                        {row.team.map((t: any) => (
-                                                                            <div key={`${row.surgery.id}-${t.staff.id}`} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-50 dark:bg-zinc-800/80 text-[10px] font-medium border border-zinc-200/50 dark:border-zinc-700 ${t.role === 'CIRUJANO' ? 'text-blue-800 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-600 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`} title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
-                                                                                <span className="font-bold bg-white dark:bg-zinc-900 rounded px-1 shadow-sm border border-zinc-100 dark:border-zinc-700/50 opacity-90">
-                                                                                    {t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : 'CI'}
-                                                                                </span>
-                                                                                <span className="break-words whitespace-normal max-w-[300px]">
-                                                                                    {`${t.staff.name} ${t.staff.lastname}`.length > 70 ? `${t.staff.name} ${t.staff.lastname}`.substring(0, 70) + '...' : `${t.staff.name} ${t.staff.lastname}`}
-                                                                                </span>
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                            {filteredSurgeries.map((row, index) => (
+                                                <tr key={row.surgery.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-all duration-300 group text-sm">
+                                                    <td className="px-3 py-3 whitespace-nowrap text-zinc-500 font-medium align-middle">
+                                                        {index + 1}
+                                                    </td>
+                                                    <td className="px-3 py-3 align-middle">
+                                                        <div className="font-bold text-zinc-900 dark:text-white truncate max-w-[180px]" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
+                                                            {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii?.apellidos?.split(' ')[0]}, ${row.patientPii?.nombres?.split(' ')[0]}` : 'Desconocido'}
+                                                        </div>
+                                                        <div className="text-xs text-zinc-500 font-mono tracking-tight mt-0.5">
+                                                            {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'S/Doc'}
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-5 whitespace-nowrap align-middle">
-                                                        <div className="inline-flex items-center">
-                                                            <div className={`w-2 h-2 rounded-full mr-2 ${row.operatingRoom?.name ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-                                                            <span className="text-sm text-zinc-900 dark:text-zinc-100 font-semibold tracking-tight">
-                                                                {row.operatingRoom?.name || 'Sala Desasignada'}
+                                                    <td className="px-3 py-3 align-middle">
+                                                        <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium truncate max-w-[100px]" title={row.specialty?.name || ''}>
+                                                            {row.specialty?.name || '-'}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 align-middle min-w-[180px]">
+                                                        <div className="flex flex-col gap-1 max-w-[180px]">
+                                                            {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
+                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold truncate" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
+                                                                    <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} {row.diagnoses.length > 1 ? `(+${row.diagnoses.length - 1})` : ''}
+                                                                </div>
+                                                            ) : row.surgery.diagnosis ? (
+                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold truncate" title={row.surgery.diagnosis}>
+                                                                    <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
+                                                                </div>
+                                                            ) : null}
+                                                            {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
+                                                                <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium truncate" title={interventions.find(int => int.id === row.interventions[0])?.name}>
+                                                                    <span className="opacity-80 font-bold">In:</span> {interventions.find(int => int.id === row.interventions[0])?.name || row.interventions[0]} {row.interventions.length > 1 ? `(+${row.interventions.length - 1})` : ''}
+                                                                </div>
+                                                            )}
+                                                            {row.surgery.notes && (
+                                                                <div className="text-[10px] text-zinc-400 truncate max-w-[180px] font-medium" title={row.surgery.notes}>
+                                                                    <span className="text-zinc-300 mr-1">↳</span> {row.surgery.notes}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
+                                                            {formatDateOnly(row.surgery.requestDate)}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
+                                                            {formatDateOnly(row.surgery.scheduledDate)}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
+                                                            {row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'TBD'}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        <div className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                                                            {row.surgery.estimatedDuration || '-'}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        <div className="inline-flex items-center text-xs font-semibold">
+                                                            <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${row.operatingRoom?.name ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                                                            <span className="truncate max-w-[100px]" title={row.operatingRoom?.name || 'S/A'}>
+                                                                {row.operatingRoom?.name || 'S/A'}
                                                             </span>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-5 whitespace-nowrap align-middle">
-                                                        {getStatusBadge(row.surgery.status)}
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        <div className="flex flex-col gap-1 items-start">
+                                                            {row.surgery.surgeryType && (
+                                                                <div className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                                                                    {row.surgery.surgeryType.replace('Cirugía ', 'C. ')}
+                                                                </div>
+                                                            )}
+                                                            {row.surgery.urgencyType && (
+                                                                <div className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.urgencyType === 'EMERGENCIA' ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
+                                                                    {row.surgery.urgencyType}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </td>
-                                                    <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium align-middle">
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        {row.surgery.insuranceType && (
+                                                            <div className="text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase bg-purple-50 text-purple-700 border-purple-200 text-center">
+                                                                {row.surgery.insuranceType}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-3 py-3 align-middle">
+                                                        {row.team && row.team.length > 0 ? (
+                                                            <div className="flex flex-col gap-0.5 text-[10px] leading-tight">
+                                                                {row.team.slice(0,2).map((t: any) => (
+                                                                    <div key={`${row.surgery.id}-${t.staff.id}`} className="truncate max-w-[120px]" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
+                                                                        <span className={`font-bold mr-1 ${t.role === 'CIRUJANO' ? 'text-blue-700 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
+                                                                            {t.role === 'CIRUJANO' ? 'Cx:' : t.role === 'ANESTESIOLOGO' ? 'An:' : 'CI:'}
+                                                                        </span>
+                                                                        <span className="text-zinc-700 dark:text-zinc-300">
+                                                                            {t.staff.name?.split(' ')[0]} {t.staff.lastname?.split(' ')[0]}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                                {row.team.length > 2 && <div className="text-zinc-400 italic text-[9px] mt-0.5">+{row.team.length - 2} más</div>}
+                                                            </div>
+                                                        ) : <span className="text-xs text-zinc-400">-</span>}
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        <div className="scale-90 origin-left">
+                                                            {getStatusBadge(row.surgery.status)}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap text-right align-middle">
                                                         <div className="flex justify-end gap-2 items-center opacity-70 group-hover:opacity-100 transition-opacity duration-300">
                                                             {/* Flujo de Estados con Modal de Tiempo */}
                                                             {row.surgery.status === 'scheduled' && canAdvancePhase && (
