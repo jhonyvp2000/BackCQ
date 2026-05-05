@@ -462,7 +462,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                 handleClose();
             }
 
-            if (actionType === 'plus' && res.surgeryId) {
+            if (actionType === 'plus' && res && 'surgeryId' in res && res.surgeryId) {
                 let pName = 'Paciente';
                 const apiPatientDataRaw = formData.get("api_patient_data") as string | null;
                 if (apiPatientDataRaw) {
