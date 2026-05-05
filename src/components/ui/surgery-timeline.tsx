@@ -269,14 +269,19 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                     )}
 
                                                     {s.team && s.team.length > 0 && (
-                                                        <div className="pl-1.5 flex flex-wrap gap-1 opacity-90 group-hover:opacity-100 pt-1.5">
-                                                            {s.team.map((t: any) => (
-                                                                <span key={t.staff.id} className={`text-[8.5px] bg-white/70 dark:bg-zinc-800/80 px-1 py-0.5 leading-none rounded-[3px] font-bold shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-white/40 dark:border-zinc-700 max-w-full break-words whitespace-normal ${t.role === 'CIRUJANO' ? 'text-blue-800 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400'}`}>
-                                                                    <span className="opacity-90">
-                                                                        {t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : 'CI'}:
-                                                                    </span> {`${t.staff.name || ''} ${t.staff.lastname || ''}`.trim().length > 70 ? `${t.staff.name || ''} ${t.staff.lastname || ''}`.trim().substring(0, 70) + '...' : `${t.staff.name || ''} ${t.staff.lastname || ''}`.trim()}
-                                                                </span>
-                                                            ))}
+                                                        <div className="pl-1.5 opacity-90 group-hover:opacity-100 pt-1 text-[8.5px] leading-tight break-words whitespace-normal w-full overflow-hidden pr-1">
+                                                            {s.team.map((t: any) => {
+                                                                const firstName = (t.staff.name || '').split(' ')[0] || '';
+                                                                const firstLastName = (t.staff.lastname || '').split(' ')[0] || '';
+                                                                const shortName = `${firstName} ${firstLastName}`.trim();
+                                                                const roleStr = t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : 'CI';
+                                                                const colorClass = t.role === 'CIRUJANO' ? 'text-blue-800 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400';
+                                                                return (
+                                                                    <span key={t.staff.id} className="inline mr-1 font-bold">
+                                                                        <span className="opacity-80">{roleStr}:</span> <span className={colorClass}>{shortName}</span>
+                                                                    </span>
+                                                                );
+                                                            })}
                                                         </div>
                                                     )}
                                                 </motion.div>
