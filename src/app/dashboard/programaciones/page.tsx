@@ -29,7 +29,7 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
 
     const surgeons = await getMedicalStaffByProfession('MEDICO CIRUJANO');
     const anesthesiologists = await getMedicalStaffByProfession('ANESTESIOLOGO');
-    const nurses = await getMedicalStaffByProfession('ENFERMERO');
+    const nurses = await getMedicalStaffByProfession(['ENFERMERO', 'ENFERMERO INSTRUMENTISTA', 'ENFERMERO CIRCULANTE']);
     const staff = { surgeons, anesthesiologists, nurses };
 
     const getStatusBadge = (status: string) => {
