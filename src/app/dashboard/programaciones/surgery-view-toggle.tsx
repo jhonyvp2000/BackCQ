@@ -573,7 +573,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         </div>
                                                     </td>
                                                     <td className="px-3 py-3 align-middle">
-                                                        <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium truncate max-w-[100px]" title={row.specialty?.name || ''}>
+                                                        <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium line-clamp-3 leading-tight break-words whitespace-normal max-w-[100px]" title={row.specialty?.name || ''}>
                                                             {row.specialty?.name || '-'}
                                                         </div>
                                                     </td>
