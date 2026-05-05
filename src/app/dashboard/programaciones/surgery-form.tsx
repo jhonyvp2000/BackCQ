@@ -1336,7 +1336,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
 
                             <div className="space-y-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Circulante / Intensivista</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Instrumentista / Circulante</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
