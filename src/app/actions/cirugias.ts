@@ -540,6 +540,8 @@ export async function createSurgery(formData: FormData) {
 
     revalidatePath("/dashboard/programaciones");
     revalidatePath("/dashboard", "layout");
+
+    return { success: true, surgeryId: surgeryRecordId };
 }
 
 export async function updateSurgeryStatus(formData: FormData) {

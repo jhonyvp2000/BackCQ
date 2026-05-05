@@ -125,6 +125,17 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
         return () => clearInterval(interval);
     }, [router]);
 
+    // Listener global para encadenamiento automático de flujos ("Confirmar Cirugía +")
+    useEffect(() => {
+        const handleOpenModal = (e: any) => {
+            if (e.detail) {
+                setTransitionModal(e.detail);
+            }
+        };
+        window.addEventListener('OPEN_TRANSITION_MODAL', handleOpenModal);
+        return () => window.removeEventListener('OPEN_TRANSITION_MODAL', handleOpenModal);
+    }, []);
+
     // Estados para Filtros de Lista
     const [filterDate, setFilterDate] = useState<string>("");
     const [filterPatient, setFilterPatient] = useState<string>("");

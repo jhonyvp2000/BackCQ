@@ -49,6 +49,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [errorModalMsg, setErrorModalMsg] = useState<string>("");
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [errorModalType, setErrorModalType] = useState<'validation' | 'conflict'>('validation');
+    const [actionType, setActionType] = useState<'normal' | 'plus'>('normal');
     const [dxSearchTerm, setDxSearchTerm] = useState("");
     const [selectedDxIds, setSelectedDxIds] = useState<Set<string>>(new Set());
     const [isSearchingDx, setIsSearchingDx] = useState(false);
@@ -460,6 +461,30 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             if (!keepOpen || editMode) {
                 handleClose();
             }
+
+            if (actionType === 'plus' && res.surgeryId) {
+                let pName = 'Paciente';
+                const apiPatientDataRaw = formData.get("api_patient_data") as string | null;
+                if (apiPatientDataRaw) {
+                    try {
+                        const parsed = JSON.parse(apiPatientDataRaw);
+                        pName = `${parsed.nombres || ''} ${parsed.apellidos || ''}`.trim() || pName;
+                    } catch (e) {}
+                } else if (selectedPatList.length > 0) {
+                    pName = `${selectedPatList[0]?.pii?.nombres || ''} ${selectedPatList[0]?.pii?.apellidos || ''}`.trim() || pName;
+                }
+
+                window.dispatchEvent(new CustomEvent('OPEN_TRANSITION_MODAL', {
+                    detail: {
+                        isOpen: true,
+                        surgeryId: res.surgeryId,
+                        targetPhase: 'in_progress',
+                        patientName: pName,
+                        urgencyType: formData.get('urgency_type') || 'ELECTIVO'
+                    }
+                }));
+            }
+
             router.refresh();
         }
         setSubmitting(false);
@@ -1417,14 +1442,29 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         </label>
                     )}
 
-                    <button
-                        type="submit"
-                        disabled={!canSchedule || submitting}
-                        className="group relative flex justify-center py-3.5 px-8 rounded-xl shadow-md text-sm font-normal text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all duration-200 overflow-hidden w-full sm:w-auto ml-auto"
-                    >
-                        <div className="absolute inset-0 w-full h-full -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                        <span className="relative">{submitting ? (editMode ? "Actualizando..." : "Aprobando Agenda...") : (editMode ? "Guardar Cambios" : "Confirmar Cirugía")}</span>
-                    </button>
+                    <div className="flex w-full sm:w-auto ml-auto gap-3">
+                        {!editMode && (
+                            <button
+                                type="submit"
+                                onClick={() => setActionType('plus')}
+                                disabled={!canSchedule || submitting}
+                                className="group relative flex justify-center py-3.5 px-6 rounded-xl shadow-sm text-sm font-bold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 overflow-hidden"
+                            >
+                                <span className="relative flex items-center gap-2">
+                                    {submitting && actionType === 'plus' ? "Procesando..." : "Confirmar Cirugía +"}
+                                </span>
+                            </button>
+                        )}
+                        <button
+                            type="submit"
+                            onClick={() => setActionType('normal')}
+                            disabled={!canSchedule || submitting}
+                            className="group relative flex justify-center py-3.5 px-8 rounded-xl shadow-md text-sm font-normal text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all duration-200 overflow-hidden"
+                        >
+                            <div className="absolute inset-0 w-full h-full -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                            <span className="relative">{(submitting && actionType === 'normal') ? (editMode ? "Actualizando..." : "Aprobando Agenda...") : (editMode ? "Guardar Cambios" : "Confirmar Cirugía")}</span>
+                        </button>
+                    </div>
                 </div>
             </form>
             
