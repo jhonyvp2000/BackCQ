@@ -526,11 +526,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     </Link>
                                                 </th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Especialidad</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[180px]">Diagnóstico / Intervención</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px]">F. Solicitud</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px]">F. Prog.</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px]">Hora</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px]">Duración</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[360px] max-w-[450px]">Diagnóstico / Intervención</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px] text-center">
+                                                    <div className="bg-zinc-200/50 dark:bg-zinc-700/50 px-2 py-1 rounded inline-block">F. SoliC. / F. Prog</div>
+                                                </th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">
+                                                    <div className="bg-zinc-200/50 dark:bg-zinc-700/50 px-2 py-1 rounded inline-block">Hora - Duración</div>
+                                                </th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Quirófano</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Tipo / Urg.</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px]">Seguro</th>
@@ -558,47 +560,47 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             {row.specialty?.name || '-'}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle min-w-[180px]">
-                                                        <div className="flex flex-col gap-1 max-w-[180px]">
+                                                    <td className="px-3 py-3 align-middle min-w-[360px] max-w-[450px]">
+                                                        <div className="flex flex-col gap-1.5 w-full">
                                                             {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
-                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-2 leading-tight break-words whitespace-normal" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
+                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
                                                                     <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} - {diagnoses.find(dx => dx.id === row.diagnoses[0])?.name || ''} {row.diagnoses.length > 1 ? `(+${row.diagnoses.length - 1})` : ''}
                                                                 </div>
                                                             ) : row.surgery.diagnosis ? (
-                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-2 leading-tight break-words whitespace-normal" title={row.surgery.diagnosis}>
+                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal" title={row.surgery.diagnosis}>
                                                                     <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
                                                                 </div>
                                                             ) : null}
                                                             {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
-                                                                <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium line-clamp-2 leading-tight break-words whitespace-normal" title={interventions.find(int => int.id === row.interventions[0])?.name}>
+                                                                <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium line-clamp-3 leading-tight break-words whitespace-normal" title={interventions.find(int => int.id === row.interventions[0])?.name}>
                                                                     <span className="opacity-80 font-bold">In:</span> {interventions.find(int => int.id === row.interventions[0])?.name || row.interventions[0]} {row.interventions.length > 1 ? `(+${row.interventions.length - 1})` : ''}
                                                                 </div>
                                                             )}
                                                             {row.surgery.notes && (
-                                                                <div className="text-[10px] text-zinc-400 truncate max-w-[180px] font-medium" title={row.surgery.notes}>
+                                                                <div className="text-[10px] text-zinc-400 line-clamp-2 leading-tight font-medium" title={row.surgery.notes}>
                                                                     <span className="text-zinc-300 mr-1">↳</span> {row.surgery.notes}
                                                                 </div>
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
-                                                        <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
-                                                            {formatDateOnly(row.surgery.requestDate)}
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
+                                                        <div className="flex flex-col items-center justify-center gap-1.5">
+                                                            <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
+                                                                {formatDateOnly(row.surgery.requestDate)}
+                                                            </div>
+                                                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
+                                                                {formatDateOnly(row.surgery.scheduledDate)}
+                                                            </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
-                                                        <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
-                                                            {formatDateOnly(row.surgery.scheduledDate)}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
-                                                        <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                                                            {row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'TBD'}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
-                                                        <div className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                                                            {row.surgery.estimatedDuration || '-'}
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
+                                                        <div className="flex flex-col items-center justify-center gap-1.5">
+                                                            <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
+                                                                {row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'TBD'}
+                                                            </div>
+                                                            <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
+                                                                {row.surgery.estimatedDuration || '-'}
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-3 py-3 whitespace-nowrap align-middle">
