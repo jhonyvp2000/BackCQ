@@ -527,12 +527,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                 </th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Especialidad</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[360px] max-w-[450px]">Diagnóstico / Intervención</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px] text-center">
-                                                    <div className="bg-zinc-200/50 dark:bg-zinc-700/50 px-2 py-1 rounded inline-block">F. SoliC. / F. Prog</div>
-                                                </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">
-                                                    <div className="bg-zinc-200/50 dark:bg-zinc-700/50 px-2 py-1 rounded inline-block">Hora - Duración</div>
-                                                </th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px] text-center">F. Sol-Pro</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">Hora-Dur</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Quirófano</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Tipo / Urg.</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px]">Seguro</th>
