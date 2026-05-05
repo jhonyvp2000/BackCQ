@@ -561,16 +561,16 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     <td className="px-3 py-3 align-middle min-w-[180px]">
                                                         <div className="flex flex-col gap-1 max-w-[180px]">
                                                             {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
-                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold truncate" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
-                                                                    <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} {row.diagnoses.length > 1 ? `(+${row.diagnoses.length - 1})` : ''}
+                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-2 leading-tight break-words whitespace-normal" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
+                                                                    <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} - {diagnoses.find(dx => dx.id === row.diagnoses[0])?.name || ''} {row.diagnoses.length > 1 ? `(+${row.diagnoses.length - 1})` : ''}
                                                                 </div>
                                                             ) : row.surgery.diagnosis ? (
-                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold truncate" title={row.surgery.diagnosis}>
+                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-2 leading-tight break-words whitespace-normal" title={row.surgery.diagnosis}>
                                                                     <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
                                                                 </div>
                                                             ) : null}
                                                             {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
-                                                                <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium truncate" title={interventions.find(int => int.id === row.interventions[0])?.name}>
+                                                                <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium line-clamp-2 leading-tight break-words whitespace-normal" title={interventions.find(int => int.id === row.interventions[0])?.name}>
                                                                     <span className="opacity-80 font-bold">In:</span> {interventions.find(int => int.id === row.interventions[0])?.name || row.interventions[0]} {row.interventions.length > 1 ? `(+${row.interventions.length - 1})` : ''}
                                                                 </div>
                                                             )}
