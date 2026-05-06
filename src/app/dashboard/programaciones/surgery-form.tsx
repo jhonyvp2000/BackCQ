@@ -367,7 +367,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         .filter(n => !selectedNursIds.has(n.id))
         .filter(n => {
             if (nursSearchTermsArr.length === 0) return true;
-            const fullText = removeDiacritics(`${n.name} ${n.lastname} ${n.professionName || ""}`).toLowerCase();
+            const prefix = n.professionName?.includes('ENFERMERO') ? 'Lic. ' : n.professionName?.includes('TECNICO') ? 'Tec. ' : '';
+            const fullText = removeDiacritics(`${prefix}${n.name} ${n.lastname} ${n.professionName || ""}`).toLowerCase();
             return nursSearchTermsArr.every(term => fullText.includes(term));
         })
         .slice(0, 50);
