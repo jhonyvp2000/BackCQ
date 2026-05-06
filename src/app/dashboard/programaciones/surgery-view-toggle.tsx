@@ -655,7 +655,21 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 {row.team.map((t: any) => (
                                                                     <span key={`${row.surgery.id}-${t.staff.id}`} className="inline mr-1.5" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
                                                                         <span className={`font-bold mr-0.5 ${t.role === 'CIRUJANO' ? 'text-blue-700 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
-                                                                            {t.role === 'CIRUJANO' ? 'Cx:' : t.role === 'ANESTESIOLOGO' ? 'An:' : 'CI:'}
+                                                                            {t.role === 'CIRUJANO' ? 'Cx:' : t.role === 'ANESTESIOLOGO' ? 'An:' : (() => {
+                                                                                let profName = t.staff?.professionName || t.professionName;
+                                                                                if (!profName && staff?.nurses) {
+                                                                                    const nurse = staff.nurses.find((n: any) => n.id === t.staff.id);
+                                                                                    if (nurse) profName = nurse.professionName;
+                                                                                }
+                                                                                if (!profName) {
+                                                                                    if (t.role === 'INSTRUMENTISTA') return 'In:';
+                                                                                    if (t.role === 'CIRCULANTE') return 'Ci:';
+                                                                                    return 'CI:';
+                                                                                }
+                                                                                if (profName.includes('INSTRUMENTISTA')) return 'In:';
+                                                                                if (profName.includes('CIRCULANTE')) return 'Ci:';
+                                                                                return 'CI:';
+                                                                            })()}
                                                                         </span>
                                                                         <span className="text-zinc-700 dark:text-zinc-300 font-medium">
                                                                             {t.staff.name?.split(' ')[0]} {t.staff.lastname?.split(' ')[0]}
