@@ -269,12 +269,22 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                     )}
 
                                                     {s.team && s.team.length > 0 && (
-                                                        <div className="pl-1.5 opacity-90 group-hover:opacity-100 pt-1 text-[8.5px] leading-tight break-words whitespace-normal w-full overflow-hidden pr-1">
+                                                        <div className="pl-1.5 opacity-90 group-hover:opacity-100 pt-1 text-[8.5px] leading-tight break-words whitespace-normal w-full pr-1">
                                                             {s.team.map((t: any) => {
                                                                 const firstName = (t.staff.name || '').split(' ')[0] || '';
                                                                 const firstLastName = (t.staff.lastname || '').split(' ')[0] || '';
                                                                 const shortName = `${firstName} ${firstLastName}`.trim();
-                                                                const roleStr = t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : 'CI';
+                                                                const roleStr = t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : (() => {
+                                                                    let profName = t.staff?.professionName || t.professionName;
+                                                                    if (!profName) {
+                                                                        if (t.role === 'INSTRUMENTISTA') return 'In';
+                                                                        if (t.role === 'CIRCULANTE') return 'Ci';
+                                                                        return 'CI';
+                                                                    }
+                                                                    if (profName.includes('INSTRUMENTISTA')) return 'In';
+                                                                    if (profName.includes('CIRCULANTE')) return 'Ci';
+                                                                    return 'CI';
+                                                                })();
                                                                 const colorClass = t.role === 'CIRUJANO' ? 'text-blue-800 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400';
                                                                 return (
                                                                     <span key={t.staff.id} className="inline mr-1 font-bold">
