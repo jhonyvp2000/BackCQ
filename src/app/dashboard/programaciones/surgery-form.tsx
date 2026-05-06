@@ -1384,8 +1384,12 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                 onChange={(e) => toggleNurs(n.id, e.target.checked)}
                                                 className="w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
                                             />
-                                            <span className="font-semibold text-[var(--color-hospital-blue)] dark:text-blue-400">{n.name} {n.lastname}</span>
-                                            <span className="text-zinc-700 dark:text-zinc-300 text-xs flex-1 truncate font-medium">{n.professionName}</span>
+                                            <span className="font-semibold text-[var(--color-hospital-blue)] dark:text-blue-400 truncate flex-1">
+                                                <span className="font-normal opacity-75 mr-1 text-xs">
+                                                    {n.professionName?.includes('ENFERMERO') ? 'Lic.' : n.professionName?.includes('TECNICO') ? 'Tec.' : ''}
+                                                </span>
+                                                {n.name} {n.lastname}
+                                            </span>
                                         </label>
                                     ))}
                                     {filteredUnselectedNurs.map((n) => (
@@ -1399,8 +1403,12 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                 onChange={(e) => toggleNurs(n.id, e.target.checked)}
                                                 className="w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
                                             />
-                                            <span className="font-semibold text-zinc-700 dark:text-zinc-200">{n.name} {n.lastname}</span>
-                                            <span className="text-zinc-500 dark:text-zinc-400 text-xs flex-1 truncate">{n.professionName}</span>
+                                            <span className="font-semibold text-zinc-700 dark:text-zinc-200 truncate flex-1">
+                                                <span className="font-normal text-zinc-500 dark:text-zinc-400 mr-1 text-xs">
+                                                    {n.professionName?.includes('ENFERMERO') ? 'Lic.' : n.professionName?.includes('TECNICO') ? 'Tec.' : ''}
+                                                </span>
+                                                {n.name} {n.lastname}
+                                            </span>
                                         </label>
                                     ))}
                                     {filteredUnselectedNurs.length === 0 && selectedNursList.length === 0 && (
