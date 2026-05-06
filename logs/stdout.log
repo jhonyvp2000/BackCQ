@@ -1,0 +1,934 @@
+
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 407ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 563ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 839ms
+[lookupDiagnosis] Buscando: FRACTIC en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTIC
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: LIPO en ApiNetHos
+[lookupDiagnosis] Buscando: LIPOMA en ApiNetHos
+[lookupDiagnosis] Buscando: LIPOMA TOR en ApiNetHos
+[lookupDiagnosis] Buscando: MIOMA en ApiNetHos
+[lookupDiagnosis] Buscando: MIOMAT en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: MIOMAT
+[lookupDiagnosis] Buscando: MIOMA en ApiNetHos
+[lookupDiagnosis] Buscando: MANO en ApiNetHos
+[lookupDiagnosis] Buscando: MANO TR en ApiNetHos
+[lookupDiagnosis] Buscando: ABCESO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCESO
+[lookupDiagnosis] Buscando: ABCES en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCES
+[lookupDiagnosis] Buscando: ABCE en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCE
+[lookupDiagnosis] Buscando: ABC en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABC
+[lookupDiagnosis] Buscando: ACCE en ApiNetHos
+[lookupDiagnosis] Buscando: ACCESO en ApiNetHos
+[lookupDiagnosis] Buscando: ABCESO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCESO
+[lookupDiagnosis] Buscando: ABCES en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCES
+[lookupDiagnosis] Buscando: ABCE en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCE
+[lookupDiagnosis] Buscando: ABCES en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCES
+[lookupDiagnosis] Buscando: ABCESO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCESO
+[lookupDiagnosis] Buscando: ABCESO FA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCESO FA
+[lookupDiagnosis] Buscando: ABCESO FACIAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCESO FACIAL
+[lookupDiagnosis] Buscando: ABCES en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ABCES
+[lookupDiagnosis] Buscando: LITIA en ApiNetHos
+[lookupDiagnosis] Buscando: LITIASI en ApiNetHos
+[lookupDiagnosis] Buscando: LIT en ApiNetHos
+[lookupDiagnosis] Buscando: LITIA en ApiNetHos
+[lookupDiagnosis] Buscando: GESTA en ApiNetHos
+[lookupDiagnosis] Buscando: APENDI en ApiNetHos
+[lookupDiagnosis] Buscando: APENDIC en ApiNetHos
+[lookupDiagnosis] Buscando: APENDICITIS en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 427ms
+[lookupDiagnosis] Buscando: 40SS en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: 40SS
+[lookupDiagnosis] Buscando: GESTANTE en ApiNetHos
+[lookupDiagnosis] Buscando: RIESGO en ApiNetHos
+[lookupDiagnosis] Buscando: PARIDA en ApiNetHos
+[lookupDiagnosis] Buscando: BIENESTAR en ApiNetHos
+[lookupDiagnosis] Buscando: BIENESTAR FETA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: BIENESTAR FETA
+[lookupDiagnosis] Buscando: BIENESTAR FETAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: BIENESTAR FETAL
+[lookupDiagnosis] Buscando: GESTANTE BIENESTAR FETAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE BIENESTAR FETAL
+[lookupDiagnosis] Buscando: GESTANTE 40 SS BIENESTAR FETAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 40 SS BIENESTAR FETAL
+[lookupDiagnosis] Buscando: GESTANTE 40 SS RIEBIENESTAR FETAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 40 SS RIEBIENESTAR FETAL
+[lookupDiagnosis] Buscando: GESTANTE 40 SS RIESGO BIENESTAR FETAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 40 SS RIESGO BIENESTAR FETAL
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 415ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 413ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 422ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 409ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 693ms
+[lookupDiagnosis] Buscando: URET en ApiNetHos
+[lookupDiagnosis] Buscando: URETROCE en ApiNetHos
+[lookupDiagnosis] Buscando: gesta en ApiNetHos
+[lookupDiagnosis] Buscando: gestant en ApiNetHos
+[lookupDiagnosis] Buscando: tors en ApiNetHos
+[lookupDiagnosis] Buscando: tors en ApiNetHos
+[lookupDiagnosis] Buscando: torsl en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: torsl
+[lookupDiagnosis] Buscando: tors en ApiNetHos
+[lookupDiagnosis] Buscando: tors test en ApiNetHos
+[lookupDiagnosis] Buscando: tor en ApiNetHos
+[lookupDiagnosis] Buscando: tors en ApiNetHos
+[lookupDiagnosis] Buscando: torsi en ApiNetHos
+[lookupDiagnosis] Buscando: torsi tes en ApiNetHos
+[lookupDiagnosis] Buscando: TORS en ApiNetHos
+[lookupDiagnosis] Buscando: TORSI en ApiNetHos
+[lookupDiagnosis] Buscando: TORSI TE en ApiNetHos
+[lookupDiagnosis] Buscando: torsi en ApiNetHos
+[lookupDiagnosis] Buscando: torsi tes en ApiNetHos
+[lookupDiagnosis] Buscando: tors en ApiNetHos
+[lookupDiagnosis] Buscando: tors test en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 561ms
+[lookupDiagnosis] Buscando: test en ApiNetHos
+[lookupDiagnosis] Buscando: testi en ApiNetHos
+[lookupDiagnosis] Buscando: testic en ApiNetHos
+[lookupDiagnosis] Buscando: tor en ApiNetHos
+[lookupDiagnosis] Buscando: tors en ApiNetHos
+[lookupDiagnosis] Buscando: tors test en ApiNetHos
+[lookupDiagnosis] Buscando: torsi en ApiNetHos
+[lookupDiagnosis] Buscando: torsio en ApiNetHos
+[lookupDiagnosis] Buscando: GEST en ApiNetHos
+[lookupDiagnosis] Buscando: tor en ApiNetHos
+[lookupDiagnosis] Buscando: tors en ApiNetHos
+[lookupDiagnosis] Buscando: torsi en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 1562ms
+[lookupDiagnosis] Buscando: torsi en ApiNetHos
+[lookupDiagnosis] Buscando: tors en ApiNetHos
+[lookupDiagnosis] Buscando: GES en ApiNetHos
+[lookupDiagnosis] Buscando: GESTA en ApiNetHos
+[lookupDiagnosis] Buscando: GESTAN en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTE en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTE en ApiNetHos
+[lookupDiagnosis] Buscando: APEND en ApiNetHos
+[lookupDiagnosis] Buscando: APENDI en ApiNetHos
+[lookupDiagnosis] Buscando: APENDICITIS en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTE 39 SS en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39 SS
+[lookupDiagnosis] Buscando: GESTANTE 39 SS CA 2 V en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39 SS CA 2 V
+[lookupDiagnosis] Buscando: GESTANTE en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTE 31 SS en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 31 SS
+[lookupDiagnosis] Buscando: GESTANTE 31 SS HTA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 31 SS HTA
+[lookupDiagnosis] Buscando: GESTANTE 31 SS HTA PRECLAMSIA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 31 SS HTA PRECLAMSIA
+[lookupDiagnosis] Buscando: FISTUL en ApiNetHos
+[lookupDiagnosis] Buscando: FISTULA en ApiNetHos
+[lookupDiagnosis] Buscando: FISTULA en ApiNetHos
+[lookupDiagnosis] Buscando: FISTULA O en ApiNetHos
+[lookupDiagnosis] Buscando: FISTULA ORO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FISTULA ORO
+[lookupDiagnosis] Buscando: FISTULA OROANTRAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FISTULA OROANTRAL
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 1119ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://172.27.112.1:3006
+
+✓ Starting...
+✓ Ready in 1469ms
+
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://172.22.48.1:3006
+
+✓ Starting...
+✓ Ready in 1831ms
+[lookupDiagnosis] Buscando: SARC en ApiNetHos
+[lookupDiagnosis] Buscando: SARCOMA en ApiNetHos
+[lookupDiagnosis] Buscando: SARCOMA PARE en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SARCOMA PARE
+[lookupDiagnosis] Buscando: SARCOMA TO en ApiNetHos
+[lookupDiagnosis] Buscando: SARCOMA TOR en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SARCOMA TOR
+[lookupDiagnosis] Buscando: SARCOMA TO en ApiNetHos
+[lookupDiagnosis] Buscando: C96 en ApiNetHos
+[lookupDiagnosis] Buscando: C968 en ApiNetHos
+[lookupProcedure] Buscando: RESE en ApiNetHos
+[lookupProcedure] Buscando: RESEC en ApiNetHos
+[lookupProcedure] Buscando: RESEC en ApiNetHos
+[lookupProcedure] Buscando: RESEC TUMO en ApiNetHos
+[lookupProcedure] Buscando: RESEC TUMO en ApiNetHos
+[lookupProcedure] Buscando: RESEC TUMO PARED en ApiNetHos
+[lookupProcedure] Buscando: RESEC TUMO PARED TO en ApiNetHos
+[lookupProcedure] Buscando: RESEC TUMO PARED TOR en ApiNetHos
+[lookupDiagnosis] Buscando: TUMOR PELV en ApiNetHos
+[lookupDiagnosis] Buscando: TUMOR PELVO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: TUMOR PELVO
+[lookupDiagnosis] Buscando: TUMOR PELVI en ApiNetHos
+[lookupDiagnosis] Buscando: TUMOR PELVI en ApiNetHos
+[lookupProcedure] Buscando: LAPAR en ApiNetHos
+[lookupProcedure] Buscando: LAPARA en ApiNetHos
+[lookupProcedure] Buscando: LAPAROT en ApiNetHos
+[lookupProcedure] Buscando: LAPAROTO en ApiNetHos
+[lookupProcedure] Buscando: LAPAROTO EXPLO en ApiNetHos
+[lookupProcedure] Buscando: LAPARO en ApiNetHos
+[lookupProcedure] Buscando: LAPARO EXPLO en ApiNetHos
+[lookupProcedure] Buscando: LAPARO EXPLO en ApiNetHos
+[lookupDiagnosis] Buscando: SARCOMA PARED TOR en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SARCOMA PARED TOR
+[lookupDiagnosis] Buscando: C96 en ApiNetHos
+[lookupDiagnosis] Buscando: C96 TORA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: C96 TORA
+[lookupDiagnosis] Buscando: C96 TOR en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: C96 TOR
+[lookupDiagnosis] Buscando: C96 en ApiNetHos
+[lookupDiagnosis] Buscando: SARCOM en ApiNetHos
+[lookupDiagnosis] Buscando: SARCOM PARE en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SARCOM PARE
+[lookupDiagnosis] Buscando: SARCOM PAR en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SARCOM PAR
+[lookupDiagnosis] Buscando: SARCOM en ApiNetHos
+[lookupDiagnosis] Buscando: SARCOM TOR en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SARCOM TOR
+[lookupDiagnosis] Buscando: SARC TOR en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SARC TOR
+[lookupDiagnosis] Buscando: SARC TO en ApiNetHos
+[lookupDiagnosis] Buscando: C96 en ApiNetHos
+[lookupDiagnosis] Buscando: C49 en ApiNetHos
+[lookupProcedure] Buscando: LAPARO en ApiNetHos
+[lookupProcedure] Buscando: LAPARO BIO en ApiNetHos
+[lookupDiagnosis] Buscando: C96 en ApiNetHos
+[lookupProcedure] Buscando: RESEP en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RESEP
+[lookupProcedure] Buscando: RESEP en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RESEP
+[lookupProcedure] Buscando: RESE en ApiNetHos
+[lookupProcedure] Buscando: RESE TUMO en ApiNetHos
+[lookupProcedure] Buscando: RESE TUMO PARED en ApiNetHos
+[lookupProcedure] Buscando: RESE TUMO PARED en ApiNetHos
+[lookupProcedure] Buscando: RESE TUMO PARED TOR en ApiNetHos
+[lookupProcedure] Buscando: RESE TUMO PARED TORA en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RESE TUMO PARED TORA
+[lookupDiagnosis] Buscando: C968 en ApiNetHos
+[lookupProcedure] Buscando: RESEP0 TUMO en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RESEP0 TUMO
+[lookupProcedure] Buscando: RESEP TUMO en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RESEP TUMO
+[lookupProcedure] Buscando: RESEPTUMO en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RESEPTUMO
+[lookupProcedure] Buscando: RESETUMO en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RESETUMO
+[lookupProcedure] Buscando: RESE TUMO en ApiNetHos
+[lookupProcedure] Buscando: RESE TUMO TORA en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RESE TUMO TORA
+[lookupDiagnosis] Buscando: C968 en ApiNetHos
+[lookupProcedure] Buscando: RESE en ApiNetHos
+[lookupProcedure] Buscando: RES TUM en ApiNetHos
+[lookupProcedure] Buscando: RES TUM TORA en ApiNetHos
+[lookupProcedure] Fallback Local Search para: RES TUM TORA
+[lookupDiagnosis] Buscando: C34 en ApiNetHos
+[lookupDiagnosis] Buscando: 034 en ApiNetHos
+[lookupDiagnosis] Buscando: Z35 en ApiNetHos
+[lookupProcedure] Buscando: CESA en ApiNetHos
+[lookupProcedure] Buscando: CESAREA en ApiNetHos
+[lookupProcedure] Fallback Local Search para: CESAREA
+[lookupProcedure] Buscando: CESAR en ApiNetHos
+[lookupProcedure] Buscando: CES en ApiNetHos
+[lookupProcedure] Buscando: CESA en ApiNetHos
+[lookupProcedure] Buscando: CESA B en ApiNetHos
+[lookupProcedure] Buscando: CESA LIGA en ApiNetHos
+[lookupProcedure] Buscando: CESA LIGADU en ApiNetHos
+[lookupDiagnosis] Buscando: L02 en ApiNetHos
+[lookupProcedure] Buscando: DEBR en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 442ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 427ms
+
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://172.31.96.1:3006
+
+✓ Starting...
+✓ Ready in 2.2s
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 433ms
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA TO en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA TOBI en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA TOBI
+[lookupDiagnosis] Buscando: FRACTURA TO en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA DE TOBILLO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA DE TOBILLO
+[lookupProcedure] Buscando: FRACTURA en ApiNetHos
+[lookupProcedure] Buscando: FRAC en ApiNetHos
+[lookupProcedure] Buscando: FRACT en ApiNetHos
+[lookupProcedure] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: HERNIO
+[lookupDiagnosis] Buscando: HERNI en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIA en ApiNetHos
+[lookupDiagnosis] Buscando: NECROSIS en ApiNetHos
+[lookupDiagnosis] Buscando: NECROSIS PUL en ApiNetHos
+[lookupProcedure] Buscando: EXTR en ApiNetHos
+[lookupProcedure] Buscando: EXTRACCION en ApiNetHos
+[lookupProcedure] Fallback Local Search para: EXTRACCION
+[lookupProcedure] Buscando: EXTRAC DEN en ApiNetHos
+[lookupProcedure] Buscando: EXTRAC DENTAL en ApiNetHos
+[lookupDiagnosis] Buscando: TUBA en ApiNetHos
+[lookupDiagnosis] Buscando: BLOQUE en ApiNetHos
+[lookupDiagnosis] Buscando: BLOQUEO en ApiNetHos
+[lookupDiagnosis] Buscando: BLOQUEO TUB en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: BLOQUEO TUB
+[lookupDiagnosis] Buscando: BLOQUEO TU en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: BLOQUEO TU
+[lookupDiagnosis] Buscando: BLOQUEO T en ApiNetHos
+[lookupDiagnosis] Buscando: BLOQUEO TUBARICO BILA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: BLOQUEO TUBARICO BILA
+[lookupDiagnosis] Buscando: BLOQUEO TUBARICO BILATERAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: BLOQUEO TUBARICO BILATERAL
+[lookupProcedure] Buscando: BLOQ en ApiNetHos
+[lookupProcedure] Buscando: BLOQUEO en ApiNetHos
+[lookupProcedure] Buscando: BLOQUEO T en ApiNetHos
+[lookupProcedure] Buscando: BLOQUEO TU en ApiNetHos
+[lookupDiagnosis] Buscando: PARIDA en ApiNetHos
+[lookupDiagnosis] Buscando: PARIDAD en ApiNetHos
+[lookupDiagnosis] Buscando: PARIDAD SATISFECHA PUERPERA INMEDIATA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: PARIDAD SATISFECHA PUERPERA INMEDIATA
+[lookupDiagnosis] Buscando: HERNIA en ApiNetHos
+[lookupProcedure] Buscando: UMBE en ApiNetHos
+[lookupProcedure] Fallback Local Search para: UMBE
+[lookupDiagnosis] Buscando: UMBILICORRAGIA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: UMBILICORRAGIA
+[lookupProcedure] Buscando: UMBI en ApiNetHos
+[lookupProcedure] Buscando: UMBILI en ApiNetHos
+[lookupProcedure] Buscando: UMBILICO en ApiNetHos
+[lookupProcedure] Fallback Local Search para: UMBILICO
+[lookupProcedure] Buscando: UMBILICORRAFIA en ApiNetHos
+[lookupProcedure] Fallback Local Search para: UMBILICORRAFIA
+[lookupDiagnosis] Buscando: HER en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIA en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIA en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIA ING en ApiNetHos
+[lookupDiagnosis] Buscando: ACSE en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ACSE
+[lookupDiagnosis] Buscando: ACCE en ApiNetHos
+[lookupDiagnosis] Buscando: ACCES en ApiNetHos
+[lookupDiagnosis] Buscando: ACCESO en ApiNetHos
+[lookupDiagnosis] Buscando: ACCESO INT en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ACCESO INT
+[lookupDiagnosis] Buscando: ACCESO IN en ApiNetHos
+[lookupProcedure] Buscando: ACCES en ApiNetHos
+[lookupProcedure] Buscando: ACCESO en ApiNetHos
+[lookupProcedure] Buscando: ACCESO en ApiNetHos
+[lookupDiagnosis] Buscando: ACCESO INTRABDOMINAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ACCESO INTRABDOMINAL
+[lookupDiagnosis] Buscando: GESTANTE 41 SS DILATACION en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 41 SS DILATACION
+[lookupDiagnosis] Buscando: GESTANTE 41 SS DILATACION GESTACIONA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 41 SS DILATACION GESTACIONA
+[lookupDiagnosis] Buscando: GESTANTE 41 SS DILATACION GESTACIONAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 41 SS DILATACION GESTACIONAL
+[lookupDiagnosis] Buscando: HERIDA en ApiNetHos
+[lookupDiagnosis] Buscando: HERIDA en ApiNetHos
+[lookupDiagnosis] Buscando: HERIDA DE en ApiNetHos
+[lookupDiagnosis] Buscando: HERIDA DE MU en ApiNetHos
+[lookupDiagnosis] Buscando: HERIDA DE MUÑEC en ApiNetHos
+[lookupDiagnosis] Buscando: PTOSISPARPEBRAL /B24 en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: PTOSISPARPEBRAL /B24
+[lookupDiagnosis] Buscando: APENDIC en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTE en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTE 38 en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 38
+[lookupDiagnosis] Buscando: GESTANTE 38 SS en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 38 SS
+[lookupDiagnosis] Buscando: GESTANTE 38 SS CA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 38 SS CA
+[lookupDiagnosis] Buscando: GESTANTE 38 SS CA 1 V en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 38 SS CA 1 V
+[lookupDiagnosis] Buscando: GESTANTE 38 SS CA 1 VEZ en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 38 SS CA 1 VEZ
+[lookupDiagnosis] Buscando: APENDIC en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTU en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA C en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA CONSO en ApiNetHos
+[lookupDiagnosis] Buscando: CONSOLIDA en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 420ms
+[lookupDiagnosis] Buscando: CONMS en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: CONMS
+[lookupDiagnosis] Buscando: CONSOLIDAD en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: CONSOLIDAD
+[lookupDiagnosis] Buscando: FRACTURA CONSO en ApiNetHos
+[lookupDiagnosis] Buscando: CONSOLIDA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA CONSOLIDADA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA CONSOLIDADA
+[lookupDiagnosis] Buscando: FRACTURA CONSOLIDADA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA CONSOLIDADA
+[lookupDiagnosis] Buscando: FRACTURA CONSOLIDADA DE RADIO DISTAL IZQUIERDO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA CONSOLIDADA DE RADIO DISTAL IZQUIERDO
+[lookupProcedure] Buscando: RETIRO en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 422ms
+[lookupDiagnosis] Buscando: FRACTURA CONSOL en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA CONSOLIDADA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA CONSOLIDADA
+[lookupDiagnosis] Buscando: FRACTURA CONSOLIDADA DE RADIO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA CONSOLIDADA DE RADIO
+[lookupDiagnosis] Buscando: FRACTURA CONSOLIDADA DE RADIO DISTAL IZQUIERDO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA CONSOLIDADA DE RADIO DISTAL IZQUIERDO
+[lookupProcedure] Buscando: RETIRO en ApiNetHos
+[lookupProcedure] Buscando: RETIRO DE en ApiNetHos
+[lookupProcedure] Buscando: RETIRO DE MOS en ApiNetHos
+[lookupProcedure] Buscando: RETIRO en ApiNetHos
+[lookupProcedure] Buscando: RETIRO en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA CONSOLIDADA DE RADIO DISTAL IZQUIERDO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA CONSOLIDADA DE RADIO DISTAL IZQUIERDO
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA CONS en ApiNetHos
+[lookupProcedure] Buscando: RETIRO en ApiNetHos
+[lookupProcedure] Buscando: RETIRO en ApiNetHos
+[lookupDiagnosis] Buscando: GESTA en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTE en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTE 39 en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39
+[lookupDiagnosis] Buscando: GESTANTE 39 SS en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39 SS
+[lookupDiagnosis] Buscando: GESTANTE 39 SS GESTACION en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39 SS GESTACION
+[lookupDiagnosis] Buscando: GESTANTE 39 SS en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39 SS
+[lookupDiagnosis] Buscando: GESTANTE 39 SS DILATACION GESTACIONAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39 SS DILATACION GESTACIONAL
+[lookupDiagnosis] Buscando: GESTANTE 39 SS DILATACION GESTACIONAL FETO GRA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39 SS DILATACION GESTACIONAL FETO GRA
+[lookupDiagnosis] Buscando: GESTANTE 39 SS DILATACION GESTACIONAL FETO GRANDE en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTE 39 SS DILATACION GESTACIONAL FETO GRANDE
+[lookupDiagnosis] Buscando: LITIASI en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA CUBI en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA CU en ApiNetHos
+[lookupProcedure] Buscando: RAFI en ApiNetHos
+[lookupProcedure] Buscando: REDUCCION en ApiNetHos
+[lookupProcedure] Fallback Local Search para: REDUCCION
+[lookupProcedure] Buscando: RAFI en ApiNetHos
+[lookupProcedure] Buscando: REDUCCION ABIE en ApiNetHos
+[lookupProcedure] Fallback Local Search para: REDUCCION ABIE
+[lookupProcedure] Buscando: REDUCCION ABIERTA en ApiNetHos
+[lookupProcedure] Fallback Local Search para: REDUCCION ABIERTA
+[lookupDiagnosis] Buscando: NECROSIS en ApiNetHos
+[lookupDiagnosis] Buscando: S92 en ApiNetHos
+[lookupDiagnosis] Buscando: S92.3 en ApiNetHos
+[lookupDiagnosis] Buscando: S92 en ApiNetHos
+[lookupDiagnosis] Buscando: S923 en ApiNetHos
+[lookupDiagnosis] Buscando: CODO en ApiNetHos
+[lookupDiagnosis] Buscando: CODO FR en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: CODO FR
+[lookupDiagnosis] Buscando: CODO en ApiNetHos
+[lookupDiagnosis] Buscando: SUPRA en ApiNetHos
+[lookupDiagnosis] Buscando: SUPRACO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SUPRACO
+[lookupDiagnosis] Buscando: SUPRAC en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: SUPRAC
+[lookupDiagnosis] Buscando: SUPRA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA SUPRACONDILEA CODO en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA SUPRACONDILEA CODO
+[lookupDiagnosis] Buscando: POSTE en ApiNetHos
+[lookupDiagnosis] Buscando: POSTEC en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: POSTEC
+[lookupDiagnosis] Buscando: FIMO en ApiNetHos
+[lookupDiagnosis] Buscando: FIMOSI en ApiNetHos
+[lookupDiagnosis] Buscando: LITIAS en ApiNetHos
+[lookupDiagnosis] Buscando: HIPE en ApiNetHos
+[lookupDiagnosis] Buscando: HIPERP en ApiNetHos
+[lookupDiagnosis] Buscando: TUMOR en ApiNetHos
+[lookupDiagnosis] Buscando: TUMOR MET en ApiNetHos
+[lookupDiagnosis] Buscando: TUMOR en ApiNetHos
+[lookupDiagnosis] Buscando: META en ApiNetHos
+[lookupDiagnosis] Buscando: METAT en ApiNetHos
+[lookupDiagnosis] Buscando: METATA en ApiNetHos
+[lookupDiagnosis] Buscando: METATAX en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: METATAX
+[lookupDiagnosis] Buscando: QUIST en ApiNetHos
+[lookupDiagnosis] Buscando: QUISTE en ApiNetHos
+[lookupDiagnosis] Buscando: QUISTE M en ApiNetHos
+[lookupDiagnosis] Buscando: QUISTE MET en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: QUISTE MET
+[lookupDiagnosis] Buscando: QUISTE M en ApiNetHos
+[lookupDiagnosis] Buscando: QUISTE MET en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: QUISTE MET
+[lookupDiagnosis] Buscando: MET en ApiNetHos
+[lookupDiagnosis] Buscando: META en ApiNetHos
+[lookupDiagnosis] Buscando: METATA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTU en ApiNetHos
+[lookupDiagnosis] Buscando: CODO en ApiNetHos
+[lookupDiagnosis] Buscando: CODO SUP en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: CODO SUP
+[lookupDiagnosis] Buscando: ADENE en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ADENE
+[lookupDiagnosis] Buscando: HIP en ApiNetHos
+[lookupDiagnosis] Buscando: HIPERPL en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIA en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIA INGUINAL en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIA INGUINAL ES en ApiNetHos
+[lookupDiagnosis] Buscando: COL en ApiNetHos
+[lookupDiagnosis] Buscando: COLE en ApiNetHos
+[lookupDiagnosis] Buscando: COLECIS en ApiNetHos
+[lookupDiagnosis] Buscando: K80 en ApiNetHos
+[lookupDiagnosis] Buscando: K801 en ApiNetHos
+[lookupProcedure] Buscando: COLE en ApiNetHos
+[lookupProcedure] Buscando: COLECIS en ApiNetHos
+[lookupProcedure] Buscando: COLECISTECTOMIA en ApiNetHos
+[lookupProcedure] Fallback Local Search para: COLECISTECTOMIA
+[lookupProcedure] Buscando: COLECISTECTOMIA ABI en ApiNetHos
+[lookupProcedure] Fallback Local Search para: COLECISTECTOMIA ABI
+[lookupProcedure] Buscando: COLECISTECTOMIA en ApiNetHos
+[lookupProcedure] Fallback Local Search para: COLECISTECTOMIA
+[lookupDiagnosis] Buscando: S52 en ApiNetHos
+[lookupDiagnosis] Buscando: S52.5 en ApiNetHos
+[lookupDiagnosis] Buscando: S52 en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA DE RADIO en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA DE RADIO DISTA en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA DE RADIO DISTA
+[lookupDiagnosis] Buscando: FRACTURA DE RADIO DISTAL en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: FRACTURA DE RADIO DISTAL
+[lookupDiagnosis] Buscando: FRACTURA DE RADIO en ApiNetHos
+[lookupProcedure] Buscando: RAFI en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://172.31.96.1:3006
+
+✓ Starting...
+✓ Ready in 1371ms
+[lookupDiagnosis] Buscando: HERNIA ING en ApiNetHos
+[lookupDiagnosis] Buscando: HERNIA INGUIN en ApiNetHos
+[lookupDiagnosis] Buscando: ESCROTA en ApiNetHos
+[lookupDiagnosis] Buscando: INGUI en ApiNetHos
+[lookupDiagnosis] Buscando: INGUINA en ApiNetHos
+[lookupDiagnosis] Buscando: E04 en ApiNetHos
+[lookupDiagnosis] Buscando: E041 en ApiNetHos
+[lookupProcedure] Buscando: TIROI en ApiNetHos
+[lookupProcedure] Buscando: TIRO en ApiNetHos
+[lookupDiagnosis] Buscando: ADE en ApiNetHos
+[lookupDiagnosis] Buscando: ADEN en ApiNetHos
+[lookupDiagnosis] Buscando: ADENE en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: ADENE
+[lookupDiagnosis] Buscando: ADENO en ApiNetHos
+[lookupDiagnosis] Buscando: HIPERPLA en ApiNetHos
+[lookupDiagnosis] Buscando: S03 en ApiNetHos
+[lookupDiagnosis] Buscando: S03.3 en ApiNetHos
+[lookupDiagnosis] Buscando: S03. en ApiNetHos
+[lookupDiagnosis] Buscando: S03 en ApiNetHos
+[lookupDiagnosis] Buscando: S033 en ApiNetHos
+[lookupDiagnosis] Buscando: S523 en ApiNetHos
+[lookupDiagnosis] Buscando: S983 en ApiNetHos
+[lookupDiagnosis] Buscando: S822 en ApiNetHos
+[lookupDiagnosis] Buscando: K801 en ApiNetHos
+[lookupDiagnosis] Buscando: C73 en ApiNetHos
+[lookupDiagnosis] Buscando: L72 en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 787ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 441ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 421ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 419ms
+[lookupDiagnosis] Buscando: 735 en ApiNetHos
+[lookupDiagnosis] Buscando: 032 en ApiNetHos
+[lookupDiagnosis] Buscando: 0329 en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: 0329
+[lookupDiagnosis] Buscando: 032 en ApiNetHos
+[lookupDiagnosis] Buscando: 0329 en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: 0329
+[lookupDiagnosis] Buscando: GESTA en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANTEW en ApiNetHos
+[lookupDiagnosis] Fallback Local Search para: GESTANTEW
+[lookupDiagnosis] Buscando: GESTANTE en ApiNetHos
+[lookupDiagnosis] Buscando: GESTANT en ApiNetHos
+[lookupDiagnosis] Buscando: GESTAN en ApiNetHos
+[lookupDiagnosis] Buscando: K801 en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 423ms
+[lookupDiagnosis] Buscando: Z93 en ApiNetHos
+[lookupDiagnosis] Buscando: Z938 en ApiNetHos
+[lookupDiagnosis] Buscando: PORTA en ApiNetHos
+[lookupDiagnosis] Buscando: Z93 en ApiNetHos
+[lookupDiagnosis] Buscando: Z938 en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 442ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 412ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 421ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 412ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 415ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 411ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 410ms
+[lookupDiagnosis] Buscando: S72 en ApiNetHos
+[lookupDiagnosis] Buscando: S720 en ApiNetHos
+[lookupDiagnosis] Buscando: CADERA en ApiNetHos
+[lookupDiagnosis] Buscando: FRACTURA en ApiNetHos
+[lookupDiagnosis] Buscando: S72 en ApiNetHos
+[lookupDiagnosis] Buscando: CAD en ApiNetHos
+[lookupDiagnosis] Buscando: CADE en ApiNetHos
+[lookupDiagnosis] Buscando: S72 en ApiNetHos
+[lookupDiagnosis] Buscando: S720 en ApiNetHos
+[lookupDiagnosis] Buscando: K40 en ApiNetHos
+[lookupDiagnosis] Buscando: K409 en ApiNetHos
+[lookupDiagnosis] Buscando: K40 en ApiNetHos
+[lookupDiagnosis] Buscando: K409 en ApiNetHos
+[lookupDiagnosis] Buscando: S913 en ApiNetHos
+[lookupDiagnosis] Buscando: PIE en ApiNetHos
+[lookupDiagnosis] Buscando: PIE TRA en ApiNetHos
+[lookupDiagnosis] Buscando: PIE TRAUMAT en ApiNetHos
+[lookupDiagnosis] Buscando: PIE T en ApiNetHos
+[lookupDiagnosis] Buscando: S91 en ApiNetHos
+[lookupDiagnosis] Buscando: C44 en ApiNetHos
+[lookupDiagnosis] Buscando: C443 en ApiNetHos
+[lookupDiagnosis] Buscando: S42 en ApiNetHos
+[lookupDiagnosis] Buscando: S422 en ApiNetHos
+[lookupDiagnosis] Buscando: Z35 en ApiNetHos
+[lookupDiagnosis] Buscando: Z359 en ApiNetHos
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 481ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 440ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 428ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 448ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 424ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 417ms
+�Desea terminar el trabajo por lotes (S/N)? 
+> backcq@0.1.0 start
+> next start -p 3006
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3006
+- Network:       http://192.168.41.25:3006
+
+✓ Starting...
+✓ Ready in 418ms
