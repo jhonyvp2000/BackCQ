@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect } from "react";
 import { formatPatientDemographics } from "@/app/dashboard/programaciones/surgery-view-toggle";
 
-export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayDate, diagnoses = [], procedures = [], interventions = [] }: { surgeriesData: any[], salas: any[], displayDate: string, setDisplayDate: (d: string) => void, diagnoses?: any[], procedures?: any[], interventions?: any[] }) {
+export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayDate, diagnoses = [], procedures = [], interventions = [], staff }: { surgeriesData: any[], salas: any[], displayDate: string, setDisplayDate: (d: string) => void, diagnoses?: any[], procedures?: any[], interventions?: any[], staff?: any }) {
     const parsedDate = displayDate ? new Date(displayDate + "T12:00:00") : new Date();
     const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -276,6 +276,10 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                                 const shortName = `${firstName} ${firstLastName}`.trim();
                                                                 const roleStr = t.role === 'CIRUJANO' ? 'Cx' : t.role === 'ANESTESIOLOGO' ? 'An' : (() => {
                                                                     let profName = t.staff?.professionName || t.professionName;
+                                                                    if (!profName && staff?.nurses) {
+                                                                        const nurse = staff.nurses.find((n: any) => n.id === t.staff.id);
+                                                                        if (nurse) profName = nurse.professionName;
+                                                                    }
                                                                     if (!profName) {
                                                                         if (t.role === 'INSTRUMENTISTA') return 'In';
                                                                         if (t.role === 'CIRCULANTE') return 'Ci';

@@ -514,7 +514,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             transition={{ duration: 0.2 }}
                             className="p-6 bg-zinc-50/50 dark:bg-zinc-900 h-full"
                         >
-                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom.length === 0 ? salas : salas.filter(s => filterRoom.includes(s.id))} displayDate={filterDate} setDisplayDate={setFilterDate} diagnoses={diagnoses} procedures={procedures} interventions={interventions} />
+                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom.length === 0 ? salas : salas.filter(s => filterRoom.includes(s.id))} displayDate={filterDate} setDisplayDate={setFilterDate} diagnoses={diagnoses} procedures={procedures} interventions={interventions} staff={staff} />
                         </motion.div>
                     ) : (
                         <motion.div
