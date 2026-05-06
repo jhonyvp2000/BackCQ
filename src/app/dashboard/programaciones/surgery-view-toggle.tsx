@@ -76,26 +76,35 @@ function formatForDateTimeLocal(dateValue: Date | string | null | undefined): st
 
 export const formatPatientDemographics = (patientPii: any, patient: any) => {
     const fullName = `${patientPii?.nombres || ''} ${patientPii?.apellidos || ''}`.trim();
-    if (!fullName || fullName === 'Desconocido') return 'Desconocido';
+    if (!fullName || fullName === 'Desconocido') return <span className="text-zinc-500 font-normal">Desconocido</span>;
 
     let sexStr = '?';
-    if (patient?.sexo) {
-        if (patient.sexo.toUpperCase().startsWith('F')) sexStr = 'F';
-        else if (patient.sexo.toUpperCase().startsWith('M')) sexStr = 'M';
-        else sexStr = patient.sexo.substring(0, 1).toUpperCase();
+    const sexo = patient?.sexo || patientPii?.sexo;
+    if (sexo) {
+        if (sexo.toUpperCase().startsWith('F')) sexStr = 'F';
+        else if (sexo.toUpperCase().startsWith('M')) sexStr = 'M';
+        else sexStr = sexo.substring(0, 1).toUpperCase();
     }
 
     let ageStr = '?';
-    if (patient?.fechaNacimiento) {
-        const diff_ms = Date.now() - new Date(patient.fechaNacimiento).getTime();
+    const dob = patient?.fechaNacimiento || patientPii?.fechaNacimiento || patientPii?.fecha_nacimiento;
+    if (dob) {
+        const diff_ms = Date.now() - new Date(dob).getTime();
         const age = Math.abs(new Date(diff_ms).getUTCFullYear() - 1970);
         ageStr = String(age).padStart(2, '0');
     }
 
     const hcStr = patientPii?.historiaClinica || '?';
-    const combined = `${fullName} (${sexStr} ${ageStr} HC: ${hcStr})`;
+    const dni = patientPii?.dni || patientPii?.carnetExtranjeria || patientPii?.pasaporte || patientPii?.numeroDocumento || patient?.dni || '';
 
-    return combined.length > 70 ? combined.substring(0, 70) + '...' : combined;
+    return (
+        <span className="inline">
+            <span className="font-bold text-zinc-900 dark:text-zinc-100">{fullName}</span>{' '}
+            <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                {dni} ({sexStr} {ageStr} HC: {hcStr})
+            </span>
+        </span>
+    );
 };
 
 export const formatDemographicsOnly = (patientPii: any, patient: any) => {
