@@ -651,7 +651,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     </td>
                                                     <td className="px-3 py-3 align-middle max-w-[150px]">
                                                         {row.team && row.team.length > 0 ? (
-                                                            <div className="text-[10px] leading-tight line-clamp-3 whitespace-normal break-words">
+                                                            <div className="text-[10px] leading-tight whitespace-normal break-words">
                                                                 {row.team.map((t: any) => (
                                                                     <span key={`${row.surgery.id}-${t.staff.id}`} className="inline mr-1.5" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
                                                                         <span className={`font-bold mr-0.5 ${t.role === 'CIRUJANO' ? 'text-blue-700 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
