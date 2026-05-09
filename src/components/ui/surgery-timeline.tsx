@@ -3,14 +3,13 @@
 import { useState } from "react";
 import { format, parseISO, addDays, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, Clock, User, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, User, ChevronLeft, ChevronRight, Maximize2, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect } from "react";
 import { formatPatientDemographics } from "@/app/dashboard/programaciones/surgery-view-toggle";
 
-export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayDate, diagnoses = [], procedures = [], interventions = [], staff }: { surgeriesData: any[], salas: any[], displayDate: string, setDisplayDate: (d: string) => void, diagnoses?: any[], procedures?: any[], interventions?: any[], staff?: any }) {
+export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayDate, diagnoses = [], procedures = [], interventions = [], staff, onClose }: { surgeriesData: any[], salas: any[], displayDate: string, setDisplayDate: (d: string) => void, diagnoses?: any[], procedures?: any[], interventions?: any[], staff?: any, onClose?: () => void }) {
     const parsedDate = displayDate ? new Date(displayDate + "T12:00:00") : new Date();
-    const [isFullscreen, setIsFullscreen] = useState(false);
 
     // Helper to get consistent hours ignoring browser local timezone cache
     const getLimaTime = (d: Date) => {
@@ -99,12 +98,8 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
         return { top: `${gridTop}%`, height: `${height}%` };
     };
 
-    const toggleFullscreen = () => {
-        setIsFullscreen(!isFullscreen);
-    };
-
     return (
-        <div className={`flex flex-col bg-white dark:bg-[#121212] rounded-3xl border border-zinc-200/60 dark:border-zinc-800 shadow-sm overflow-hidden transition-all duration-300 ${isFullscreen ? 'fixed inset-4 z-50' : 'h-[600px]'}`}>
+        <div className="flex flex-col bg-white dark:bg-[#121212] fixed inset-0 z-[100] w-screen h-screen overflow-hidden">
             {/* Header del Canvas */}
             <div className="flex items-center justify-between p-4 border-b border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/20">
                 <div className="flex items-center gap-4">
@@ -115,10 +110,11 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                 </div>
 
                 <div className="flex items-center gap-3">
-
-                    <button onClick={toggleFullscreen} className="p-2 ml-2 shrink-0 bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 text-zinc-500 transition-all shadow-sm tooltip" title="Pantalla Completa">
-                        <Maximize2 size={16} />
-                    </button>
+                    {onClose && (
+                        <button onClick={onClose} className="flex items-center gap-2 px-4 py-2 shrink-0 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800/50 hover:bg-red-100 hover:text-red-700 text-red-600 transition-all shadow-sm tooltip font-bold text-sm" title="Cerrar y volver a la tabla">
+                            <X size={16} strokeWidth={2.5} /> Cerrar Timeline
+                        </button>
+                    )}
                 </div>
             </div>
 

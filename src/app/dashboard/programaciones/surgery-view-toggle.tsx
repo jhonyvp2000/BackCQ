@@ -137,6 +137,10 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const canViewReport = permissions.includes('ver:reporte_operatorio');
     const router = useRouter();
     const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
     const [editingSurgery, setEditingSurgery] = useState<any>(null);
     const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
     const [cancelConfirmText, setCancelConfirmText] = useState<string>("");
@@ -514,18 +518,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             {/* Content Area */}
             <div className="flex-grow">
                 <AnimatePresence mode="wait">
-                    {viewMode === 'timeline' ? (
-                        <motion.div
-                            key="timeline"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.98 }}
-                            transition={{ duration: 0.2 }}
-                            className="p-6 bg-zinc-50/50 dark:bg-zinc-900 h-full"
-                        >
-                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom.length === 0 ? salas : salas.filter(s => filterRoom.includes(s.id))} displayDate={filterDate} setDisplayDate={setFilterDate} diagnoses={diagnoses} procedures={procedures} interventions={interventions} staff={staff} />
-                        </motion.div>
-                    ) : (
+                    {viewMode === 'timeline' ? null : (
                         <motion.div
                             key="list"
                             initial={{ opacity: 0, y: 10 }}
@@ -1007,6 +1000,24 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                 </div>
                             </motion.div>
                         </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+
+            {mounted && createPortal(
+                <AnimatePresence>
+                    {viewMode === 'timeline' && (
+                        <motion.div
+                            key="timeline-fullscreen"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="relative z-[100]"
+                        >
+                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom.length === 0 ? salas : salas.filter(s => filterRoom.includes(s.id))} displayDate={filterDate} setDisplayDate={setFilterDate} diagnoses={diagnoses} procedures={procedures} interventions={interventions} staff={staff} onClose={() => setViewMode('list')} />
+                        </motion.div>
                     )}
                 </AnimatePresence>,
                 document.body
