@@ -268,6 +268,14 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                         </div>
                                                     )}
 
+                                                    {s.surgery.notes && (
+                                                        <div className="text-[9px] text-black dark:text-white font-normal pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={s.surgery.notes}>
+                                                            <div className="truncate leading-[1.15]">
+                                                                {s.surgery.notes}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     {s.team && s.team.length > 0 && (
                                                         <div className="pl-1.5 opacity-90 group-hover:opacity-100 pt-1 text-[8.5px] leading-tight break-words whitespace-normal w-full pr-1">
                                                             {s.team.map((t: any) => {

@@ -693,108 +693,121 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         className="overflow-hidden"
                     >
                         <div className="p-4 pt-2 space-y-4 border-t border-zinc-100 dark:border-zinc-800/60">
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Paciente (DNI / HC)</label>
-                                <div className="relative group">
+                            <div className="flex gap-4">
+                                <div className="space-y-2 flex-1">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Paciente (DNI / HC)</label>
+                                    <div className="relative group">
+                                        <input
+                                            type="text"
+                                            autoFocus
+                                            id="patient-dni-input"
+                                            disabled={!canSchedule}
+                                            value={patSearchTerm}
+                                            onChange={(e) => setPatSearchTerm(e.target.value)}
+                                            className={getInputCls("patient_id", "pl-4 pr-10")}
+                                            placeholder="Filtrar variables (DNI o Nombres)"
+                                        />
+                                        <input type="hidden" name="patient_uuid" value={selectedPatId || (editMode ? editData?.patientPii?.patientId : "") || ""} />
+                                        <input type="hidden" name="patient_dni" value={patSearchTerm || ""} />
+                                        <input type="hidden" name="api_patient_data" value={selectedPatList[0]?.apiData || ""} />
+                                        {editMode && <input type="hidden" name="id" value={editData?.surgery?.id || ""} />}
+                                        
+                                        <div className="absolute right-3 top-2.5 flex items-center">
+                                            {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-[var(--color-hospital-blue)]" /> : <Search className="h-4 w-4 text-zinc-400" />}
+                                        </div>
+                                    </div>
+
+                                    <div className={`mt-2 border rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all ${
+                                        selectedPatId ? "border-[var(--color-hospital-blue)] ring-2 ring-blue-500/20" : "border-zinc-200 dark:border-zinc-800"
+                                    }`}>
+                                        <div className="bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-500 border-b border-zinc-200 dark:border-zinc-800 flex justify-between">
+                                            <span>Motor PIDE - Resultados</span>
+                                            {selectedPatId && <span className="text-[var(--color-hospital-blue)]">Paciente Seleccionado</span>}
+                                        </div>
+                                        <div id="patients-list" className="max-h-52 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                                            {selectedPatList.map((pat) => (
+                                                <label key={pat.id} className="flex items-start gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors group">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={selectedPatId === pat.id}
+                                                        onChange={(e) => togglePat(pat.id, e.target.checked)}
+                                                        className="mt-0.5 rounded border-zinc-300 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)]"
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">
+                                                            {pat.pii?.nombres} {pat.pii?.apellidos}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{pat.pii?.dni || 'S/DNI'}</span>
+                                                            {pat.id && pat.id.startsWith('__api') ? (
+                                                                <span className="flex items-center text-[10px] uppercase font-bold text-emerald-600 gap-0.5"><Verified size={10} /> MINSA PIDE</span>
+                                                            ) : (
+                                                                <span className="flex items-center text-[10px] uppercase font-bold text-blue-500 gap-0.5"><CheckCircle size={10} /> REGISTRADO</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            ))}
+
+                                            {filteredUnselectedPat.map((pat) => (
+                                                <label key={pat.id} className="flex items-start gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors group">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={selectedPatId === pat.id}
+                                                        onChange={(e) => togglePat(pat.id, e.target.checked)}
+                                                        className="mt-0.5 rounded border-zinc-300 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)]"
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">
+                                                            {pat.pii?.nombres} {pat.pii?.apellidos}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{pat.pii?.dni || 'S/DNI'}</span>
+                                                            {pat.id && pat.id.startsWith('__api') ? (
+                                                                <span className="flex items-center text-[10px] uppercase font-bold text-emerald-600 gap-0.5"><Verified size={10} /> MINSA PIDE</span>
+                                                            ) : (
+                                                                <span className="flex items-center text-[10px] uppercase font-bold text-zinc-500 gap-0.5"><CheckCircle size={10} /> REGISTRADO</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            ))}
+                                            
+                                            {patSearchTerm && filteredUnselectedPat.length === 0 && selectedPatList.length === 0 && !isSearching && (
+                                                <div className="p-4 text-center text-xs text-zinc-500 font-medium flex flex-col items-center">
+                                                    <User size={24} className="text-zinc-300 mb-2" />
+                                                    Ningún paciente coincide con "{patSearchTerm}"
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {selectedPatId && (
+                                        <input 
+                                            type="hidden" 
+                                            name="patient_id" 
+                                            value={selectedPatList[0]?.pii?.dni || selectedPatId.replace('__api_pat__', '')} 
+                                        />
+                                    )}
+                                    <FieldError msg={errors.patient_id} />
+                                    
+                                    {apiDownPats && (
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
+                                            <AlertTriangle size={14} className="shrink-0" />
+                                            <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                                        </motion.div>
+                                    )}
+                                </div>
+                                <div className="space-y-2 w-32 shrink-0">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
                                     <input
                                         type="text"
-                                        autoFocus
-                                        id="patient-dni-input"
+                                        name="bed_number"
                                         disabled={!canSchedule}
-                                        value={patSearchTerm}
-                                        onChange={(e) => setPatSearchTerm(e.target.value)}
-                                        className={getInputCls("patient_id", "pl-4 pr-10")}
-                                        placeholder="Filtrar variables (DNI o Nombres)"
+                                        defaultValue={clonedData?.surgery?.bedNumber || ""}
+                                        placeholder="Ej: A-308"
+                                        className={getInputCls("bed_number", "px-3")}
                                     />
-                                    <input type="hidden" name="patient_uuid" value={selectedPatId || (editMode ? editData?.patientPii?.patientId : "") || ""} />
-                                    <input type="hidden" name="patient_dni" value={patSearchTerm || ""} />
-                                    <input type="hidden" name="api_patient_data" value={selectedPatList[0]?.apiData || ""} />
-                                    {editMode && <input type="hidden" name="id" value={editData?.surgery?.id || ""} />}
-                                    
-                                    <div className="absolute right-3 top-2.5 flex items-center">
-                                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-[var(--color-hospital-blue)]" /> : <Search className="h-4 w-4 text-zinc-400" />}
-                                    </div>
                                 </div>
-
-                                <div className={`mt-2 border rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all ${
-                                    selectedPatId ? "border-[var(--color-hospital-blue)] ring-2 ring-blue-500/20" : "border-zinc-200 dark:border-zinc-800"
-                                }`}>
-                                    <div className="bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-zinc-500 border-b border-zinc-200 dark:border-zinc-800 flex justify-between">
-                                        <span>Motor PIDE - Resultados</span>
-                                        {selectedPatId && <span className="text-[var(--color-hospital-blue)]">Paciente Seleccionado</span>}
-                                    </div>
-                                    <div id="patients-list" className="max-h-52 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                                        {selectedPatList.map((pat) => (
-                                            <label key={pat.id} className="flex items-start gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors group">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={selectedPatId === pat.id}
-                                                    onChange={(e) => togglePat(pat.id, e.target.checked)}
-                                                    className="mt-0.5 rounded border-zinc-300 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)]"
-                                                />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">
-                                                        {pat.pii?.nombres} {pat.pii?.apellidos}
-                                                    </div>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{pat.pii?.dni || 'S/DNI'}</span>
-                                                        {pat.id && pat.id.startsWith('__api') ? (
-                                                            <span className="flex items-center text-[10px] uppercase font-bold text-emerald-600 gap-0.5"><Verified size={10} /> MINSA PIDE</span>
-                                                        ) : (
-                                                            <span className="flex items-center text-[10px] uppercase font-bold text-blue-500 gap-0.5"><CheckCircle size={10} /> REGISTRADO</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        ))}
-
-                                        {filteredUnselectedPat.map((pat) => (
-                                            <label key={pat.id} className="flex items-start gap-3 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors group">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={selectedPatId === pat.id}
-                                                    onChange={(e) => togglePat(pat.id, e.target.checked)}
-                                                    className="mt-0.5 rounded border-zinc-300 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)]"
-                                                />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">
-                                                        {pat.pii?.nombres} {pat.pii?.apellidos}
-                                                    </div>
-                                                    <div className="flex items-center gap-2 mt-1">
-                                                        <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{pat.pii?.dni || 'S/DNI'}</span>
-                                                        {pat.id && pat.id.startsWith('__api') ? (
-                                                            <span className="flex items-center text-[10px] uppercase font-bold text-emerald-600 gap-0.5"><Verified size={10} /> MINSA PIDE</span>
-                                                        ) : (
-                                                            <span className="flex items-center text-[10px] uppercase font-bold text-zinc-500 gap-0.5"><CheckCircle size={10} /> REGISTRADO</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </label>
-                                        ))}
-                                        
-                                        {patSearchTerm && filteredUnselectedPat.length === 0 && selectedPatList.length === 0 && !isSearching && (
-                                            <div className="p-4 text-center text-xs text-zinc-500 font-medium flex flex-col items-center">
-                                                <User size={24} className="text-zinc-300 mb-2" />
-                                                Ningún paciente coincide con "{patSearchTerm}"
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                {selectedPatId && (
-                                    <input 
-                                        type="hidden" 
-                                        name="patient_id" 
-                                        value={selectedPatList[0]?.pii?.dni || selectedPatId.replace('__api_pat__', '')} 
-                                    />
-                                )}
-                                <FieldError msg={errors.patient_id} />
-                                
-                                {apiDownPats && (
-                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
-                                        <AlertTriangle size={14} className="shrink-0" />
-                                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
-                                    </motion.div>
-                                )}
                             </div>
 
                             <div className="pt-2 flex justify-end">
@@ -1131,6 +1144,17 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
                             </div>
 
+                            <div className="col-span-full border-t border-zinc-100 dark:border-zinc-800/60 pt-4 mt-2">
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 block">Notas Internas</label>
+                                <textarea
+                                    name="notes"
+                                    disabled={!canSchedule}
+                                    defaultValue={clonedData?.surgery?.notes || ""}
+                                    className={getInputCls("", "resize-none h-20 w-full")}
+                                    placeholder="Observaciones, procedimiento, insumos especiales o materiales médicos (Opcional)..."
+                                ></textarea>
+                            </div>
+
 
                             <div className="col-span-full pt-2 flex justify-end">
                                 <button type="button" onClick={() => toggleSection('schedule')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
@@ -1206,16 +1230,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                             </div>
 
-                            <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Notas Internas</label>
-                                <textarea
-                                    name="notes"
-                                    disabled={!canSchedule}
-                                    defaultValue={clonedData?.surgery?.notes || ""}
-                                    className={getInputCls("", "resize-none h-20")}
-                                    placeholder="Procedimiento, insumos especiales o materiales médicos (Opcional)..."
-                                ></textarea>
-                            </div>
+
 
                             <div className="pt-4 flex justify-end">
                                 <button type="button" onClick={() => toggleSection('team')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
