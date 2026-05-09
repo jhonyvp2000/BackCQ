@@ -666,8 +666,8 @@ export async function deleteSurgery(formData: FormData) {
             return { error: "No se encontró el registro especificado." };
         }
 
-        if (!['scheduled', 'cancelled'].includes(targetSurgery[0].status)) {
-            return { error: "Prohibido: Esta cirugía ya se encuentra en proceso o ha sido completada. No puede eliminarse, solo auditarse en el historial." };
+        if (targetSurgery[0].status === 'completed') {
+            return { error: "Prohibido: Esta cirugía ya ha sido completada. No puede eliminarse, solo auditarse en el historial." };
         }
 
         const associated = await db.select().from(cqSurgicalReports).where(eq(cqSurgicalReports.surgeryId, id)).limit(1);

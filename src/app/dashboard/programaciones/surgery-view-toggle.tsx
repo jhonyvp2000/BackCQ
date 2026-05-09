@@ -849,7 +849,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             )}
 
                                                             {/* Modal Seguro de Eliminación */}
-                                                            {['scheduled'].includes(row.surgery.status) && canDelete && (
+                                                            {canDelete && (
                                                                 <div className="inline-block ml-1 border-l border-zinc-200 dark:border-zinc-700 pl-1">
                                                                     <DeleteSurgeryButton id={row.surgery.id} />
                                                                 </div>
