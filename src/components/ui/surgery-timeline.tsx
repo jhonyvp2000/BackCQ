@@ -32,11 +32,11 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
     // Determinar si el día mostrado en el canvas es hoy
     const isShowingToday = isSameDayStr(parsedDate, new Date());
     
-    // Calcular altura del indicador rojo según los 10 bloques visuales (08:00 a 18:00)
+    // Calcular altura del indicador rojo según los 13 bloques visuales (07:00 a 20:00)
     const { h: curH, m: curM } = getLimaTime(currentTime);
     const currentHour = curH + (curM / 60);
-    const isTimelineActive = currentHour >= 8 && currentHour <= 18.5;
-    const timeIndicatorTop = ((currentHour - 8) / 10) * 100;
+    const isTimelineActive = currentHour >= 7 && currentHour <= 20.5;
+    const timeIndicatorTop = ((currentHour - 7) / 13) * 100;
 
     // Utilidad para buscar colisiones en el mismo día
     function isSameDayStr(d1: Date | string, d2: Date) {
@@ -46,8 +46,8 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
             date1.getDate() === d2.getDate();
     }
 
-    // Escala de tiempo: 08:00 a 18:00
-    const timeSlots = Array.from({ length: 11 }).map((_, i) => i + 8);
+    // Escala de tiempo: 07:00 a 20:00
+    const timeSlots = Array.from({ length: 14 }).map((_, i) => i + 7);
     const isWeekView = salas.length === 1;
 
     // Configuración dinámica del Eje X
@@ -91,9 +91,9 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
         else durationHours = parseInt(durationStr) || 1;
 
         // Boundaries
-        const renderStartHour = Math.max(8, Math.min(18, startHour));
-        const gridTop = ((renderStartHour - 8) / 10) * 100;
-        const height = (durationHours / 10) * 100;
+        const renderStartHour = Math.max(7, Math.min(20, startHour));
+        const gridTop = ((renderStartHour - 7) / 13) * 100;
+        const height = (durationHours / 13) * 100;
 
         return { top: `${gridTop}%`, height: `${height}%` };
     };
@@ -124,7 +124,7 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                     <div className="h-12 border-b border-zinc-200 dark:border-zinc-800"></div> {/* Corner Spacer */}
                     <div className="relative h-[800px] w-full">
                         {timeSlots.map(hour => (
-                            <div key={hour} className="absolute w-full flex justify-center" style={{ top: `${((hour - 8) / 10) * 100}%`, transform: 'translateY(-50%)' }}>
+                            <div key={hour} className="absolute w-full flex justify-center" style={{ top: `${((hour - 7) / 13) * 100}%`, transform: 'translateY(-50%)' }}>
                                 <span className="text-[10px] font-bold text-zinc-400 bg-[#fafafa] dark:bg-[#0a0a0a] px-1">{hour}:00</span>
                             </div>
                         ))}
@@ -152,7 +152,7 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                         {/* Background Grid Lines */}
                         <div className="absolute inset-0 pointer-events-none">
                             {timeSlots.map(hour => (
-                                <div key={hour} className="absolute left-0 right-0 border-t border-zinc-200 dark:border-zinc-800/80 w-full" style={{ top: `${((hour - 8) / 10) * 100}%` }}></div>
+                                <div key={hour} className="absolute left-0 right-0 border-t border-zinc-200 dark:border-zinc-800/80 w-full" style={{ top: `${((hour - 7) / 13) * 100}%` }}></div>
                             ))}
                             
                             {/* LÍNEA DE TIEMPO REAL INDICADORA (TRACKER ROJO) */}
