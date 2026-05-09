@@ -62,8 +62,10 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [selectedSurgIds, setSelectedSurgIds] = useState<Set<string>>(new Set());
     const [anesSearchTerm, setAnesSearchTerm] = useState("");
     const [selectedAnesIds, setSelectedAnesIds] = useState<Set<string>>(new Set());
-    const [nursSearchTerm, setNursSearchTerm] = useState("");
-    const [selectedNursIds, setSelectedNursIds] = useState<Set<string>>(new Set());
+    const [selectedInstIds, setSelectedInstIds] = useState<Set<string>>(new Set());
+    const [selectedCircIds, setSelectedCircIds] = useState<Set<string>>(new Set());
+    const [instSearchTerm, setInstSearchTerm] = useState("");
+    const [circSearchTerm, setCircSearchTerm] = useState("");
 
     const [intSearchTerm, setIntSearchTerm] = useState("");
     const [selectedIntIds, setSelectedIntIds] = useState<Set<string>>(new Set());
@@ -122,10 +124,12 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             if (editData?.team) {
                 const surg = editData.team.filter((t: any) => t.role === 'CIRUJANO').map((t: any) => t.staff.id);
                 const anes = editData.team.filter((t: any) => t.role === 'ANESTESIOLOGO').map((t: any) => t.staff.id);
-                const nurs = editData.team.filter((t: any) => t.role === 'ENFERMERO').map((t: any) => t.staff.id);
+                const inst = editData.team.filter((t: any) => t.role === 'INSTRUMENTISTA' || (t.role === 'ENFERMERO' && t.staff.professionName?.includes('INSTRUMENTISTA'))).map((t: any) => t.staff.id);
+                const circ = editData.team.filter((t: any) => t.role === 'CIRCULANTE' || (t.role === 'ENFERMERO' && t.staff.professionName?.includes('CIRCULANTE'))).map((t: any) => t.staff.id);
                 setSelectedSurgIds(new Set(surg));
                 setSelectedAnesIds(new Set(anes));
-                setSelectedNursIds(new Set(nurs));
+                setSelectedInstIds(new Set(inst));
+                setSelectedCircIds(new Set(circ));
             }
             if (editData?.diagnoses && Object.keys(editData.diagnoses).length) setSelectedDxIds(new Set(editData.diagnoses));
             if (editData?.procedures && Object.keys(editData.procedures).length) setSelectedProcIds(new Set(editData.procedures));
@@ -170,7 +174,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         try {
             const res = await createTemporaryPatient(patSearchTerm, manualPatientName);
             if (res.success) {
-                // If it worked, we just try to fetch again or wait for revalidate.
                 setPatSearchTerm(patSearchTerm);
                 setManualPatientName("");
                 setOpenSection("classification");
@@ -187,19 +190,19 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             const row = e.detail;
             setClonedData(row);
             
-            // Sync Patient State
             if (row?.patientPii?.patientId) {
                 setSelectedPatId(row.patientPii.patientId);
                 setPatSearchTerm(row.patientPii.dni || "");
             }
 
-            // Sync Staff Selection State
             const surg = row?.team?.filter((t: any) => t.role === 'CIRUJANO').map((t: any) => t.staff.id) || [];
             const anes = row?.team?.filter((t: any) => t.role === 'ANESTESIOLOGO').map((t: any) => t.staff.id) || [];
-            const nurs = row?.team?.filter((t: any) => t.role === 'ENFERMERO').map((t: any) => t.staff.id) || [];
+            const inst = row.team.filter((t: any) => t.role === 'INSTRUMENTISTA' || (t.role === 'ENFERMERO' && t.staff.professionName?.includes('INSTRUMENTISTA'))).map((t: any) => t.staff.id);
+            const circ = row.team.filter((t: any) => t.role === 'CIRCULANTE' || (t.role === 'ENFERMERO' && t.staff.professionName?.includes('CIRCULANTE'))).map((t: any) => t.staff.id);
             setSelectedSurgIds(new Set(surg));
             setSelectedAnesIds(new Set(anes));
-            setSelectedNursIds(new Set(nurs));
+            setSelectedInstIds(new Set(inst));
+            setSelectedCircIds(new Set(circ));
 
             if (row?.diagnoses) Object.keys(row.diagnoses).length ? setSelectedDxIds(new Set(row.diagnoses)) : setSelectedDxIds(new Set());
             else setSelectedDxIds(new Set());
@@ -210,21 +213,15 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             if (row?.interventions) Object.keys(row.interventions).length ? setSelectedIntIds(new Set(row.interventions)) : setSelectedIntIds(new Set());
             else setSelectedIntIds(new Set());
 
-            setFormKey(prev => prev + 1); // Remount form with new defaultValues
-            setInternalIsOpen(true); // Abre el modal visualmente para que el usuario proceda
+            setFormKey(prev => prev + 1);
+            setInternalIsOpen(true);
             setOpenSection('patient');
 
-            // Scroll to form smoothly
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
         window.addEventListener('CLONE_SURGERY', handleClone);
         return () => window.removeEventListener('CLONE_SURGERY', handleClone);
     }, []);
-
-    // Extract initial values for team arrays
-    const initialSurgeons = clonedData?.team?.filter((t: any) => t.role === 'CIRUJANO').map((t: any) => t.staff.id) || [];
-    const initialAnesthesiologists = clonedData?.team?.filter((t: any) => t.role === 'ANESTESIOLOGO').map((t: any) => t.staff.id) || [];
-    const initialNurses = clonedData?.team?.filter((t: any) => t.role === 'ENFERMERO').map((t: any) => t.staff.id) || [];
 
     const toggleSection = (section: 'patient' | 'classification' | 'team' | 'schedule') => {
         setOpenSection(prev => prev === section ? prev : section);
@@ -232,7 +229,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
     const removeDiacritics = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-    // --- PATIENTS MULTIVARIABLE SEARCH ---
     const patSearchTermsArr = removeDiacritics(patSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
     const selectedPatList = localPatients.filter(pat => pat.id === selectedPatId);
     const filteredUnselectedPat = localPatients
@@ -253,7 +249,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         }
         else setSelectedPatId(null);
     };
-    // ------------------------------------
 
     const searchTerms = removeDiacritics(dxSearchTerm.toLowerCase())
         .split(/\s+/)
@@ -361,26 +356,39 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         setSelectedAnesIds(next);
     };
 
-    const nursSearchTermsArr = removeDiacritics(nursSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
-    const selectedNursList = staff.nurses.filter(n => selectedNursIds.has(n.id));
-    const filteredUnselectedNurs = staff.nurses
-        .filter(n => !selectedNursIds.has(n.id))
+    const instrumentistas = staff.nurses.filter((n: any) => n.professionName?.includes('INSTRUMENTISTA'));
+    const circulantes = staff.nurses.filter((n: any) => n.professionName?.includes('CIRCULANTE'));
+
+    const selectedInstList = instrumentistas.filter(n => selectedInstIds.has(n.id));
+    const filteredUnselectedInst = instrumentistas
+        .filter(n => !selectedInstIds.has(n.id))
         .filter(n => {
-            if (nursSearchTermsArr.length === 0) return true;
-            const prefix = n.professionName?.includes('ENFERMERO') ? 'Lic. ' : n.professionName?.includes('TECNICO') ? 'Tec. ' : '';
-            const fullText = removeDiacritics(`${prefix}${n.name} ${n.lastname} ${n.professionName || ""}`).toLowerCase();
-            return nursSearchTermsArr.every(term => fullText.includes(term));
+            const q = instSearchTerm.toLowerCase();
+            return (n.name?.toLowerCase().includes(q) || n.lastname?.toLowerCase().includes(q) || n.tuitionCode?.toLowerCase().includes(q) || n.professionName?.toLowerCase().includes(q));
         })
         .slice(0, 50);
 
-    const toggleNurs = (id: string, checked: boolean) => {
-        const next = new Set(selectedNursIds);
-        if (checked) {
-            next.add(id);
-            setTimeout(() => document.getElementById('nurses-list')?.scrollTo({ top: 0, behavior: 'smooth' }), 50);
-        }
+    const toggleInst = (id: string, checked: boolean) => {
+        const next = new Set(selectedInstIds);
+        if (checked) next.add(id);
         else next.delete(id);
-        setSelectedNursIds(next);
+        setSelectedInstIds(next);
+    };
+
+    const selectedCircList = circulantes.filter(n => selectedCircIds.has(n.id));
+    const filteredUnselectedCirc = circulantes
+        .filter(n => !selectedCircIds.has(n.id))
+        .filter(n => {
+            const q = circSearchTerm.toLowerCase();
+            return (n.name?.toLowerCase().includes(q) || n.lastname?.toLowerCase().includes(q) || n.tuitionCode?.toLowerCase().includes(q) || n.professionName?.toLowerCase().includes(q));
+        })
+        .slice(0, 50);
+
+    const toggleCirc = (id: string, checked: boolean) => {
+        const next = new Set(selectedCircIds);
+        if (checked) next.add(id);
+        else next.delete(id);
+        setSelectedCircIds(next);
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -388,7 +396,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         const form = e.currentTarget;
         const formData = new FormData(form);
 
-        // Premium UX/UI Frontend Validation
         let newErrors: Record<string, string> = {};
         let firstErrorSection: 'patient' | 'classification' | 'team' | 'schedule' | null = null;
         let firstErrorField: string | null = null;
@@ -415,7 +422,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         if (Object.keys(newErrors).length > 0) {
             if (firstErrorSection) setOpenSection(firstErrorSection);
             
-            // Allow accordion to open dynamically before searching for the element and scrolling smoothly
             setTimeout(() => {
                 const els = document.getElementsByName(firstErrorField || "");
                 if (els.length > 0) {
@@ -423,7 +429,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     el.focus();
                     
-                    // Add a highly visible rapid blinking/pulsating red shadow
                     el.classList.add('animate-pulse', 'ring-4', 'ring-red-500', 'border-red-600');
                     setTimeout(() => {
                         el.classList.remove('animate-pulse', 'ring-4', 'ring-red-500', 'border-red-600');
@@ -455,9 +460,9 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             setSurgSearchTerm("");
             setSelectedAnesIds(new Set());
             setAnesSearchTerm("");
-            setSelectedNursIds(new Set());
-            setNursSearchTerm("");
-            setOpenSection('patient'); // reset accordion
+            setSelectedInstIds(new Set());
+            setSelectedCircIds(new Set());
+            setOpenSection('patient');
             
             if (!keepOpen || editMode) {
                 handleClose();
@@ -491,9 +496,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         setSubmitting(false);
     };
 
-    // Debounce the DNI search against ApiNetHos
     useEffect(() => {
-        if (patSearchTerm.trim().length >= 3) { // Search API if length >= 3
+        if (patSearchTerm.trim().length >= 3) {
             setIsSearching(true);
             const timeoutId = setTimeout(async () => {
                 const resArray = await lookupPatientsInApi(patSearchTerm.trim());
@@ -520,7 +524,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         }
     }, [patSearchTerm]);
 
-    // Debounce the Diagnosis search against ApiNetHos
     useEffect(() => {
         if (dxSearchTerm.trim().length >= 3) {
             setIsSearchingDx(true);
@@ -529,7 +532,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                 if (resArray && Array.isArray(resArray) && resArray.length > 0) {
                     if (resArray[0]?.__apiError) {
                         setApiDownDx(true);
-                        resArray.shift(); // Remove error object to show any fallback local results
+                        resArray.shift();
                     } else {
                         setApiDownDx(false);
                     }
@@ -552,7 +555,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         }
     }, [dxSearchTerm]);
 
-    // Debounce the Procedure search against ApiNetHos
     useEffect(() => {
         if (procSearchTerm.trim().length >= 3) {
             setIsSearchingProc(true);
@@ -595,16 +597,13 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         return `${getInputCls(field, extra)} appearance-none bg-no-repeat bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2371717A%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_10px] bg-[position:right_1rem_center]`;
     };
     
-    // Fallback handlers for inputs without explicit errors initially mapped
     const inputClasses = getInputCls("");
     const selectClasses = getSelectCls("");
     
-    // Also a helper for containers (like empty checkboxes areas)
     const getContainerErrCls = (field: string) => errors[field] ? "border border-red-500 ring-4 ring-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]" : "border border-zinc-200 dark:border-zinc-700";
 
     return (
         <>
-            {/* Botón flotante superior (en la página se colocará junto al título) */}
             <button
                 type="button"
                 onClick={() => setInternalIsOpen(true)}
@@ -616,7 +615,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             <AnimatePresence>
                 {isOpen && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-                        {/* Backdrop */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -625,7 +623,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                         />
 
-                        {/* Modal Container */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 30 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -633,7 +630,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             className="relative w-[96vw] max-w-[1632px] bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col max-h-[95vh]"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Header */}
                             <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-t-3xl shrink-0">
                                 <div>
                                     <h3 className="font-bold text-xl text-zinc-900 dark:text-white flex items-center gap-2">
@@ -650,7 +646,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </button>
                             </div>
 
-                            {/* Scrollable Form Content */}
                             <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pb-3">
             
             {!canSchedule && (
@@ -674,7 +669,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
             <form key={formKey} onSubmit={handleSubmit} noValidate className="space-y-4">
 
-                {/* --- SECCIÓN 1: PACIENTE & DIAGNÓSTICO --- */}
                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
                     <button
                         type="button"
@@ -712,7 +706,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         className={getInputCls("patient_id", "pl-4 pr-10")}
                                         placeholder="Filtrar variables (DNI o Nombres)"
                                     />
-                                    {/* HIDDEN INPUT FOR SUBMISSION */}
                                     <input type="hidden" name="patient_uuid" value={selectedPatId || (editMode ? editData?.patientPii?.patientId : "") || ""} />
                                     <input type="hidden" name="patient_dni" value={patSearchTerm || ""} />
                                     <input type="hidden" name="api_patient_data" value={selectedPatList[0]?.apiData || ""} />
@@ -804,7 +797,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 )}
                             </div>
 
-                                                        {/* Action button to continue */}
                             <div className="pt-2 flex justify-end">
                                 <button type="button" onClick={() => toggleSection('classification')} className="text-sm font-semibold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-4 py-2 rounded-xl transition-colors">Siguiente Paso &rarr;</button>
                             </div>
@@ -812,7 +804,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     </motion.div>
                 </div>
 
-                {/* --- SECCIÓN 2: CLASIFICACIÓN & SEGURO --- */}
                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
                     <button
                         type="button"
@@ -1148,7 +1139,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     </motion.div>
                 </div>
 
-                {/* --- SECCIÓN 3: AGENDA Y SALA --- */}
                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
                     <button
                         type="button"
@@ -1236,7 +1226,6 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                 </div>
 
 
-                {/* --- SECCIÓN 4: EQUIPO ASISTENCIAL --- */}
                 <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all duration-300">
                     <button
                         type="button"
@@ -1260,7 +1249,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                     >
-                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-zinc-100 dark:border-zinc-800/60">
+                        <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
                             <div className="space-y-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Cirujano(s) Principal(es)</label>
                                 <div className="relative mb-2">
@@ -1360,64 +1349,114 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                             </div>
 
-
                             <div className="space-y-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Instrumentista / Circulante</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Instrumentistas</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
-                                        placeholder="Buscar por nombre, apellido o rol..."
-                                        value={nursSearchTerm}
-                                        onChange={e => setNursSearchTerm(e.target.value)}
+                                        placeholder="Buscar instrumentista..."
+                                        value={instSearchTerm}
+                                        onChange={e => setInstSearchTerm(e.target.value)}
                                         className={getInputCls("", "pl-9 py-2")}
                                         disabled={!canSchedule}
                                     />
                                     <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
                                 </div>
-                                <div id="nurses-list" className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1">
-                                    {selectedNursList.map((n) => (
+                                <div id="inst-list" className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1">
+                                    {selectedInstList.map((n) => (
                                         <label key={n.id} className="flex items-center gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
                                             <input
                                                 type="checkbox"
-                                                name="nurses"
+                                                name="instrumentistas"
                                                 value={n.id}
                                                 checked={true}
-                                                onChange={(e) => toggleNurs(n.id, e.target.checked)}
+                                                onChange={(e) => toggleInst(n.id, e.target.checked)}
                                                 className="w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
                                             />
                                             <span className="font-semibold text-[var(--color-hospital-blue)] dark:text-blue-400 truncate flex-1">
-                                                <span className="font-normal opacity-75 mr-1 text-xs">
-                                                    {n.professionName?.includes('ENFERMERO') ? 'Lic.' : n.professionName?.includes('TECNICO') ? 'Tec.' : ''}
-                                                </span>
+                                                <span className="font-normal opacity-75 mr-1 text-xs">In:</span>
                                                 {n.name} {n.lastname}
                                             </span>
                                         </label>
                                     ))}
-                                    {filteredUnselectedNurs.map((n) => (
+                                    {filteredUnselectedInst.map((n) => (
                                         <label key={n.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer cursor-allowed disabled:opacity-50 text-sm">
                                             <input
                                                 type="checkbox"
-                                                name="nurses"
+                                                name="instrumentistas"
                                                 value={n.id}
                                                 checked={false}
                                                 disabled={!canSchedule}
-                                                onChange={(e) => toggleNurs(n.id, e.target.checked)}
+                                                onChange={(e) => toggleInst(n.id, e.target.checked)}
                                                 className="w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
                                             />
                                             <span className="font-semibold text-zinc-700 dark:text-zinc-200 truncate flex-1">
-                                                <span className="font-normal text-zinc-500 dark:text-zinc-400 mr-1 text-xs">
-                                                    {n.professionName?.includes('ENFERMERO') ? 'Lic.' : n.professionName?.includes('TECNICO') ? 'Tec.' : ''}
-                                                </span>
+                                                <span className="font-normal text-zinc-500 dark:text-zinc-400 mr-1 text-xs">In:</span>
                                                 {n.name} {n.lastname}
                                             </span>
+                                            <span className="text-zinc-500 dark:text-zinc-400 text-xs">({n.tuitionCode})</span>
                                         </label>
                                     ))}
-                                    {filteredUnselectedNurs.length === 0 && selectedNursList.length === 0 && (
-                                        <p className="text-sm text-zinc-500 p-4 text-center">No se encontraron enfermeros.</p>
+                                    {filteredUnselectedInst.length === 0 && selectedInstList.length === 0 && (
+                                        <p className="text-sm text-zinc-500 p-4 text-center">No se encontraron instrumentistas.</p>
                                     )}
                                 </div>
                             </div>
 
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Circulantes</label>
+                                <div className="relative mb-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar circulante..."
+                                        value={circSearchTerm}
+                                        onChange={e => setCircSearchTerm(e.target.value)}
+                                        className={getInputCls("", "pl-9 py-2")}
+                                        disabled={!canSchedule}
+                                    />
+                                    <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+                                </div>
+                                <div id="circ-list" className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1">
+                                    {selectedCircList.map((n) => (
+                                        <label key={n.id} className="flex items-center gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
+                                            <input
+                                                type="checkbox"
+                                                name="circulantes"
+                                                value={n.id}
+                                                checked={true}
+                                                onChange={(e) => toggleCirc(n.id, e.target.checked)}
+                                                className="w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
+                                            />
+                                            <span className="font-semibold text-[var(--color-hospital-blue)] dark:text-blue-400 truncate flex-1">
+                                                <span className="font-normal opacity-75 mr-1 text-xs">Ci:</span>
+                                                {n.name} {n.lastname}
+                                            </span>
+                                        </label>
+                                    ))}
+                                    {filteredUnselectedCirc.map((n) => (
+                                        <label key={n.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer cursor-allowed disabled:opacity-50 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                name="circulantes"
+                                                value={n.id}
+                                                checked={false}
+                                                disabled={!canSchedule}
+                                                onChange={(e) => toggleCirc(n.id, e.target.checked)}
+                                                className="w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
+                                            />
+                                            <span className="font-semibold text-zinc-700 dark:text-zinc-200 truncate flex-1">
+                                                <span className="font-normal text-zinc-500 dark:text-zinc-400 mr-1 text-xs">Ci:</span>
+                                                {n.name} {n.lastname}
+                                            </span>
+                                            <span className="text-zinc-500 dark:text-zinc-400 text-xs">({n.tuitionCode})</span>
+                                        </label>
+                                    ))}
+                                    {filteredUnselectedCirc.length === 0 && selectedCircList.length === 0 && (
+                                        <p className="text-sm text-zinc-500 p-4 text-center">No se encontraron circulantes.</p>
+                                    )}
+                                </div>
+                            </div>
+                            
                             <div className="space-y-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Anestesia</label>
                                 <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>

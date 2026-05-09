@@ -301,7 +301,8 @@ export async function createSurgery(formData: FormData) {
 
     const surgeonIds = formData.getAll("surgeons") as string[];
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
-    const nurseIds = formData.getAll("nurses") as string[];
+    const instrumentistaIds = formData.getAll("instrumentistas") as string[];
+    const circulanteIds = formData.getAll("circulantes") as string[];
 
     let faltantes = [];
     if (!patientId) faltantes.push("Paciente");
@@ -515,8 +516,11 @@ export async function createSurgery(formData: FormData) {
     for (const aid of anesthesiologistIds) {
         teamInserts.push({ surgeryId: surgeryRecordId, staffUserId: aid, roleInSurgery: 'ANESTESIOLOGO' });
     }
-    for (const nid of nurseIds) {
-        teamInserts.push({ surgeryId: surgeryRecordId, staffUserId: nid, roleInSurgery: 'ENFERMERO' });
+    for (const nid of instrumentistaIds) {
+        teamInserts.push({ surgeryId: surgeryRecordId, staffUserId: nid, roleInSurgery: 'INSTRUMENTISTA' });
+    }
+    for (const nid of circulanteIds) {
+        teamInserts.push({ surgeryId: surgeryRecordId, staffUserId: nid, roleInSurgery: 'CIRCULANTE' });
     }
 
     if (teamInserts.length > 0) {
@@ -595,9 +599,6 @@ export async function updateSurgeryStatus(formData: FormData) {
 
         switch (status) {
             case 'in_progress':
-                if (tdMs < targetSurgery.scheduledDate.getTime()) {
-                    return { error: "Error de consistencia temporal:\n\nEl 'Ingreso a Quirófano' debe ser igual o posterior a la 'Fecha/Hora Programada'." };
-                }
                 updatePayload.actualStartTime = transitionDate;
                 break;
             case 'anesthesia_start':
@@ -703,7 +704,8 @@ export async function editSurgery(formData: FormData) {
 
     const surgeonIds = formData.getAll("surgeons") as string[];
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
-    const nurseIds = formData.getAll("nurses") as string[];
+    const instrumentistaIds = formData.getAll("instrumentistas") as string[];
+    const circulanteIds = formData.getAll("circulantes") as string[];
     const diagnosesIds = formData.getAll("diagnoses") as string[];
     const proceduresIds = formData.getAll("procedures") as string[];
     const interventionsIds = formData.getAll("interventions") as string[];
@@ -866,8 +868,11 @@ export async function editSurgery(formData: FormData) {
     for (const aid of anesthesiologistIds) {
         teamInserts.push({ surgeryId: id, staffUserId: aid, roleInSurgery: 'ANESTESIOLOGO' });
     }
-    for (const nid of nurseIds) {
-        teamInserts.push({ surgeryId: id, staffUserId: nid, roleInSurgery: 'ENFERMERO' });
+    for (const nid of instrumentistaIds) {
+        teamInserts.push({ surgeryId: id, staffUserId: nid, roleInSurgery: 'INSTRUMENTISTA' });
+    }
+    for (const nid of circulanteIds) {
+        teamInserts.push({ surgeryId: id, staffUserId: nid, roleInSurgery: 'CIRCULANTE' });
     }
 
     if (teamInserts.length > 0) {
