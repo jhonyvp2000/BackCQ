@@ -101,7 +101,7 @@ export const formatPatientDemographics = (patientPii: any, patient: any, bedNumb
     return (
         <span className="inline">
             <span className="font-bold text-zinc-900 dark:text-zinc-100">{fullName}</span>{' '}
-            <span className="font-medium text-zinc-500 dark:text-zinc-400">
+            <span className="font-normal text-zinc-900 dark:text-zinc-100">
                 {dni} ({sexStr} {ageStr} HC: {hcStr}{bloodGroupRh ? ` GFS: ${bloodGroupRh}` : ''}){bedNumber ? ` C: ${bedNumber}` : ''}
             </span>
         </span>

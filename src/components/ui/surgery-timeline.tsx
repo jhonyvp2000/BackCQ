@@ -225,47 +225,47 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                     <div className={`w-1.5 absolute left-0 top-0 bottom-0 ${colors.ribbon} ${isTBD ? 'opacity-50' : ''}`}></div>
 
                                                     <div className="flex justify-between items-start pl-1.5 pr-0.5 w-full gap-1">
-                                                        <span className="text-[10px] font-bold text-zinc-900 leading-none mt-0.5 break-words whitespace-normal relative w-full">
-                                                            {isTBD && <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[9px] font-black px-1 rounded border border-amber-200 dark:border-amber-700/50 uppercase tracking-tighter">Por definir</span>}
+                                                        <span className="text-[11px] font-bold text-zinc-900 leading-none mt-0.5 break-words whitespace-normal relative w-full">
+                                                            {isTBD && <span className="bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[10px] font-black px-1 rounded border border-amber-200 dark:border-amber-700/50 uppercase tracking-tighter">Por definir</span>}
                                                             {formatPatientDemographics(s.patientPii, s.patient, s.surgery.bedNumber)}
                                                         </span>
                                                         {s.surgery.urgencyType === 'EMERGENCIA' && (
-                                                            <span className="bg-rose-500 text-white px-1 py-0.5 rounded-[3px] text-[7px] uppercase tracking-widest animate-pulse shadow-sm shrink-0 leading-none">
+                                                            <span className="bg-rose-500 text-white px-1 py-0.5 rounded-[3px] text-[8px] uppercase tracking-widest animate-pulse shadow-sm shrink-0 leading-none">
                                                                 EMER
                                                             </span>
                                                         )}
                                                     </div>
 
                                                     {s.diagnoses && s.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
-                                                        <div className="text-[9px] text-blue-800 dark:text-blue-300 font-semibold pl-1.5 mt-1 w-full pr-1 overflow-hidden" title={diagnoses.find(d => d.id === s.diagnoses[0])?.name}>
+                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-1 w-full pr-1 overflow-hidden" title={diagnoses.find(d => d.id === s.diagnoses[0])?.name}>
                                                             <div className="truncate leading-[1.15]">
-                                                                <span className="opacity-80 font-bold">Dx:</span> {diagnoses.find(d => d.id === s.diagnoses[0])?.code} - {diagnoses.find(d => d.id === s.diagnoses[0])?.name}
+                                                                <span className="opacity-80">Dx:</span> {diagnoses.find(d => d.id === s.diagnoses[0])?.code} - {diagnoses.find(d => d.id === s.diagnoses[0])?.name}
                                                             </div>
                                                         </div>
                                                     ) : s.surgery.diagnosis ? (
-                                                        <div className="text-[9px] text-blue-800 dark:text-blue-300 font-semibold pl-1.5 mt-1 w-full pr-1 overflow-hidden" title={s.surgery.diagnosis}>
+                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-1 w-full pr-1 overflow-hidden" title={s.surgery.diagnosis}>
                                                             <div className="truncate leading-[1.15]">
-                                                                <span className="opacity-80 font-bold">Dx:</span> {s.surgery.diagnosis.split(',')[0]}
+                                                                <span className="opacity-80">Dx:</span> {s.surgery.diagnosis.split(',')[0]}
                                                             </div>
                                                         </div>
                                                     ) : null}
                                                     {s.interventions && s.interventions.length > 0 && typeof interventions !== 'undefined' && (
-                                                        <div className="text-[9px] text-emerald-700 dark:text-emerald-400 font-semibold pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={interventions.find(i => i.id === s.interventions[0])?.name}>
+                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={interventions.find(i => i.id === s.interventions[0])?.name}>
                                                             <div className="truncate leading-[1.15]">
-                                                                <span className="opacity-80 font-bold">In:</span> {interventions.find(i => i.id === s.interventions[0])?.name}
+                                                                <span className="opacity-80">In:</span> {interventions.find(i => i.id === s.interventions[0])?.name}
                                                             </div>
                                                         </div>
                                                     )}
                                                     {s.procedures && s.procedures.length > 0 && typeof procedures !== 'undefined' && (
-                                                        <div className="text-[9px] text-pink-500 dark:text-pink-300 font-medium pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={procedures.find(p => p.id === s.procedures[0])?.name}>
+                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={procedures.find(p => p.id === s.procedures[0])?.name}>
                                                             <div className="truncate leading-[1.15]">
-                                                                <span className="opacity-80 font-bold">Px:</span> {procedures.find(p => p.id === s.procedures[0])?.code} - {procedures.find(p => p.id === s.procedures[0])?.name}
+                                                                <span className="opacity-80">Px:</span> {procedures.find(p => p.id === s.procedures[0])?.code} - {procedures.find(p => p.id === s.procedures[0])?.name}
                                                             </div>
                                                         </div>
                                                     )}
 
                                                     {s.surgery.notes && (
-                                                        <div className="text-[9px] text-black dark:text-white font-normal pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={s.surgery.notes}>
+                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={s.surgery.notes}>
                                                             <div className="truncate leading-[1.15]">
                                                                 {s.surgery.notes}
                                                             </div>
@@ -273,7 +273,7 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                     )}
 
                                                     {s.team && s.team.length > 0 && (
-                                                        <div className="pl-1.5 opacity-90 group-hover:opacity-100 pt-1 text-[8.5px] leading-tight break-words whitespace-normal w-full pr-1">
+                                                        <div className="pl-1.5 opacity-90 group-hover:opacity-100 pt-1 text-[10px] leading-tight break-words whitespace-normal w-full pr-1">
                                                             {s.team.map((t: any) => {
                                                                 const firstName = (t.staff.name || '').split(' ')[0] || '';
                                                                 const firstLastName = (t.staff.lastname || '').split(' ')[0] || '';
@@ -293,9 +293,9 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                                     if (profName.includes('CIRCULANTE')) return 'Ci';
                                                                     return 'CI';
                                                                 })();
-                                                                const colorClass = t.role === 'CIRUJANO' ? 'text-blue-800 dark:text-blue-400' : t.role === 'ANESTESIOLOGO' ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-600 dark:text-sky-400';
+                                                                const colorClass = 'text-zinc-900 dark:text-zinc-100';
                                                                 return (
-                                                                    <span key={t.staff.id} className="inline mr-1 font-bold">
+                                                                    <span key={t.staff.id} className="inline mr-1 font-normal">
                                                                         <span className="opacity-80">{roleStr}:</span> <span className={colorClass}>{shortName}</span>
                                                                     </span>
                                                                 );
