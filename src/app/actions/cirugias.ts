@@ -39,6 +39,16 @@ export async function createCustomProcedure(name: string) {
     return inserted;
 }
 
+export async function createCustomIntervention(name: string) {
+    const code = `I-TMP-${Math.floor(Math.random() * 10000)}`;
+    const [inserted] = await db.insert(cqInterventionTypes).values({
+        code,
+        name: name.trim().toUpperCase(),
+        isActive: true,
+    }).returning();
+    return inserted;
+}
+
 export async function lookupProcedureInApi(query: string) {
     if (!query) return [];
     

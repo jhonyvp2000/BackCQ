@@ -182,10 +182,14 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     // Filtros Universales (Paciente y Estado)
     const baseFilteredSurgeries = surgeriesData.filter(s => {
         if (filterPatient.trim() !== "") {
-            const searchTerms = filterPatient.toLowerCase();
+            const searchTerms = filterPatient.toLowerCase().split(/\s+/).filter(Boolean);
             const fullName = `${s.patient?.name || ''} ${s.patientPii?.nombres || ''} ${s.patientPii?.apellidos || ''}`.toLowerCase();
             const dni = `${s.patientPii?.dni || ''}`.toLowerCase();
-            if (!fullName.includes(searchTerms) && !dni.includes(searchTerms)) return false;
+            const combinedString = `${fullName} ${dni}`;
+            
+            // Multivariable AND: TODAS las palabras escritas deben existir en el nombre completo o DNI, sin importar el orden
+            const matchesAll = searchTerms.every(term => combinedString.includes(term));
+            if (!matchesAll) return false;
         }
 
         if (filterStatus.length > 0) {
