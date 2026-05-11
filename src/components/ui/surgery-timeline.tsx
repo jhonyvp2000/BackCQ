@@ -236,41 +236,35 @@ export function SurgeryTimeline({ surgeriesData, salas, displayDate, setDisplayD
                                                         )}
                                                     </div>
 
-                                                    {s.diagnoses && s.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
-                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-1 w-full pr-1 overflow-hidden" title={diagnoses.find(d => d.id === s.diagnoses[0])?.name}>
-                                                            <div className="truncate leading-[1.15]">
-                                                                <span className="opacity-80">Dx:</span> {diagnoses.find(d => d.id === s.diagnoses[0])?.code} - {diagnoses.find(d => d.id === s.diagnoses[0])?.name}
-                                                            </div>
-                                                        </div>
-                                                    ) : s.surgery.diagnosis ? (
-                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-1 w-full pr-1 overflow-hidden" title={s.surgery.diagnosis}>
-                                                            <div className="truncate leading-[1.15]">
-                                                                <span className="opacity-80">Dx:</span> {s.surgery.diagnosis.split(',')[0]}
-                                                            </div>
-                                                        </div>
-                                                    ) : null}
-                                                    {s.interventions && s.interventions.length > 0 && typeof interventions !== 'undefined' && (
-                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={interventions.find(i => i.id === s.interventions[0])?.name}>
-                                                            <div className="truncate leading-[1.15]">
-                                                                <span className="opacity-80">In:</span> {interventions.find(i => i.id === s.interventions[0])?.name}
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {s.procedures && s.procedures.length > 0 && typeof procedures !== 'undefined' && (
-                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={procedures.find(p => p.id === s.procedures[0])?.name}>
-                                                            <div className="truncate leading-[1.15]">
-                                                                <span className="opacity-80">Px:</span> {procedures.find(p => p.id === s.procedures[0])?.code} - {procedures.find(p => p.id === s.procedures[0])?.name}
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                    <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-1 w-full pr-1 leading-[1.15] break-words whitespace-normal">
+                                                        {s.diagnoses && s.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
+                                                            <span className="mr-1" title={diagnoses.find(d => d.id === s.diagnoses[0])?.name}>
+                                                                <span className="opacity-80">Dx:</span> {diagnoses.find(d => d.id === s.diagnoses[0])?.code} - {diagnoses.find(d => d.id === s.diagnoses[0])?.name}.
+                                                            </span>
+                                                        ) : s.surgery.diagnosis ? (
+                                                            <span className="mr-1" title={s.surgery.diagnosis}>
+                                                                <span className="opacity-80">Dx:</span> {s.surgery.diagnosis.split(',')[0]}.
+                                                            </span>
+                                                        ) : null}
 
-                                                    {s.surgery.notes && (
-                                                        <div className="text-[10px] text-blue-800 dark:text-blue-300 font-normal pl-1.5 mt-0.5 w-full pr-1 overflow-hidden" title={s.surgery.notes}>
-                                                            <div className="truncate leading-[1.15]">
-                                                                {s.surgery.notes}
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                        {s.interventions && s.interventions.length > 0 && typeof interventions !== 'undefined' && (
+                                                            <span className="mr-1" title={interventions.find(i => i.id === s.interventions[0])?.name}>
+                                                                <span className="opacity-80">In:</span> {interventions.find(i => i.id === s.interventions[0])?.name}.
+                                                            </span>
+                                                        )}
+
+                                                        {s.procedures && s.procedures.length > 0 && typeof procedures !== 'undefined' && (
+                                                            <span className="mr-1" title={procedures.find(p => p.id === s.procedures[0])?.name}>
+                                                                <span className="opacity-80">Px:</span> {procedures.find(p => p.id === s.procedures[0])?.code} - {procedures.find(p => p.id === s.procedures[0])?.name}.
+                                                            </span>
+                                                        )}
+
+                                                        {s.surgery.notes && (
+                                                            <span title={s.surgery.notes}>
+                                                                <span className="opacity-80">Nota:</span> {s.surgery.notes}
+                                                            </span>
+                                                        )}
+                                                    </div>
 
                                                     {s.team && s.team.length > 0 && (
                                                         <div className="pl-1.5 opacity-90 group-hover:opacity-100 pt-1 text-[10px] leading-tight break-words whitespace-normal w-full pr-1">
