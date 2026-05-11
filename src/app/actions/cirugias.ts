@@ -422,6 +422,10 @@ export async function createSurgery(formData: FormData) {
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
+        const bloodGroupRh = formData.get("blood_group_rh") as string | null;
+        if (bloodGroupRh) {
+            await db.update(cqPatientPii).set({ bloodGroupRh }).where(eq(cqPatientPii.patientId, finalPatientId));
+        }
     } else {
         const apiPatientDataRaw = formData.get("api_patient_data") as string | null;
         let pName = 'NO IDENTIFICADO';
@@ -458,13 +462,15 @@ export async function createSurgery(formData: FormData) {
             finalPatientId = newPat.id;
 
             // Identity Vault
+            const bloodGroupRh = formData.get("blood_group_rh") as string | null;
             await db.insert(cqPatientPii).values({
                 patientId: finalPatientId,
                 dni: patientId,
                 nombres: pName,
                 apellidos: pLastName,
                 historiaClinica: pHistoriaClinica,
-                direccion: pDireccion
+                direccion: pDireccion,
+                bloodGroupRh
             });
         } catch (dbErr) {
             // Fallback total: si algo falló en la inserción (carrera de procesos), buscamos de nuevo
@@ -827,14 +833,20 @@ export async function editSurgery(formData: FormData) {
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
+        const bloodGroupRh = formData.get("blood_group_rh") as string | null;
+        if (bloodGroupRh) {
+            await db.update(cqPatientPii).set({ bloodGroupRh }).where(eq(cqPatientPii.patientId, finalPatientId));
+        }
     } else {
         const newPat = await db.insert(cqPatients).values({}).returning({ id: cqPatients.id });
         finalPatientId = newPat[0].id;
+        const bloodGroupRh = formData.get("blood_group_rh") as string | null;
         await db.insert(cqPatientPii).values({
             patientId: finalPatientId,
             dni: patientId,
             nombres: 'No Identificado',
-            apellidos: 'No Identificado'
+            apellidos: 'No Identificado',
+            bloodGroupRh
         });
     }
 

@@ -797,16 +797,37 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         </motion.div>
                                     )}
                                 </div>
-                                <div className="space-y-2 w-32 shrink-0">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
-                                    <input
-                                        type="text"
-                                        name="bed_number"
-                                        disabled={!canSchedule}
-                                        defaultValue={clonedData?.surgery?.bedNumber || ""}
-                                        placeholder="Ej: A-308"
-                                        className={getInputCls("bed_number", "px-3")}
-                                    />
+                                <div className="space-y-4 w-32 shrink-0">
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
+                                        <input
+                                            type="text"
+                                            name="bed_number"
+                                            disabled={!canSchedule}
+                                            defaultValue={clonedData?.surgery?.bedNumber || ""}
+                                            placeholder="Ej: A-308"
+                                            className={getInputCls("bed_number", "px-3")}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Grupo RH</label>
+                                        <select
+                                            name="blood_group_rh"
+                                            disabled={!canSchedule}
+                                            defaultValue={(selectedPatId && localPatients.find(p => p.id === selectedPatId)?.pii?.bloodGroupRh) || clonedData?.patientPii?.bloodGroupRh || ""}
+                                            className={getInputCls("blood_group_rh", "px-2")}
+                                        >
+                                            <option value="">N/A</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 

@@ -74,7 +74,7 @@ function formatForDateTimeLocal(dateValue: Date | string | null | undefined): st
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-export const formatPatientDemographics = (patientPii: any, patient: any) => {
+export const formatPatientDemographics = (patientPii: any, patient: any, bedNumber?: string | null) => {
     const fullName = `${patientPii?.nombres || ''} ${patientPii?.apellidos || ''}`.trim();
     if (!fullName || fullName === 'Desconocido') return <span className="text-zinc-500 font-normal">Desconocido</span>;
 
@@ -96,18 +96,19 @@ export const formatPatientDemographics = (patientPii: any, patient: any) => {
 
     const hcStr = patientPii?.historiaClinica || '?';
     const dni = patientPii?.dni || patientPii?.carnetExtranjeria || patientPii?.pasaporte || patientPii?.numeroDocumento || patient?.dni || '';
+    const bloodGroupRh = patientPii?.bloodGroupRh;
 
     return (
         <span className="inline">
             <span className="font-bold text-zinc-900 dark:text-zinc-100">{fullName}</span>{' '}
             <span className="font-medium text-zinc-500 dark:text-zinc-400">
-                {dni} ({sexStr} {ageStr} HC: {hcStr})
+                {dni} ({sexStr} {ageStr} HC: {hcStr}{bloodGroupRh ? ` GFS: ${bloodGroupRh}` : ''}){bedNumber ? ` C: ${bedNumber}` : ''}
             </span>
         </span>
     );
 };
 
-export const formatDemographicsOnly = (patientPii: any, patient: any) => {
+export const formatDemographicsOnly = (patientPii: any, patient: any, bedNumber?: string | null) => {
     let sexStr = '?';
     const sexo = patient?.sexo || patientPii?.sexo;
     if (sexo) {
@@ -125,7 +126,8 @@ export const formatDemographicsOnly = (patientPii: any, patient: any) => {
     }
 
     const hcStr = patientPii?.historiaClinica || '?';
-    return `(${sexStr} ${ageStr} HC: ${hcStr})`;
+    const bloodGroupRh = patientPii?.bloodGroupRh;
+    return `(${sexStr} ${ageStr} HC: ${hcStr}${bloodGroupRh ? ` GFS: ${bloodGroupRh}` : ''})${bedNumber ? ` C: ${bedNumber}` : ''}`;
 };
 
 export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialties, staff, permissions = [], diagnoses = [], procedures = [], interventions = [], patients = [] }: { surgeriesData: any[], salas: any[], sortParams: any, specialties?: any[], staff?: any, permissions?: string[], diagnoses?: any[], procedures?: any[], interventions?: any[], patients?: any[] }) {
@@ -567,11 +569,11 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         {index + 1}
                                                     </td>
                                                     <td className="px-3 py-3 align-middle">
-                                                        <div className="font-bold text-zinc-900 dark:text-white truncate max-w-[180px]" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
-                                                            {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii?.apellidos?.split(' ')[0]}, ${row.patientPii?.nombres?.split(' ')[0]}` : 'Desconocido'}
+                                                        <div className="text-xs font-bold text-zinc-900 dark:text-white whitespace-normal break-words leading-tight max-w-[220px]" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
+                                                            {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}
                                                         </div>
-                                                        <div className="text-[11px] text-zinc-500 font-mono tracking-tight mt-0.5">
-                                                            {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'S/Doc'} <span className="text-zinc-400 font-sans tracking-normal ml-0.5">{formatDemographicsOnly(row.patientPii, row.patient)}</span>
+                                                        <div className="text-[10px] text-zinc-500 font-mono tracking-tight mt-0.5">
+                                                            {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'S/Doc'} <span className="text-zinc-400 font-sans tracking-normal ml-0.5">{formatDemographicsOnly(row.patientPii, row.patient, row.surgery?.bedNumber)}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-3 py-3 align-middle">
