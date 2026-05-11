@@ -130,7 +130,7 @@ export const formatDemographicsOnly = (patientPii: any, patient: any, bedNumber?
     return `(${sexStr} ${ageStr} HC: ${hcStr}${bloodGroupRh ? ` GFS: ${bloodGroupRh}` : ''})${bedNumber ? ` C: ${bedNumber}` : ''}`;
 };
 
-export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialties, staff, permissions = [], diagnoses = [], procedures = [], interventions = [], patients = [] }: { surgeriesData: any[], salas: any[], sortParams: any, specialties?: any[], staff?: any, permissions?: string[], diagnoses?: any[], procedures?: any[], interventions?: any[], patients?: any[] }) {
+export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialties, staff, permissions = [], diagnoses = [], procedures = [], interventions = [], patients = [], initialDate = "" }: { surgeriesData: any[], salas: any[], sortParams: any, specialties?: any[], staff?: any, permissions?: string[], diagnoses?: any[], procedures?: any[], interventions?: any[], patients?: any[], initialDate?: string }) {
     const canEdit = permissions.includes('editar:programacion');
     const canCancel = permissions.includes('cancelar:programacion');
     const canAdvancePhase = permissions.includes('avanzar_fase:programacion');
@@ -173,11 +173,23 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     }, []);
 
     // Estados para Filtros de Lista
-    const [filterDate, setFilterDate] = useState<string>("");
+    const [filterDate, setFilterDate] = useState<string>(initialDate);
     const [filterPatient, setFilterPatient] = useState<string>("");
     const [filterRoom, setFilterRoom] = useState<string[]>([]);
     const [filterStatus, setFilterStatus] = useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+
+    const handleDateChange = (newDate: string) => {
+        setFilterDate(newDate);
+        const params = new URLSearchParams();
+        if (newDate) {
+            params.set('date', newDate);
+        } else {
+            params.set('date', 'all');
+        }
+        if (sortParams?.sort) params.set('sort', sortParams.sort);
+        router.push(`?${params.toString()}`);
+    };
 
     // Filtros Universales (Paciente y Estado)
     const baseFilteredSurgeries = surgeriesData.filter(s => {
@@ -240,17 +252,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
         return true;
     });
 
-    // Filtros Locales de Lista (Fecha y Quirófano)
+    // Filtros Locales de Lista (Quirófano) - Fecha ya se filtró en el backend
     const filteredSurgeries = baseFilteredSurgeries.filter(s => {
-        if (filterDate) {
-            const surgeryDate = new Date(s.surgery.scheduledDate);
-            const selectedDate = new Date(filterDate + "T12:00:00");
-            if (surgeryDate.getFullYear() !== selectedDate.getFullYear() ||
-                surgeryDate.getMonth() !== selectedDate.getMonth() ||
-                surgeryDate.getDate() !== selectedDate.getDate()) {
-                return false;
-            }
-        }
 
         if (filterRoom.length > 0 && (!s.operatingRoom?.id || !filterRoom.includes(s.operatingRoom.id))) {
             return false;
@@ -338,7 +341,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                         </button>
                         {(filterDate || filterPatient || filterRoom.length > 0 || filterStatus.length > 0) && (
                             <button
-                                onClick={() => { setFilterDate(''); setFilterPatient(''); setFilterRoom([]); setFilterStatus([]); }}
+                                onClick={() => { handleDateChange(''); setFilterPatient(''); setFilterRoom([]); setFilterStatus([]); }}
                                 className="text-xs font-semibold text-zinc-500 hover:text-red-500 hover:underline px-2 transition-colors"
                             >
                                 Limpiar Filtros
@@ -394,7 +397,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                         <input
                                             type="date"
                                             value={filterDate}
-                                            onChange={(e) => setFilterDate(e.target.value)}
+                                            onChange={(e) => handleDateChange(e.target.value)}
                                             className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200 [color-scheme:light] dark:[color-scheme:dark]"
                                         />
                                     </div>
@@ -1022,7 +1025,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             transition={{ duration: 0.2 }}
                             className="relative z-[100]"
                         >
-                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom.length === 0 ? salas : salas.filter(s => filterRoom.includes(s.id))} displayDate={filterDate} setDisplayDate={setFilterDate} diagnoses={diagnoses} procedures={procedures} interventions={interventions} staff={staff} onClose={() => setViewMode('list')} />
+                            <SurgeryTimeline surgeriesData={baseFilteredSurgeries} salas={filterRoom.length === 0 ? salas : salas.filter(s => filterRoom.includes(s.id))} displayDate={filterDate} setDisplayDate={handleDateChange} diagnoses={diagnoses} procedures={procedures} interventions={interventions} staff={staff} onClose={() => setViewMode('list')} />
                         </motion.div>
                     )}
                 </AnimatePresence>,

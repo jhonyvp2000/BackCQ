@@ -219,9 +219,10 @@ export async function getSurgeries(startDate?: Date, endDate?: Date) {
     return await query;
 }
 
-export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc') {
+export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', dateFilter?: string) {
     const orderFn = sortDir === 'asc' ? asc : desc;
-    const surgeries = await db.select({
+    
+    let baseQuery = db.select({
         surgery: cqSurgeries,
         operatingRoom: cqOperatingRooms,
         patientPii: cqPatientPii,
@@ -232,8 +233,16 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc') {
         .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
         .leftJoin(cqPatientPii, eq(cqSurgeries.patientId, cqPatientPii.patientId))
         .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
-        .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id))
-        .orderBy(orderFn(cqSurgeries.scheduledDate));
+        .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id));
+
+    if (dateFilter) {
+        // filter from 00:00:00 to 23:59:59 of the given date
+        const startDate = new Date(`${dateFilter}T00:00:00`);
+        const endDate = new Date(`${dateFilter}T23:59:59.999`);
+        baseQuery = baseQuery.where(and(gte(cqSurgeries.scheduledDate, startDate), lte(cqSurgeries.scheduledDate, endDate))) as any;
+    }
+
+    const surgeries = await baseQuery.orderBy(orderFn(cqSurgeries.scheduledDate));
 
     if (surgeries.length === 0) return [];
 
