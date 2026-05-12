@@ -1,0 +1,271 @@
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 2e27eb64-4947-4c19-a1c2-79bce533d1cb,009483747,JOSE ALEJANDRO,ARANGO DOMINGUEZ,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '1071093683',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 3214d4f8-1c7e-4fed-b757-a898d789e36b,009483747,NO IDENTIFICADO,NO IDENTIFICADO,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '3625160211',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 4ac19e88-6118-4fcd-8aff-cbab5fccdf0f,009483747,NO IDENTIFICADO,NO IDENTIFICADO,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '2327991763',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 737bada1-2033-4150-a321-d38dc72fe872,009483747,NO IDENTIFICADO,NO IDENTIFICADO,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '2820453203',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 990ded1c-b53c-4375-a683-c58f65c74bfb,009483747,NO IDENTIFICADO,NO IDENTIFICADO,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '1545480915',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: a4653448-eb4d-4163-b6e2-1cfc2e4d0593,009483747,NO IDENTIFICADO,NO IDENTIFICADO,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '795226515',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 7271b843-8a03-4cc7-917e-0cefbd8032a0,009483747,NO IDENTIFICADO,NO IDENTIFICADO,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '1425947443',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: af41f690-16be-4c48-9b0a-a879416fa9de,009483747,JOSE ALEJANDRO,ARANGO DOMINGUEZ,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '579260947',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 13ffd3dc-2371-483a-b361-ce003110da09,009483747,JOSE ALEJANDRO,ARANGO DOMINGUEZ,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '1216416307',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 41b9df64-1c6c-4a7f-ac30-c4053801e9d2,009483747,JOSE ALEJANDRO,ARANGO DOMINGUEZ,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '3695771507',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+⨯ Error: Failed query: insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)
+params: 712ec5fd-2fde-4272-b203-a50e3fc67570,009483747,JOSE ALEJANDRO,ARANGO DOMINGUEZ,009483747,
+    at co.queryWithCache (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:28:40034)
+    at async r (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\src_app_actions_cirugias_ts_d51fd8a0._.js:3:887)
+    at async m (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:1:7317)
+    at async p (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_938c08e5._.js:2:2713) {
+  query: 'insert into "cq_patient_pii" ("patient_id", "dni", "carnet_extranjeria", "pasaporte", "nombres", "apellidos", "historia_clinica", "direccion") values ($1, $2, default, default, $3, $4, $5, $6)',
+  params: [Array],
+  digest: '3820729843',
+  [cause]: i: el valor es demasiado largo para el tipo character varying(8)
+      at ad (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:2279)
+      at <unknown> (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3216)
+      at Socket.aS (C:\sistemas_ogess\BackCQ\.next\server\chunks\ssr\_0cd9f04c._.js:4:3220) {
+    severity_local: 'ERROR',
+    severity: 'ERROR',
+    code: '22001',
+    file: 'varchar.c',
+    line: '640',
+    routine: 'varchar'
+  }
+}
+Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
+Error: Failed to find Server Action "x". This request might be from an older or newer deployment.
+Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+    at ignore-listed frames
+Error: Failed to find Server Action "x". This request might be from an older or newer deployment.
+Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+    at ignore-listed frames
+Error: Failed to find Server Action "x". This request might be from an older or newer deployment.
+Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+    at ignore-listed frames
+Error: Failed to find Server Action "x". This request might be from an older or newer deployment.
+Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+    at ignore-listed frames
+Error: Failed to find Server Action "x". This request might be from an older or newer deployment.
+Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+    at ignore-listed frames
+Error: Failed to find Server Action "x". This request might be from an older or newer deployment.
+Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+    at ignore-listed frames
+Error: Failed to find Server Action "x". This request might be from an older or newer deployment.
+Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+    at ignore-listed frames
+Error: Failed to find Server Action "x". This request might be from an older or newer deployment.
+Read more: https://nextjs.org/docs/messages/failed-to-find-server-action
+    at ignore-listed frames
+Error: aborted
+    at ignore-listed frames {
+  code: 'ECONNRESET'
+}
