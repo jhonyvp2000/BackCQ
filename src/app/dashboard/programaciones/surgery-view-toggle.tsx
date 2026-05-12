@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LayoutGrid, List as ListIcon, Calendar, ArrowUp, ArrowDown, User, Clock, Hourglass, CheckCircle2, XCircle, FileText, Activity, AlertCircle, Pencil, CopyPlus, AlertTriangle, X, Filter, Search } from "lucide-react";
+import { LayoutGrid, List as ListIcon, Calendar, ArrowUp, ArrowDown, User, Clock, Hourglass, CheckCircle2, XCircle, FileText, Activity, AlertCircle, Pencil, CopyPlus, AlertTriangle, X, Filter, Search, Maximize2, Minimize2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -138,6 +138,44 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const canDelete = permissions.includes('eliminar:programacion');
     const canViewReport = permissions.includes('ver:reporte_operatorio');
     const router = useRouter();
+    const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, string>>({});
+    const [pendingStatuses, setPendingStatuses] = useState<Record<string, boolean>>({});
+
+    const handleQuickStatusCycle = async (id: string, currentStatus: string) => {
+        if (pendingStatuses[id]) return;
+
+        let nextStatus = 'scheduled';
+        const optStatus = optimisticStatuses[id] || currentStatus;
+        if (optStatus === 'scheduled') nextStatus = 'in_progress';
+        else if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(optStatus)) nextStatus = 'completed';
+        else if (optStatus === 'completed') nextStatus = 'cancelled';
+        else if (optStatus === 'cancelled') nextStatus = 'scheduled';
+
+        setOptimisticStatuses(prev => ({ ...prev, [id]: nextStatus }));
+        setPendingStatuses(prev => ({ ...prev, [id]: true }));
+
+        try {
+            const formData = new FormData();
+            formData.append("id", id);
+            formData.append("status", nextStatus);
+            await updateSurgeryStatus(formData);
+            router.refresh();
+        } catch (e) {
+            console.error("Failed to cycle status", e);
+            setOptimisticStatuses(prev => ({ ...prev, [id]: optStatus }));
+        } finally {
+            setPendingStatuses(prev => ({ ...prev, [id]: false }));
+        }
+    };
+
+    const getRowBgColor = (status: string) => {
+        if (status === 'scheduled') return "bg-white dark:bg-zinc-900";
+        if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) return "bg-yellow-50/70 dark:bg-yellow-900/20";
+        if (status === 'completed') return "bg-emerald-50/70 dark:bg-emerald-900/20";
+        if (status === 'cancelled') return "bg-red-50/70 dark:bg-red-900/20";
+        return "bg-white dark:bg-zinc-900";
+    };
+
     const [viewMode, setViewMode] = useState<'list' | 'timeline'>('list');
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
@@ -178,6 +216,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [filterRoom, setFilterRoom] = useState<string[]>([]);
     const [filterStatus, setFilterStatus] = useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+    const [isListFullscreen, setIsListFullscreen] = useState<boolean>(false);
 
     const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
@@ -354,7 +393,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm flex flex-col h-full ring-1 ring-zinc-100 dark:ring-zinc-800/50">
+        <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 overflow-hidden shadow-sm flex flex-col ${isListFullscreen ? 'fixed inset-0 z-[100] w-screen h-screen rounded-none' : 'rounded-3xl h-full ring-1 ring-zinc-100 dark:ring-zinc-800/50'}`}>
             {/* Header de Configuración y Toggles */}
             <div className="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/20">
                 <div>
@@ -368,6 +407,15 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                     <span className="bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm hidden sm:block">
                         {surgeriesData.filter(s => s.surgery.status !== 'cancelled').length} Activas
                     </span>
+                    {viewMode === 'list' && (
+                        <button
+                            onClick={() => setIsListFullscreen(!isListFullscreen)}
+                            className="bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 p-2 rounded-xl transition-colors border border-zinc-200 dark:border-zinc-700 shadow-sm flex items-center gap-2"
+                            title={isListFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                        >
+                            {isListFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                        </button>
+                    )}
                     <div className="bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl flex items-center border border-zinc-200 dark:border-zinc-700 shadow-inner">
                         <button
                             onClick={() => setViewMode('list')}
@@ -376,7 +424,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             <ListIcon size={16} /> Lista
                         </button>
                         <button
-                            onClick={() => setViewMode('timeline')}
+                            onClick={() => { setViewMode('timeline'); setIsListFullscreen(false); }}
                             className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-300 ${viewMode === 'timeline' ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600' : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
                         >
                             <LayoutGrid size={16} /> Timeline
@@ -582,7 +630,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             </div>
 
             {/* Content Area */}
-            <div className="flex-grow">
+            <div className="flex-grow flex flex-col min-h-0">
                 <AnimatePresence mode="wait">
                     {viewMode === 'timeline' ? null : (
                         <motion.div
@@ -591,7 +639,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.98 }}
                             transition={{ duration: 0.2 }}
-                            className="flex flex-col h-full"
+                            className="flex flex-col flex-grow min-h-0"
                         >
                             {/* Listado de Cirugías Mejorado */}
                             {filteredSurgeries.length === 0 ? (
@@ -603,7 +651,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                     <p className="text-zinc-500 dark:text-zinc-400 max-w-sm font-medium">No hay intervenciones programadas para este filtro. Utiliza el panel lateral para agendar la primera cirugía del día.</p>
                                 </div>
                             ) : (
-                                <div className="overflow-x-auto flex-grow">
+                                <div className="overflow-auto flex-grow bg-white dark:bg-zinc-900 custom-scrollbar">
                                     <table className="w-full text-left border-collapse">
                                         <thead className="sticky top-0 z-20">
                                             <tr className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/95 dark:bg-zinc-800/95 backdrop-blur-md">
@@ -639,15 +687,35 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     </div>
                                                 </th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[290px] max-w-[490px]">Diagnóstico / Intervención</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px] text-center">F. Sol-Pro</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[247px]">Equipo</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px] text-center">F. Sol-Pro</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Estado</th>
                                                 <th scope="col" className="px-3 py-4 pl-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px] sticky right-0 z-30 bg-zinc-50/95 dark:bg-zinc-800/95 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-200 dark:before:bg-zinc-700">Gestión</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800/50">
-                                            {sortedSurgeries.map((row, index) => (
-                                                <tr key={row.surgery.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/50 transition-all duration-300 group text-sm">
+                                            {sortedSurgeries.map((row, index) => {
+                                                const effectiveStatus = optimisticStatuses[row.surgery.id] || row.surgery.status;
+                                                const isPending = pendingStatuses[row.surgery.id] || false;
+                                                
+                                                let pillClasses = "";
+                                                let pillContent = null;
+                                                if (effectiveStatus === 'scheduled') {
+                                                    pillClasses = "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700 hover:bg-yellow-100 dark:hover:bg-yellow-900/50";
+                                                    pillContent = <><div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div> Programado</>;
+                                                } else if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(effectiveStatus)) {
+                                                    pillClasses = "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50";
+                                                    pillContent = <><div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></div> Realizado</>;
+                                                } else if (effectiveStatus === 'completed') {
+                                                    pillClasses = "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 hover:bg-red-100 dark:hover:bg-red-900/50";
+                                                    pillContent = <><CheckCircle2 size={12} className="text-emerald-500" /> Finalizado</>;
+                                                } else if (effectiveStatus === 'cancelled') {
+                                                    pillClasses = "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800";
+                                                    pillContent = <><XCircle size={12} className="text-red-500" /> Suspendido</>;
+                                                }
+
+                                                return (
+                                                <tr key={row.surgery.id} className={`transition-all duration-300 group text-sm border-b border-zinc-100 dark:border-zinc-800/50 last:border-0 hover:brightness-95 dark:hover:brightness-125 ${getRowBgColor(effectiveStatus)}`}>
                                                     <td className="px-3 py-3 whitespace-nowrap text-zinc-500 font-medium align-middle">
                                                         {index + 1}
                                                     </td>
@@ -730,17 +798,6 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
-                                                        <div className="flex flex-col items-center justify-center gap-1.5">
-                                                            <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
-                                                                {formatDateOnly(row.surgery.requestDate)}
-                                                            </div>
-                                                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
-                                                                {formatDateOnly(row.surgery.scheduledDate)}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-
                                                     <td className="px-3 py-3 align-middle max-w-[297px]">
                                                         {row.team && row.team.length > 0 ? (() => {
                                                             const surgeons = row.team.filter((t: any) => t.role === 'CIRUJANO');
@@ -790,10 +847,27 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             );
                                                         })() : <span className="text-xs text-zinc-400">-</span>}
                                                     </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
-                                                        <div className="scale-90 origin-left">
-                                                            {getStatusBadge(row.surgery.status)}
+
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
+                                                        <div className="flex flex-col items-center justify-center gap-1.5">
+                                                            <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
+                                                                {formatDateOnly(row.surgery.requestDate)}
+                                                            </div>
+                                                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
+                                                                {formatDateOnly(row.surgery.scheduledDate)}
+                                                            </div>
                                                         </div>
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                        <button 
+                                                            onClick={() => handleQuickStatusCycle(row.surgery.id, row.surgery.status)}
+                                                            disabled={isPending}
+                                                            className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold border flex flex-nowrap items-center justify-center gap-1.5 shadow-sm transition-all duration-300 cursor-pointer ${pillClasses} ${isPending ? 'opacity-50 scale-95' : 'hover:scale-105 active:scale-95'}`}
+                                                            title="Clic para cambiar estado visual"
+                                                        >
+                                                            {pillContent}
+                                                        </button>
+
                                                     </td>
                                                     <td className="px-3 py-3 whitespace-nowrap text-right align-middle sticky right-0 z-10 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50/50 dark:group-hover:bg-zinc-800/50 transition-colors shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-100 dark:before:bg-zinc-800/50">
                                                         <div className="flex justify-end gap-2 items-center opacity-70 group-hover:opacity-100 transition-opacity duration-300">
@@ -959,7 +1033,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         </div>
                                                     </td>
                                                 </tr>
-                                            ))}
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
