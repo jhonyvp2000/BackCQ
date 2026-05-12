@@ -39,6 +39,16 @@ export async function createCustomProcedure(name: string) {
     return inserted;
 }
 
+export async function createCustomIntervention(name: string) {
+    const code = `I-TMP-${Math.floor(Math.random() * 10000)}`;
+    const [inserted] = await db.insert(cqInterventionTypes).values({
+        code,
+        name: name.trim().toUpperCase(),
+        isActive: true,
+    }).returning();
+    return inserted;
+}
+
 export async function lookupProcedureInApi(query: string) {
     if (!query) return [];
     
@@ -209,9 +219,10 @@ export async function getSurgeries(startDate?: Date, endDate?: Date) {
     return await query;
 }
 
-export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc') {
+export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', dateFilter?: string) {
     const orderFn = sortDir === 'asc' ? asc : desc;
-    const surgeries = await db.select({
+    
+    let baseQuery = db.select({
         surgery: cqSurgeries,
         operatingRoom: cqOperatingRooms,
         patientPii: cqPatientPii,
@@ -222,8 +233,16 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc') {
         .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
         .leftJoin(cqPatientPii, eq(cqSurgeries.patientId, cqPatientPii.patientId))
         .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
-        .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id))
-        .orderBy(orderFn(cqSurgeries.scheduledDate));
+        .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id));
+
+    if (dateFilter) {
+        // filter from 00:00:00 to 23:59:59 of the given date
+        const startDate = new Date(`${dateFilter}T00:00:00`);
+        const endDate = new Date(`${dateFilter}T23:59:59.999`);
+        baseQuery = baseQuery.where(and(gte(cqSurgeries.scheduledDate, startDate), lte(cqSurgeries.scheduledDate, endDate))) as any;
+    }
+
+    const surgeries = await baseQuery.orderBy(orderFn(cqSurgeries.scheduledDate));
 
     if (surgeries.length === 0) return [];
 
@@ -422,6 +441,10 @@ export async function createSurgery(formData: FormData) {
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
+        const bloodGroupRh = formData.get("blood_group_rh") as string | null;
+        if (bloodGroupRh) {
+            await db.update(cqPatientPii).set({ bloodGroupRh }).where(eq(cqPatientPii.patientId, finalPatientId));
+        }
     } else {
         const apiPatientDataRaw = formData.get("api_patient_data") as string | null;
         let pName = 'NO IDENTIFICADO';
@@ -458,13 +481,15 @@ export async function createSurgery(formData: FormData) {
             finalPatientId = newPat.id;
 
             // Identity Vault
+            const bloodGroupRh = formData.get("blood_group_rh") as string | null;
             await db.insert(cqPatientPii).values({
                 patientId: finalPatientId,
                 dni: patientId,
                 nombres: pName,
                 apellidos: pLastName,
                 historiaClinica: pHistoriaClinica,
-                direccion: pDireccion
+                direccion: pDireccion,
+                bloodGroupRh
             });
         } catch (dbErr) {
             // Fallback total: si algo falló en la inserción (carrera de procesos), buscamos de nuevo
@@ -827,14 +852,20 @@ export async function editSurgery(formData: FormData) {
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
+        const bloodGroupRh = formData.get("blood_group_rh") as string | null;
+        if (bloodGroupRh) {
+            await db.update(cqPatientPii).set({ bloodGroupRh }).where(eq(cqPatientPii.patientId, finalPatientId));
+        }
     } else {
         const newPat = await db.insert(cqPatients).values({}).returning({ id: cqPatients.id });
         finalPatientId = newPat[0].id;
+        const bloodGroupRh = formData.get("blood_group_rh") as string | null;
         await db.insert(cqPatientPii).values({
             patientId: finalPatientId,
             dni: patientId,
             nombres: 'No Identificado',
-            apellidos: 'No Identificado'
+            apellidos: 'No Identificado',
+            bloodGroupRh
         });
     }
 

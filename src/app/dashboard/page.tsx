@@ -1,6 +1,9 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getDashboardStats } from "@/app/actions/dashboard";
+import { db } from "@/db";
+import { staffProfiles, professions } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import { Activity, Clock, Plus, Users, Calendar, ArrowRight, ActivitySquare, LayoutDashboard, CalendarDays, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -11,6 +14,34 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
     const session = await getServerSession(authOptions);
     const user = session?.user as any;
+
+    let userPrefix = ""; // Por defecto sin prefijo si no está en la tabla
+    if (user?.id) {
+        try {
+            const staff = await db.select({
+                prof: professions.name
+            })
+            .from(staffProfiles)
+            .innerJoin(professions, eq(staffProfiles.professionId, professions.id))
+            .where(eq(staffProfiles.userId, user.id))
+            .limit(1);
+
+            if (staff.length > 0) {
+                const prof = staff[0].prof.toUpperCase();
+                if (prof.includes("MEDICO CIRUJANO") || prof.includes("MÉDICO CIRUJANO")) {
+                    userPrefix = "Dr. ";
+                } else if (prof.includes("ANESTESIOLOGO") || prof.includes("ANESTESIÓLOGO") || prof.includes("ENFERMER")) {
+                    userPrefix = "Lic. ";
+                } else if (prof.includes("TECNICO") || prof.includes("TÉCNICO") || prof.includes("ASISTENCIAL") || prof.includes("OTROS")) {
+                    userPrefix = "Tec. ";
+                } else {
+                    userPrefix = "Dr. "; // Fallback si tiene profesion pero no entra en las categorías
+                }
+            }
+        } catch (e) {
+            console.error("Error fetching user profession prefix", e);
+        }
+    }
 
     // Fallbacks in case stats fail
     const data = await getDashboardStats().catch(() => ({
@@ -59,7 +90,7 @@ export default async function DashboardPage() {
                         <LayoutDashboard size={14} /> Panel Principal
                     </div>
                     <h2 className="text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white leading-tight">
-                        Bienvenido, Dr. {user?.lastname}
+                        Bienvenido, {userPrefix}{user?.lastname}
                     </h2>
                     <p className="mt-2 text-zinc-500 dark:text-zinc-400 text-sm font-medium leading-relaxed max-w-md">
                         Comando central de operaciones del Centro Quirúrgico. Vistazo en tiempo real del flujo de las salas y los pacientes agendados.

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Plus, User, AlertCircle, CheckCircle, Search, Loader2, AlertTriangle, X, Shield, Users, CalendarDays, ChevronDown, ListX, Verified } from "lucide-react";
-import { createSurgery, editSurgery, createCustomDiagnosis, createCustomProcedure, lookupProcedureInApi, lookupDiagnosisInApi } from "@/app/actions/cirugias";
+import { createSurgery, editSurgery, createCustomDiagnosis, createCustomProcedure, lookupProcedureInApi, lookupDiagnosisInApi, createCustomIntervention } from "@/app/actions/cirugias";
 import { useRouter } from "next/navigation";
 import { lookupPatientByDni, createTemporaryPatient, lookupPatientsInApi } from "@/app/actions/pacientes";
 import { motion, AnimatePresence } from "framer-motion";
@@ -83,6 +83,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [localInterventions, setLocalInterventions] = useState<any[]>(interventions || []);
     const [isCreatingDx, setIsCreatingDx] = useState(false);
     const [isCreatingProc, setIsCreatingProc] = useState(false);
+    const [isCreatingInt, setIsCreatingInt] = useState(false);
     const [isCreatingPat, setIsCreatingPat] = useState(false);
     const [manualPatientName, setManualPatientName] = useState("");
 
@@ -165,6 +166,21 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             console.error(e);
         } finally {
             setIsCreatingProc(false);
+        }
+    };
+
+    const handleCreateInt = async () => {
+        if (!intSearchTerm) return;
+        setIsCreatingInt(true);
+        try {
+            const newInt = await createCustomIntervention(intSearchTerm);
+            setLocalInterventions(prev => [newInt, ...prev]);
+            setSelectedIntIds(prev => new Set([...Array.from(prev), newInt.id]));
+            setIntSearchTerm("");
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsCreatingInt(false);
         }
     };
 
@@ -797,16 +813,37 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         </motion.div>
                                     )}
                                 </div>
-                                <div className="space-y-2 w-32 shrink-0">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
-                                    <input
-                                        type="text"
-                                        name="bed_number"
-                                        disabled={!canSchedule}
-                                        defaultValue={clonedData?.surgery?.bedNumber || ""}
-                                        placeholder="Ej: A-308"
-                                        className={getInputCls("bed_number", "px-3")}
-                                    />
+                                <div className="space-y-4 w-32 shrink-0">
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
+                                        <input
+                                            type="text"
+                                            name="bed_number"
+                                            disabled={!canSchedule}
+                                            defaultValue={clonedData?.surgery?.bedNumber || ""}
+                                            placeholder="Ej: A-308"
+                                            className={getInputCls("bed_number", "px-3")}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Grupo RH</label>
+                                        <select
+                                            name="blood_group_rh"
+                                            disabled={!canSchedule}
+                                            defaultValue={(selectedPatId && localPatients.find(p => p.id === selectedPatId)?.pii?.bloodGroupRh) || clonedData?.patientPii?.bloodGroupRh || ""}
+                                            className={getInputCls("blood_group_rh", "px-2")}
+                                        >
+                                            <option value="">N/A</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1130,6 +1167,17 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     {filteredUnselectedInt.length === 0 && selectedIntList.length === 0 && (
                                         <div className="p-4 text-center">
                                             <p className="text-sm text-zinc-500 mb-2">No se encontraron intervenciones que coincidan con la búsqueda.</p>
+                                            {intSearchTerm && (
+                                                <button 
+                                                    type="button" 
+                                                    onClick={handleCreateInt} 
+                                                    disabled={isCreatingInt || !canSchedule}
+                                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-[11px] font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
+                                                >
+                                                    {isCreatingInt ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                    ✨ Añadir rápidamente "{intSearchTerm}" al sistema
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </div>

@@ -12,14 +12,23 @@ import { StartSurgeryButton } from "./start-surgery-button";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export default async function ProgramacionesPage({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
+export default async function ProgramacionesPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string }> }) {
     const session = await getServerSession(authOptions);
     const permissions = (session?.user as any)?.permissions || [];
     const canCreate = permissions.includes('crear:programacion');
 
     const sortParams = await searchParams;
     const currentSort = sortParams?.sort === 'asc' ? 'asc' : 'desc';
-    const surgeriesData = await getSurgeriesByDateDesc(currentSort);
+    
+    // Default to today in Lima timezone if no date provided, but allow "all" to fetch everything
+    let currentDate: string | undefined = sortParams?.date;
+    if (currentDate === 'all') {
+        currentDate = undefined;
+    } else if (!currentDate) {
+        currentDate = new Date().toLocaleString("sv-SE", { timeZone: "America/Lima" }).split(' ')[0];
+    }
+
+    const surgeriesData = await getSurgeriesByDateDesc(currentSort, currentDate);
     const salas = await getOperatingRooms();
     const specialties = await getSpecialties();
     const diagnoses = await getActiveDiagnoses();
@@ -79,7 +88,7 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
 
             <div className="w-full">
                 {/* Lista / Timeline de Agenda (Envuelto en Client Component)  Expandido a ancho total */}
-                <SurgeryViewToggle surgeriesData={surgeriesData} salas={salas} sortParams={sortParams} specialties={specialties} staff={staff} permissions={permissions} diagnoses={diagnoses} procedures={procedures} interventions={interventions} patients={patients} />
+                <SurgeryViewToggle surgeriesData={surgeriesData} salas={salas} sortParams={sortParams} specialties={specialties} staff={staff} permissions={permissions} diagnoses={diagnoses} procedures={procedures} interventions={interventions} patients={patients} initialDate={currentDate || ""} />
             </div>
         </div>
     );
