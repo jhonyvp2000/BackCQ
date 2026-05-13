@@ -170,9 +170,9 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
 
     const getRowBgColor = (status: string) => {
         if (status === 'scheduled') return "bg-white dark:bg-zinc-900";
-        if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) return "bg-yellow-50/70 dark:bg-yellow-900/20";
-        if (status === 'completed') return "bg-emerald-50/70 dark:bg-emerald-900/20";
-        if (status === 'cancelled') return "bg-red-50/70 dark:bg-red-900/20";
+        if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) return "bg-yellow-100 dark:bg-yellow-900/40";
+        if (status === 'completed') return "bg-emerald-100 dark:bg-emerald-900/40";
+        if (status === 'cancelled') return "bg-red-100 dark:bg-red-900/40";
         return "bg-white dark:bg-zinc-900";
     };
 
@@ -690,7 +690,9 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[247px]">Equipo</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px] text-center">F. Sol-Pro</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Estado</th>
-                                                <th scope="col" className="px-3 py-4 pl-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px] sticky right-0 z-30 bg-zinc-50/95 dark:bg-zinc-800/95 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-200 dark:before:bg-zinc-700">Gestión</th>
+                                                {!isListFullscreen && (
+                                                    <th scope="col" className="px-3 py-4 pl-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px] sticky right-0 z-30 bg-zinc-50/95 dark:bg-zinc-800/95 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-200 dark:before:bg-zinc-700">Gestión</th>
+                                                )}
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800/50">
@@ -698,6 +700,18 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                 const effectiveStatus = optimisticStatuses[row.surgery.id] || row.surgery.status;
                                                 const isPending = pendingStatuses[row.surgery.id] || false;
                                                 
+                                                const logicalPhase = (() => {
+                                                    if (row.surgery.status === 'cancelled') return 'cancelled';
+                                                    if (!row.surgery.actualStartTime) return 'scheduled';
+                                                    if (!row.surgery.anesthesiaStartTime) return 'in_progress';
+                                                    if (!row.surgery.preIncisionTime) return 'anesthesia_start';
+                                                    if (!row.surgery.surgeryEndTime) return 'pre_incision';
+                                                    if (!row.surgery.patientExitTime) return 'surgery_end';
+                                                    if (!row.surgery.urpaExitTime) return 'patient_exit';
+                                                    if (row.surgery.status === 'completed') return 'completed';
+                                                    return 'urpa_exit';
+                                                })();
+
                                                 let pillClasses = "";
                                                 let pillContent = null;
                                                 if (effectiveStatus === 'scheduled') {
@@ -869,169 +883,171 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         </button>
 
                                                     </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap text-right align-middle sticky right-0 z-10 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50/50 dark:group-hover:bg-zinc-800/50 transition-colors shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-100 dark:before:bg-zinc-800/50">
-                                                        <div className="flex justify-end gap-2 items-center opacity-70 group-hover:opacity-100 transition-opacity duration-300">
-                                                            {/* Flujo de Estados con Modal de Tiempo */}
-                                                            {row.surgery.status === 'scheduled' && canAdvancePhase && (
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setTransitionModal({
-                                                                            isOpen: true,
-                                                                            surgeryId: row.surgery.id,
-                                                                            targetPhase: 'in_progress',
-                                                                            patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`.trim() || 'Desconocido',
-                                                                            urgencyType: row.surgery.urgencyType || 'ELECTIVO'
-                                                                        });
-                                                                    }}
-                                                                    className="text-amber-700 hover:text-white hover:bg-amber-600 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-xl transition-all duration-300 border border-amber-200 hover:scale-[1.02] text-xs font-bold shadow-sm"
-                                                                >
-                                                                    Ingreso a Quirófano
-                                                                </button>
-                                                            )}
+                                                    {!isListFullscreen && (
+                                                        <td className="px-3 py-3 whitespace-nowrap text-right align-middle sticky right-0 z-10 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50/50 dark:group-hover:bg-zinc-800/50 transition-colors shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-100 dark:before:bg-zinc-800/50">
+                                                            <div className="flex justify-end gap-2 items-center opacity-70 group-hover:opacity-100 transition-opacity duration-300">
+                                                                {/* Flujo de Estados con Modal de Tiempo */}
+                                                                {logicalPhase === 'scheduled' && canAdvancePhase && (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setTransitionModal({
+                                                                                isOpen: true,
+                                                                                surgeryId: row.surgery.id,
+                                                                                targetPhase: 'in_progress',
+                                                                                patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`.trim() || 'Desconocido',
+                                                                                urgencyType: row.surgery.urgencyType || 'ELECTIVO'
+                                                                            });
+                                                                        }}
+                                                                        className="text-amber-700 hover:text-white hover:bg-amber-600 bg-amber-50 dark:bg-amber-900/20 px-4 py-2 rounded-xl transition-all duration-300 border border-amber-200 hover:scale-[1.02] text-xs font-bold shadow-sm"
+                                                                    >
+                                                                        Ingreso a Quirófano
+                                                                    </button>
+                                                                )}
 
-                                                            {row.surgery.status === 'in_progress' && canAdvancePhase && (
-                                                                <button
-                                                                    onClick={() => setTransitionModal({ 
-                                                                        isOpen: true, 
-                                                                        surgeryId: row.surgery.id, 
-                                                                        targetPhase: 'anesthesia_start', 
-                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.actualStartTime),
-                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
-                                                                    })}
-                                                                    className="text-purple-700 hover:text-white hover:bg-purple-600 bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-purple-200/50"
-                                                                >
-                                                                    Inic. Anestesia &rarr;
-                                                                </button>
-                                                            )}
-
-                                                            {row.surgery.status === 'anesthesia_start' && canAdvancePhase && (
-                                                                <button
-                                                                    onClick={() => setTransitionModal({ 
-                                                                        isOpen: true, 
-                                                                        surgeryId: row.surgery.id, 
-                                                                        targetPhase: 'pre_incision', 
-                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.anesthesiaStartTime),
-                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
-                                                                    })}
-                                                                    className="text-rose-700 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-rose-200/50"
-                                                                >
-                                                                    Antes Incisión &rarr;
-                                                                </button>
-                                                            )}
-
-                                                            {row.surgery.status === 'pre_incision' && canAdvancePhase && (
-                                                                <button
-                                                                    onClick={() => setTransitionModal({ 
-                                                                        isOpen: true, 
-                                                                        surgeryId: row.surgery.id, 
-                                                                        targetPhase: 'surgery_end', 
-                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.preIncisionTime),
-                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
-                                                                    })}
-                                                                    className="text-cyan-700 hover:text-white hover:bg-cyan-600 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-cyan-200/50"
-                                                                >
-                                                                    Término Cirugía &rarr;
-                                                                </button>
-                                                            )}
-
-                                                            {row.surgery.status === 'surgery_end' && canAdvancePhase && (
-                                                                <button
-                                                                    onClick={() => setTransitionModal({ 
-                                                                        isOpen: true, 
-                                                                        surgeryId: row.surgery.id, 
-                                                                        targetPhase: 'patient_exit', 
-                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.surgeryEndTime),
-                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
-                                                                    })}
-                                                                    className="text-orange-700 hover:text-white hover:bg-orange-600 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-orange-200/50"
-                                                                >
-                                                                    Salida Paciente &rarr;
-                                                                </button>
-                                                            )}
-
-                                                            {row.surgery.status === 'patient_exit' && canAdvancePhase && (
-                                                                <div className="flex gap-1.5 items-center">
+                                                                {logicalPhase === 'in_progress' && canAdvancePhase && (
                                                                     <button
                                                                         onClick={() => setTransitionModal({ 
                                                                             isOpen: true, 
                                                                             surgeryId: row.surgery.id, 
-                                                                            targetPhase: 'urpa_exit', 
+                                                                            targetPhase: 'anesthesia_start', 
                                                                             patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                            initialTime: formatForDateTimeLocal(row.surgery.patientExitTime),
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.actualStartTime),
                                                                             urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                         })}
-                                                                        className="text-indigo-700 hover:text-white hover:bg-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1.5 rounded-lg transition-all text-[11px] font-bold shadow-sm whitespace-nowrap border border-indigo-200/50"
+                                                                        className="text-purple-700 hover:text-white hover:bg-purple-600 bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-purple-200/50"
                                                                     >
-                                                                        Pase URPA &rarr;
+                                                                        Inic. Anestesia &rarr;
                                                                     </button>
+                                                                )}
+
+                                                                {logicalPhase === 'anesthesia_start' && canAdvancePhase && (
+                                                                    <button
+                                                                        onClick={() => setTransitionModal({ 
+                                                                            isOpen: true, 
+                                                                            surgeryId: row.surgery.id, 
+                                                                            targetPhase: 'pre_incision', 
+                                                                            patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.anesthesiaStartTime),
+                                                                            urgencyType: row.surgery.urgencyType || 'ELECTIVO'
+                                                                        })}
+                                                                        className="text-rose-700 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-rose-200/50"
+                                                                    >
+                                                                        Antes Incisión &rarr;
+                                                                    </button>
+                                                                )}
+
+                                                                {logicalPhase === 'pre_incision' && canAdvancePhase && (
+                                                                    <button
+                                                                        onClick={() => setTransitionModal({ 
+                                                                            isOpen: true, 
+                                                                            surgeryId: row.surgery.id, 
+                                                                            targetPhase: 'surgery_end', 
+                                                                            patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.preIncisionTime),
+                                                                            urgencyType: row.surgery.urgencyType || 'ELECTIVO'
+                                                                        })}
+                                                                        className="text-cyan-700 hover:text-white hover:bg-cyan-600 bg-cyan-50 dark:bg-cyan-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-cyan-200/50"
+                                                                    >
+                                                                        Término Cirugía &rarr;
+                                                                    </button>
+                                                                )}
+
+                                                                {logicalPhase === 'surgery_end' && canAdvancePhase && (
+                                                                    <button
+                                                                        onClick={() => setTransitionModal({ 
+                                                                            isOpen: true, 
+                                                                            surgeryId: row.surgery.id, 
+                                                                            targetPhase: 'patient_exit', 
+                                                                            patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.surgeryEndTime),
+                                                                            urgencyType: row.surgery.urgencyType || 'ELECTIVO'
+                                                                        })}
+                                                                        className="text-orange-700 hover:text-white hover:bg-orange-600 bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap border border-orange-200/50"
+                                                                    >
+                                                                        Salida Paciente &rarr;
+                                                                    </button>
+                                                                )}
+
+                                                                {logicalPhase === 'patient_exit' && canAdvancePhase && (
+                                                                    <div className="flex gap-1.5 items-center">
+                                                                        <button
+                                                                            onClick={() => setTransitionModal({ 
+                                                                                isOpen: true, 
+                                                                                surgeryId: row.surgery.id, 
+                                                                                targetPhase: 'urpa_exit', 
+                                                                                patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                                initialTime: formatForDateTimeLocal(row.surgery.patientExitTime),
+                                                                                urgencyType: row.surgery.urgencyType || 'ELECTIVO'
+                                                                            })}
+                                                                            className="text-indigo-700 hover:text-white hover:bg-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1.5 rounded-lg transition-all text-[11px] font-bold shadow-sm whitespace-nowrap border border-indigo-200/50"
+                                                                        >
+                                                                            Pase URPA &rarr;
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => setTransitionModal({ 
+                                                                                isOpen: true, 
+                                                                                surgeryId: row.surgery.id, 
+                                                                                targetPhase: 'completed', 
+                                                                                patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
+                                                                                initialTime: formatForDateTimeLocal(row.surgery.patientExitTime),
+                                                                                urgencyType: row.surgery.urgencyType || 'ELECTIVO'
+                                                                            })}
+                                                                            className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap flex items-center gap-1 border border-emerald-200/50"
+                                                                        >
+                                                                            <CheckCircle2 size={13} /> Alta
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+
+                                                                {logicalPhase === 'urpa_exit' && canAdvancePhase && (
                                                                     <button
                                                                         onClick={() => setTransitionModal({ 
                                                                             isOpen: true, 
                                                                             surgeryId: row.surgery.id, 
                                                                             targetPhase: 'completed', 
                                                                             patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                            initialTime: formatForDateTimeLocal(row.surgery.patientExitTime),
+                                                                            initialTime: formatForDateTimeLocal(row.surgery.urpaExitTime),
                                                                             urgencyType: row.surgery.urgencyType || 'ELECTIVO'
                                                                         })}
-                                                                        className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-sm whitespace-nowrap flex items-center gap-1 border border-emerald-200/50"
+                                                                        className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-xl transition-all duration-300 border border-emerald-200 hover:scale-[1.02] text-xs font-bold shadow-sm flex items-center gap-1.5 whitespace-nowrap"
                                                                     >
-                                                                        <CheckCircle2 size={13} /> Alta
+                                                                        <CheckCircle2 size={14} /> Finalizar
                                                                     </button>
-                                                                </div>
-                                                            )}
+                                                                )}
 
-                                                            {row.surgery.status === 'urpa_exit' && canAdvancePhase && (
-                                                                <button
-                                                                    onClick={() => setTransitionModal({ 
-                                                                        isOpen: true, 
-                                                                        surgeryId: row.surgery.id, 
-                                                                        targetPhase: 'completed', 
-                                                                        patientName: `${row.patientPii?.nombres || ''} ${row.patientPii?.apellidos || ''}`,
-                                                                        initialTime: formatForDateTimeLocal(row.surgery.urpaExitTime),
-                                                                        urgencyType: row.surgery.urgencyType || 'ELECTIVO'
-                                                                    })}
-                                                                    className="text-emerald-700 hover:text-white hover:bg-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2 rounded-xl transition-all duration-300 border border-emerald-200 hover:scale-[1.02] text-xs font-bold shadow-sm flex items-center gap-1.5 whitespace-nowrap"
-                                                                >
-                                                                    <CheckCircle2 size={14} /> Finalizar
-                                                                </button>
-                                                            )}
+                                                                {logicalPhase === 'scheduled' && canCancel && (
+                                                                    <button type="button" onClick={() => { setCancellingSurgery(row); setCancelConfirmText(""); }} className="text-zinc-400 hover:text-amber-600 hover:bg-amber-50 p-2.5 rounded-xl transition-all" title="Suspender Evento">
+                                                                        <XCircle size={18} />
+                                                                    </button>
+                                                                )}
 
-                                                            {row.surgery.status === 'scheduled' && canCancel && (
-                                                                <button type="button" onClick={() => { setCancellingSurgery(row); setCancelConfirmText(""); }} className="text-zinc-400 hover:text-amber-600 hover:bg-amber-50 p-2.5 rounded-xl transition-all" title="Suspender Evento">
-                                                                    <XCircle size={18} />
-                                                                </button>
-                                                            )}
+                                                                {specialties && staff && canEdit && (
+                                                                    <button onClick={() => setEditingSurgery(row)} className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="Editar Programación">
+                                                                        <Pencil size={18} />
+                                                                    </button>
+                                                                )}
 
-                                                            {specialties && staff && canEdit && (
-                                                                <button onClick={() => setEditingSurgery(row)} className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="Editar Programación">
-                                                                    <Pencil size={18} />
-                                                                </button>
-                                                            )}
+                                                                {logicalPhase === 'cancelled' && canDuplicate && (
+                                                                    <button onClick={() => window.dispatchEvent(new CustomEvent('CLONE_SURGERY', { detail: row }))} className="text-zinc-400 hover:text-[var(--color-hospital-blue)] hover:bg-blue-50 p-2.5 rounded-xl transition-all inline-block ml-1" title="Duplicar / Re-Agendar Cirugía">
+                                                                        <CopyPlus size={18} />
+                                                                    </button>
+                                                                )}
 
-                                                            {row.surgery.status === 'cancelled' && canDuplicate && (
-                                                                <button onClick={() => window.dispatchEvent(new CustomEvent('CLONE_SURGERY', { detail: row }))} className="text-zinc-400 hover:text-[var(--color-hospital-blue)] hover:bg-blue-50 p-2.5 rounded-xl transition-all inline-block ml-1" title="Duplicar / Re-Agendar Cirugía">
-                                                                    <CopyPlus size={18} />
-                                                                </button>
-                                                            )}
+                                                                {logicalPhase === 'completed' && canViewReport && (
+                                                                    <Link href={`/dashboard/programaciones/${row.surgery.id}/reporte`} className="inline-flex items-center text-zinc-500 hover:text-[var(--color-hospital-blue)] hover:bg-blue-50 p-2.5 rounded-xl transition-all tooltip bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700" title="Ver Reporte Operatorio">
+                                                                        <FileText size={18} />
+                                                                    </Link>
+                                                                )}
 
-                                                            {row.surgery.status === 'completed' && canViewReport && (
-                                                                <Link href={`/dashboard/programaciones/${row.surgery.id}/reporte`} className="inline-flex items-center text-zinc-500 hover:text-[var(--color-hospital-blue)] hover:bg-blue-50 p-2.5 rounded-xl transition-all tooltip bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700" title="Ver Reporte Operatorio">
-                                                                    <FileText size={18} />
-                                                                </Link>
-                                                            )}
-
-                                                            {/* Modal Seguro de Eliminación */}
-                                                            {canDelete && (
-                                                                <div className="inline-block ml-1 border-l border-zinc-200 dark:border-zinc-700 pl-1">
-                                                                    <DeleteSurgeryButton id={row.surgery.id} />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </td>
+                                                                {/* Modal Seguro de Eliminación */}
+                                                                {canDelete && (
+                                                                    <div className="inline-block ml-1 border-l border-zinc-200 dark:border-zinc-700 pl-1">
+                                                                        <DeleteSurgeryButton id={row.surgery.id} />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    )}
                                                 </tr>
                                                 );
                                             })}
