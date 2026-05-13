@@ -373,7 +373,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     };
 
     const instrumentistas = staff.nurses.filter((n: any) => n.professionName?.includes('INSTRUMENTISTA'));
-    const circulantes = staff.nurses.filter((n: any) => n.professionName?.includes('CIRCULANTE'));
+    const circulantesRaw = staff.nurses.filter((n: any) => n.professionName?.includes('CIRCULANTE'));
+    const circulantes = [...instrumentistas, ...circulantesRaw];
 
     const selectedInstList = instrumentistas.filter(n => selectedInstIds.has(n.id));
     const filteredUnselectedInst = instrumentistas
@@ -1491,7 +1492,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                 className="w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
                                             />
                                             <span className="font-semibold text-[var(--color-hospital-blue)] dark:text-blue-400 truncate flex-1">
-                                                <span className="font-normal opacity-75 mr-1 text-xs">Ci:</span>
+                                                <span className="font-normal opacity-75 mr-1 text-xs">{n.professionName?.includes('INSTRUMENTISTA') ? 'Lic:' : 'Cir:'}</span>
                                                 {n.name} {n.lastname}
                                             </span>
                                         </label>
@@ -1508,7 +1509,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                 className="w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
                                             />
                                             <span className="font-semibold text-zinc-700 dark:text-zinc-200 truncate flex-1">
-                                                <span className="font-normal text-zinc-500 dark:text-zinc-400 mr-1 text-xs">Ci:</span>
+                                                <span className="font-normal text-zinc-500 dark:text-zinc-400 mr-1 text-xs">{n.professionName?.includes('INSTRUMENTISTA') ? 'Lic:' : 'Cir:'}</span>
                                                 {n.name} {n.lastname}
                                             </span>
                                             <span className="text-zinc-500 dark:text-zinc-400 text-xs">({n.tuitionCode})</span>
