@@ -218,7 +218,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
     const [isListFullscreen, setIsListFullscreen] = useState<boolean>(false);
 
-    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'hora', direction: 'asc' });
 
     const handleSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'asc';
@@ -734,13 +734,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         {index + 1}
                                                     </td>
                                                     <td className="px-3 py-3 align-middle">
-                                                        <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium line-clamp-3 leading-tight break-words whitespace-normal" title={row.specialty?.name || ''}>
+                                                        <div className="text-xs text-zinc-900 dark:text-zinc-100 font-bold line-clamp-3 leading-tight break-words whitespace-normal" title={row.specialty?.name || ''}>
                                                             {row.specialty?.name || '-'}
                                                         </div>
                                                     </td>
                                                     <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
-                                                        <div className="flex items-start justify-center text-xs font-semibold text-left">
-                                                            <div className={`w-1.5 h-1.5 rounded-full mr-1.5 shrink-0 mt-1 ${row.operatingRoom?.name ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                                                        <div className="flex items-start justify-center text-[13px] font-bold text-left">
+                                                            <div className={`w-1.5 h-1.5 rounded-full mr-1.5 shrink-0 mt-1.5 ${row.operatingRoom?.name ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
                                                             <span className="whitespace-normal break-words leading-tight max-w-[40px]" title={row.operatingRoom?.name || 'S/A'}>
                                                                 {row.operatingRoom?.name || 'S/A'}
                                                             </span>
@@ -748,23 +748,23 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     </td>
                                                     <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
                                                         <div className="flex flex-col items-center justify-center gap-1.5">
-                                                            <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400">
+                                                            <div className="text-[13px] font-bold text-amber-700 dark:text-amber-400">
                                                                 {row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'TBD'}
                                                             </div>
-                                                            <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
+                                                            <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
                                                                 {row.surgery.estimatedDuration || '-'}
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-3 py-3 align-middle">
-                                                        <div className="text-[11px] whitespace-normal break-words leading-tight">
+                                                        <div className="text-xs whitespace-normal break-words leading-tight">
                                                             <span className="font-bold text-zinc-900 dark:text-white mr-1" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
                                                                 {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}
                                                             </span>
-                                                            <span className="text-[10px] text-zinc-900 dark:text-white font-mono tracking-tight mr-1">
+                                                            <span className="text-[11px] text-zinc-900 dark:text-white font-mono tracking-tight mr-1">
                                                                 {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'S/Doc'}
                                                             </span>
-                                                            <span className="text-[10px] text-zinc-900 dark:text-white font-sans tracking-normal mr-1">
+                                                            <span className="text-[11px] text-zinc-900 dark:text-white font-sans tracking-normal mr-1">
                                                                 {formatDemographicsOnly(row.patientPii, row.patient, row.surgery?.bedNumber)}
                                                             </span>
                                                             {row.surgery.insuranceType && (
@@ -841,7 +841,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         <span className={`font-bold ${colorClass} shrink-0`}>{prefix}:</span>
                                                                         <div className="flex flex-wrap gap-x-1.5">
                                                                             {members.map((t: any, idx: number) => (
-                                                                                <span key={`${row.surgery.id}-${t.staff.id}`} className="text-zinc-700 dark:text-zinc-300 font-medium" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
+                                                                                <span key={`${row.surgery.id}-${t.staff.id}`} className="text-zinc-900 dark:text-zinc-100 font-bold" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
                                                                                     {t.staff.name?.split(' ')[0]} {t.staff.lastname?.split(' ')[0]}{idx < members.length - 1 ? ',' : ''}
                                                                                 </span>
                                                                             ))}
@@ -851,7 +851,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             };
 
                                                             return (
-                                                                <div className="text-[10px] leading-tight flex flex-col gap-0.5">
+                                                                <div className="text-[11px] leading-tight flex flex-col gap-0.5">
                                                                     {renderTeamGroup(surgeons, 'Cx', 'text-blue-700 dark:text-blue-400')}
                                                                     {renderTeamGroup(anesthesiologists, 'An', 'text-emerald-700 dark:text-emerald-400')}
                                                                     {renderTeamGroup(instrumentistas, 'In', 'text-sky-700 dark:text-sky-400')}
