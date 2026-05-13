@@ -933,3 +933,33 @@ export async function editSurgery(formData: FormData) {
 
     revalidatePath("/dashboard/programaciones");
 }
+
+export async function updateSurgeryPhaseTimes(data: {
+    surgeryId: string;
+    actualStartTime?: string | null;
+    anesthesiaStartTime?: string | null;
+    preIncisionTime?: string | null;
+    surgeryEndTime?: string | null;
+    patientExitTime?: string | null;
+    urpaExitTime?: string | null;
+}) {
+    if (!data.surgeryId) return { error: "ID de cirugía es requerido" };
+    
+    try {
+        await db.update(cqSurgeries).set({
+            actualStartTime: data.actualStartTime ? new Date(data.actualStartTime) : null,
+            anesthesiaStartTime: data.anesthesiaStartTime ? new Date(data.anesthesiaStartTime) : null,
+            preIncisionTime: data.preIncisionTime ? new Date(data.preIncisionTime) : null,
+            surgeryEndTime: data.surgeryEndTime ? new Date(data.surgeryEndTime) : null,
+            patientExitTime: data.patientExitTime ? new Date(data.patientExitTime) : null,
+            urpaExitTime: data.urpaExitTime ? new Date(data.urpaExitTime) : null,
+            updatedAt: new Date(),
+        }).where(eq(cqSurgeries.id, data.surgeryId));
+        
+        revalidatePath("/dashboard/programaciones");
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error updating phase times:", error);
+        return { error: "Ocurrió un error al actualizar los tiempos." };
+    }
+}

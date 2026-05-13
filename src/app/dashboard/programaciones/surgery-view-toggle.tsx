@@ -12,6 +12,7 @@ import { SurgeryTimeline } from "@/components/ui/surgery-timeline";
 import { AnimatePresence, motion } from "framer-motion";
 import { EditSurgeryModal } from "./edit-surgery-modal";
 import { PhaseTransitionModal } from "./phase-transition-modal";
+import { PhaseTimesModal } from "./phase-times-modal";
 
 function getFormattedDate(dateValue: Date | string | null | undefined, isTimeDefined: boolean = true): React.ReactNode {
     if (!dateValue) return 'Fecha no definida';
@@ -182,6 +183,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
         setMounted(true);
     }, []);
     const [editingSurgery, setEditingSurgery] = useState<any>(null);
+    const [editingTimesSurgery, setEditingTimesSurgery] = useState<any>(null);
     const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
     const [cancelConfirmText, setCancelConfirmText] = useState<string>("");
     const [errorModalMsg, setErrorModalMsg] = useState<string>("");
@@ -1022,9 +1024,14 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 )}
 
                                                                 {specialties && staff && canEdit && (
-                                                                    <button onClick={() => setEditingSurgery(row)} className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="Editar Programación">
-                                                                        <Pencil size={18} />
-                                                                    </button>
+                                                                    <>
+                                                                        <button onClick={() => setEditingTimesSurgery(row)} className="text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 p-2.5 rounded-xl transition-all" title="Ver/Editar Tiempos y Fases">
+                                                                            <Clock size={18} />
+                                                                        </button>
+                                                                        <button onClick={() => setEditingSurgery(row)} className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="Editar Programación">
+                                                                            <Pencil size={18} />
+                                                                        </button>
+                                                                    </>
                                                                 )}
 
                                                                 {logicalPhase === 'cancelled' && canDuplicate && (
@@ -1090,6 +1097,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                     router.refresh();
                 }}
             />
+
+            {editingTimesSurgery && (
+                <PhaseTimesModal
+                    surgery={editingTimesSurgery}
+                    onClose={() => setEditingTimesSurgery(null)}
+                />
+            )}
 
             {typeof document !== "undefined" && createPortal(
                 <AnimatePresence>
