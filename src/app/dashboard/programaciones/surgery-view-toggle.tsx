@@ -41,21 +41,21 @@ function getFormattedDate(dateValue: Date | string | null | undefined, isTimeDef
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-    }).format(date);
+    }).format(date).replace(/[\u202f\u00a0]/g, ' ');
 }
 
 function formatDateOnly(dateValue: Date | string | null | undefined): string {
     if (!dateValue) return 'N/A';
     const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     if (isNaN(date.getTime())) return 'Inválida';
-    return new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+    return new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', day: '2-digit', month: 'short', year: 'numeric' }).format(date).replace(/[\u202f\u00a0]/g, ' ');
 }
 
 function formatTimeOnly(dateValue: Date | string | null | undefined): string {
     if (!dateValue) return 'N/A';
     const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     if (isNaN(date.getTime())) return 'Inválida';
-    return new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }).format(date);
+    return new Intl.DateTimeFormat('es-PE', { timeZone: 'America/Lima', hour: '2-digit', minute: '2-digit' }).format(date).replace(/[\u202f\u00a0]/g, ' ');
 }
 
 function formatForDateTimeLocal(dateValue: Date | string | null | undefined): string {
@@ -216,6 +216,9 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [filterDate, setFilterDate] = useState<string>(initialDate);
     const [filterPatient, setFilterPatient] = useState<string>("");
     const [filterRoom, setFilterRoom] = useState<string[]>([]);
+    const [filterSpecialty, setFilterSpecialty] = useState<string[]>([]);
+    const [filterStaff, setFilterStaff] = useState<string[]>([]);
+    const [searchStaffFilter, setSearchStaffFilter] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<string[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
     const [isListFullscreen, setIsListFullscreen] = useState<boolean>(false);
@@ -315,6 +318,18 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
 
         if (filterRoom.length > 0 && (!s.operatingRoom?.id || !filterRoom.includes(s.operatingRoom.id))) {
             return false;
+        }
+
+        if (filterSpecialty.length > 0 && (!s.specialty?.id || !filterSpecialty.includes(s.specialty.id))) {
+            return false;
+        }
+
+        if (filterStaff.length > 0) {
+            if (!s.team || s.team.length === 0) return false;
+            const hasMatchedStaff = filterStaff.some(staffId => 
+                s.team.some((t: any) => t.staff?.id === staffId || t.staffId === staffId)
+            );
+            if (!hasMatchedStaff) return false;
         }
 
         return true;
@@ -436,7 +451,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             </div>
 
             {/* Control Panel de Filtros - Diseño Premium */}
-            <div className="bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 p-4">
+            {!isListFullscreen && (
+                <div className="bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800 p-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
                     <div className="flex items-center gap-2">
                         <button
@@ -446,9 +462,9 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             <Filter size={16} />
                             Filtros Dinámicos
                         </button>
-                        {(filterDate || filterPatient || filterRoom.length > 0 || filterStatus.length > 0) && (
+                        {(filterDate || filterPatient || filterRoom.length > 0 || filterStatus.length > 0 || filterSpecialty.length > 0 || filterStaff.length > 0) && (
                             <button
-                                onClick={() => { handleDateChange(''); setFilterPatient(''); setFilterRoom([]); setFilterStatus([]); }}
+                                onClick={() => { handleDateChange(''); setFilterPatient(''); setFilterRoom([]); setFilterStatus([]); setFilterSpecialty([]); setFilterStaff([]); }}
                                 className="text-xs font-semibold text-zinc-500 hover:text-red-500 hover:underline px-2 transition-colors"
                             >
                                 Limpiar Filtros
@@ -480,7 +496,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2 pb-2">
+                            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4 pt-2 pb-2">
                                 {/* Buscador de Paciente */}
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -561,8 +577,133 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                     </div>
                                 </div>
 
+                                {/* Selector Múltiple de Especialidad */}
+                                <div className="relative group/specialty-select z-40">
+                                    <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer flex justify-between items-center transition-all bg-white dark:bg-zinc-900 group-hover/specialty-select:border-blue-500/50">
+                                        <span className="truncate pr-2">
+                                            {filterSpecialty.length === 0 
+                                                ? "Cualquier Espec." 
+                                                : filterSpecialty.length === 1
+                                                    ? (specialties?.find(s => s.id === filterSpecialty[0])?.name || filterSpecialty[0])
+                                                    : `${filterSpecialty.length} Espec. Selecc.`}
+                                        </span>
+                                        <svg className="w-4 h-4 text-zinc-400 group-hover/specialty-select:text-[var(--color-hospital-blue)] transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                    <div className="absolute top-[calc(100%-8px)] left-0 w-full pt-3 opacity-0 invisible group-hover/specialty-select:opacity-100 group-hover/specialty-select:visible transition-all duration-200 z-50">
+                                        <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl flex flex-col overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                                            <div className="p-2 border-b border-zinc-100 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80">
+                                                <div className="flex items-center justify-between px-1">
+                                                    <button type="button" onClick={() => setFilterSpecialty(specialties?.map(s => s.id) || [])} className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline mb-0.5 mt-0.5">SEL. TODAS</button>
+                                                    <button type="button" onClick={() => setFilterSpecialty([])} className="text-[11px] font-bold text-zinc-500 hover:text-red-500 hover:underline mb-0.5 mt-0.5">NINGUNA</button>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-y-auto p-1.5 flex flex-col custom-scrollbar max-h-[250px]">
+                                                {specialties?.map(s => (
+                                                    <label key={s.id} className="flex items-center gap-3 px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 rounded-lg cursor-pointer transition-colors group/label border-b border-zinc-100/50 last:border-0 dark:border-zinc-700/30">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)] bg-white dark:bg-zinc-900 cursor-pointer"
+                                                            checked={filterSpecialty.includes(s.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setFilterSpecialty([...filterSpecialty, s.id]);
+                                                                } else {
+                                                                    setFilterSpecialty(filterSpecialty.filter(id => id !== s.id));
+                                                                }
+                                                            }}
+                                                        />
+                                                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover/label:text-zinc-900 dark:group-hover/label:text-white select-none whitespace-normal leading-tight">{s.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Selector Múltiple de Profesional */}
+                                <div className="relative group/staff-select z-30">
+                                    <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer flex justify-between items-center transition-all bg-white dark:bg-zinc-900 group-hover/staff-select:border-blue-500/50">
+                                        <span className="truncate pr-2">
+                                            {filterStaff.length === 0 
+                                                ? "Cualquier Prof." 
+                                                : filterStaff.length === 1
+                                                    ? (() => {
+                                                        const allStaff = [...(staff?.surgeons || []), ...(staff?.anesthesiologists || []), ...(staff?.nurses || [])];
+                                                        const found = allStaff.find(s => s.id === filterStaff[0]);
+                                                        return found ? `${found.name?.split(' ')[0]} ${found.lastname?.split(' ')[0]}` : filterStaff[0];
+                                                    })()
+                                                    : `${filterStaff.length} Prof. Selecc.`}
+                                        </span>
+                                        <svg className="w-4 h-4 text-zinc-400 group-hover/staff-select:text-[var(--color-hospital-blue)] transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                    <div className="absolute top-[calc(100%-8px)] left-0 w-full pt-3 opacity-0 invisible group-hover/staff-select:opacity-100 group-hover/staff-select:visible transition-all duration-200 z-50">
+                                        <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl flex flex-col overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                                            <div className="p-2 border-b border-zinc-100 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80">
+                                                <div className="mb-2 relative">
+                                                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                                        <Search size={12} className="text-zinc-400" />
+                                                    </div>
+                                                    <input 
+                                                        type="text" 
+                                                        placeholder="Buscar profesional..." 
+                                                        value={searchStaffFilter}
+                                                        onChange={(e) => setSearchStaffFilter(e.target.value)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="w-full pl-7 pr-2 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200 placeholder-zinc-400"
+                                                    />
+                                                </div>
+                                                <div className="flex items-center justify-between px-1">
+                                                    <button type="button" onClick={() => setFilterStaff([...(staff?.surgeons || []), ...(staff?.anesthesiologists || []), ...(staff?.nurses || [])].map((s: any) => s.id))} className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline mb-0.5 mt-0.5">SEL. TODOS</button>
+                                                    <button type="button" onClick={() => setFilterStaff([])} className="text-[11px] font-bold text-zinc-500 hover:text-red-500 hover:underline mb-0.5 mt-0.5">NINGUNO</button>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-y-auto p-1.5 flex flex-col custom-scrollbar max-h-[250px]">
+                                                {[...(staff?.surgeons || []), ...(staff?.anesthesiologists || []), ...(staff?.nurses || [])]
+                                                    .sort((a: any, b: any) => {
+                                                        const aName = `${a.lastname || ''} ${a.name || ''}`.trim().toLowerCase();
+                                                        const bName = `${b.lastname || ''} ${b.name || ''}`.trim().toLowerCase();
+                                                        return aName.localeCompare(bName);
+                                                    })
+                                                    .filter((s: any) => {
+                                                        if (!searchStaffFilter.trim()) return true;
+                                                        const searchTerms = searchStaffFilter.toLowerCase().split(/\s+/).filter(Boolean);
+                                                        const fullName = `${s.lastname || ''} ${s.name || ''}`.toLowerCase();
+                                                        return searchTerms.every(term => fullName.includes(term));
+                                                    })
+                                                    .map((s: any) => (
+                                                    <label key={`filter-staff-${s.id}`} className="flex items-center gap-3 px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 rounded-lg cursor-pointer transition-colors group/label border-b border-zinc-100/50 last:border-0 dark:border-zinc-700/30">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)] bg-white dark:bg-zinc-900 cursor-pointer"
+                                                            checked={filterStaff.includes(s.id)}
+                                                            onChange={(e) => {
+                                                                if (e.target.checked) {
+                                                                    setFilterStaff([...filterStaff, s.id]);
+                                                                } else {
+                                                                    setFilterStaff(filterStaff.filter(id => id !== s.id));
+                                                                }
+                                                            }}
+                                                        />
+                                                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover/label:text-zinc-900 dark:group-hover/label:text-white select-none whitespace-normal leading-tight">{s.lastname} {s.name}</span>
+                                                    </label>
+                                                ))}
+                                                {[...(staff?.surgeons || []), ...(staff?.anesthesiologists || []), ...(staff?.nurses || [])].filter((s: any) => {
+                                                    if (!searchStaffFilter.trim()) return true;
+                                                    const searchTerms = searchStaffFilter.toLowerCase().split(/\s+/).filter(Boolean);
+                                                    const fullName = `${s.lastname || ''} ${s.name || ''}`.toLowerCase();
+                                                    return searchTerms.every(term => fullName.includes(term));
+                                                }).length === 0 && (
+                                                    <div className="py-4 text-center text-xs text-zinc-500 font-medium">
+                                                        No se encontraron profesionales
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 {/* Selector Múltiple de Estado */}
-                                <div className="relative group/status-select z-40">
+                                <div className="relative group/status-select z-20">
                                     <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer flex justify-between items-center transition-all bg-white dark:bg-zinc-900 group-hover/status-select:border-blue-500/50">
                                         <span className="truncate pr-2">
                                             {filterStatus.length === 0 
@@ -630,6 +771,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                     )}
                 </AnimatePresence>
             </div>
+            )}
 
             {/* Content Area */}
             <div className="flex-grow flex flex-col min-h-0">
@@ -658,7 +800,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                         <thead className="sticky top-0 z-20">
                                             <tr className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/95 dark:bg-zinc-800/95 backdrop-blur-md">
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[40px]">N°</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[85px] max-w-[120px]">
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('especialidad')}>
                                                         Especialidad
                                                         <SortIcon columnKey="especialidad" />
@@ -676,7 +818,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         <SortIcon columnKey="hora" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[29px]">
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[150px] max-w-[200px]">
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('paciente')}>
                                                         Paciente
                                                         <SortIcon columnKey="paciente" />
@@ -688,7 +830,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         <SortIcon columnKey="tipo" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[290px] max-w-[490px]">Diagnóstico / Intervención</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[400px] max-w-[750px]">Diagnóstico / Intervención</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[247px]">Equipo</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px] text-center">F. Sol-Pro</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Estado</th>
@@ -735,7 +877,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     <td className="px-3 py-3 whitespace-nowrap text-zinc-500 font-medium align-middle">
                                                         {index + 1}
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle">
+                                                    <td className="px-3 py-3 align-middle max-w-[120px]">
                                                         <div className="text-xs text-zinc-900 dark:text-zinc-100 font-bold line-clamp-3 leading-tight break-words whitespace-normal" title={row.specialty?.name || ''}>
                                                             {row.specialty?.name || '-'}
                                                         </div>
@@ -758,7 +900,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle">
+                                                    <td className="px-3 py-3 align-middle max-w-[200px]">
                                                         <div className="text-xs whitespace-normal break-words leading-tight">
                                                             <span className="font-bold text-zinc-900 dark:text-white mr-1" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
                                                                 {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}
@@ -791,7 +933,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             )} */}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle min-w-[290px] max-w-[490px]">
+                                                    <td className="px-3 py-3 align-middle min-w-[400px] max-w-[750px]">
                                                         <div className="flex flex-col gap-1.5 w-full">
                                                             {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
                                                                 <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
@@ -808,8 +950,8 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                 </div>
                                                             )}
                                                             {row.surgery.notes && (
-                                                                <div className="text-[10px] text-zinc-400 line-clamp-2 leading-tight font-medium" title={row.surgery.notes}>
-                                                                    <span className="text-zinc-300 mr-1">↳</span> {row.surgery.notes}
+                                                                <div className="text-[10px] text-black dark:text-white line-clamp-2 leading-tight font-medium" title={row.surgery.notes}>
+                                                                    {row.surgery.notes}
                                                                 </div>
                                                             )}
                                                         </div>

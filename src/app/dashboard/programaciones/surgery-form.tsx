@@ -18,6 +18,17 @@ const FieldError = ({ msg }: { msg?: string }) => {
     );
 };
 
+const ANESTHESIA_TYPES = [
+    { id: 'RAQ', name: 'Raquídea (o Subaracnoidea)' },
+    { id: 'EPI', name: 'Epidural' },
+    { id: 'AGB', name: 'Anestesia General Balanceada' },
+    { id: 'AGE', name: 'Anestesia General Endovenosa' },
+    { id: 'AGI', name: 'Anestesia General Inhalatoria' },
+    { id: 'BLOQ', name: 'Bloqueo Regional' },
+    { id: 'LOCL', name: 'Local' },
+    { id: 'ANES', name: 'Anestesia' }
+];
+
 export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, diagnoses, procedures, interventions = [], patients, editMode, editData, isOpenOverride, onCloseOverride }: {
     salas: any[],
     specialties: any[],
@@ -69,6 +80,9 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
     const [intSearchTerm, setIntSearchTerm] = useState("");
     const [selectedIntIds, setSelectedIntIds] = useState<Set<string>>(new Set());
+
+    const [anesTypeSearchTerm, setAnesTypeSearchTerm] = useState("");
+    const [selectedAnesTypes, setSelectedAnesTypes] = useState<Set<string>>(new Set());
 
     // Cloning State
     const [clonedData, setClonedData] = useState<any>(null);
@@ -135,6 +149,14 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             if (editData?.diagnoses && Object.keys(editData.diagnoses).length) setSelectedDxIds(new Set(editData.diagnoses));
             if (editData?.procedures && Object.keys(editData.procedures).length) setSelectedProcIds(new Set(editData.procedures));
             if (editData?.interventions && Object.keys(editData.interventions).length) setSelectedIntIds(new Set(editData.interventions));
+            
+            if (editData?.surgery?.anesthesiaType) {
+                const parts = editData.surgery.anesthesiaType.split(',').filter(Boolean);
+                setSelectedAnesTypes(new Set(parts));
+            } else {
+                setSelectedAnesTypes(new Set());
+            }
+
             setFormKey(prev => prev + 1);
         }
     }, [editData, editMode]);
@@ -228,6 +250,13 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
             if (row?.interventions) Object.keys(row.interventions).length ? setSelectedIntIds(new Set(row.interventions)) : setSelectedIntIds(new Set());
             else setSelectedIntIds(new Set());
+
+            if (row?.surgery?.anesthesiaType) {
+                const parts = row.surgery.anesthesiaType.split(',').filter(Boolean);
+                setSelectedAnesTypes(new Set(parts));
+            } else {
+                setSelectedAnesTypes(new Set());
+            }
 
             setFormKey(prev => prev + 1);
             setInternalIsOpen(true);
@@ -330,6 +359,24 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         else next.delete(id);
         setSelectedIntIds(next);
         document.getElementById('interventions-list')?.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const anesTypeSearchTermsArr = removeDiacritics(anesTypeSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
+    const selectedAnesTypeList = ANESTHESIA_TYPES.filter(a => selectedAnesTypes.has(a.id));
+    const filteredUnselectedAnesType = ANESTHESIA_TYPES
+        .filter(a => !selectedAnesTypes.has(a.id))
+        .filter(a => {
+            if (anesTypeSearchTermsArr.length === 0) return true;
+            const fullText = removeDiacritics(`${a.id} ${a.name}`).toLowerCase();
+            return anesTypeSearchTermsArr.every(term => fullText.includes(term));
+        });
+
+    const toggleAnesType = (id: string, checked: boolean) => {
+        const next = new Set(selectedAnesTypes);
+        if (checked) next.add(id);
+        else next.delete(id);
+        setSelectedAnesTypes(next);
+        document.getElementById('anesthesiatype-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const surgSearchTermsArr = removeDiacritics(surgSearchTerm.toLowerCase()).split(/\s+/).filter(Boolean);
@@ -1521,18 +1568,61 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                             </div>
                             
-                            <div className="space-y-2">
+                            <div className="space-y-2 pt-2 md:col-span-2 lg:col-span-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Anestesia</label>
-                                <select name="anesthesia_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.anesthesiaType || ""} className={getSelectCls("anesthesia_type")}>
-                                    <option value="">- Seleccionar -</option>
-                                    <option value="RAQ">RAQ - Raquídea (o Subaracnoidea)</option>
-                                    <option value="EPI">EPI - Epidural</option>
-                                    <option value="AGB">AGB - Anestesia General Balanceada</option>
-                                    <option value="AGE">AGE - Anestesia General Endovenosa</option>
-                                    <option value="AGI">AGI - Anestesia General Inhalatoria</option>
-                                    <option value="BLOQ">BLOQ - Bloqueo Regional</option>
-                                    <option value="LOCL">LOCL - Local</option>
-                                </select>
+                                <div className="relative mb-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar tipo de anestesia..."
+                                        value={anesTypeSearchTerm}
+                                        onChange={e => setAnesTypeSearchTerm(e.target.value)}
+                                        className={getInputCls("", "pl-9 py-2")}
+                                        disabled={!canSchedule}
+                                    />
+                                    <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+                                </div>
+                                <div id="anesthesiatype-list" className={`max-h-52 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("anesthesia_type")}`}>
+                                    <input type="hidden" name="anesthesia_type" value={Array.from(selectedAnesTypes).join(',')} />
+                                    {selectedAnesTypeList.map((a) => (
+                                        <label key={a.id} className="flex items-start gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
+                                            <input
+                                                type="checkbox"
+                                                checked={true}
+                                                onChange={(e) => toggleAnesType(a.id, e.target.checked)}
+                                                className="mt-0.5 w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">{a.name}</div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{a.id}</span>
+                                                    <span className="flex items-center text-[10px] uppercase font-bold text-[var(--color-hospital-blue)] gap-0.5"><CheckCircle size={10} /> SELECCIONADO</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                    {filteredUnselectedAnesType.map((a) => (
+                                        <label key={a.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer cursor-allowed disabled:opacity-50 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                checked={false}
+                                                disabled={!canSchedule}
+                                                onChange={(e) => toggleAnesType(a.id, e.target.checked)}
+                                                className="mt-0.5 w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">{a.name}</div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{a.id}</span>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                    {filteredUnselectedAnesType.length === 0 && selectedAnesTypeList.length === 0 && (
+                                        <div className="p-4 text-center">
+                                            <p className="text-sm text-zinc-500">No se encontraron tipos de anestesia.</p>
+                                        </div>
+                                    )}
+                                </div>
                                 <FieldError msg={errors.anesthesia_type} />
                             </div>
 
