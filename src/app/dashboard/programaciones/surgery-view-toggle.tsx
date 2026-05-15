@@ -867,7 +867,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         <SortIcon columnKey="paciente" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px]">
+                                                <th scope="col" className="hidden px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px]">
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('tipo')}>
                                                         Tipo / Urg.
                                                         <SortIcon columnKey="tipo" />
@@ -906,7 +906,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     pillContent = <><div className="w-1.5 h-1.5 rounded-full bg-zinc-400"></div> Programado</>;
                                                 } else if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(effectiveStatus)) {
                                                     pillClasses = "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/40 dark:text-yellow-400 dark:border-yellow-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50";
-                                                    pillContent = <><div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></div> Realizado</>;
+                                                    pillContent = <><div className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></div> En proceso</>;
                                                 } else if (effectiveStatus === 'completed') {
                                                     pillClasses = "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 hover:bg-red-100 dark:hover:bg-red-900/50";
                                                     pillContent = <><CheckCircle2 size={12} className="text-emerald-500" /> Finalizado</>;
@@ -965,9 +965,16 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                     )}
                                                                 </>
                                                             )}
+                                                            {row.surgery.surgeryType && (
+                                                                <div className="mt-1.5 block">
+                                                                    <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                                                                        {row.surgery.surgeryType.replace('Cirugía ', 'C. ')}
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                    <td className="hidden px-3 py-3 whitespace-nowrap align-middle">
                                                         <div className="flex flex-col gap-1 items-start">
                                                             {row.surgery.surgeryType && (
                                                                 <div className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
