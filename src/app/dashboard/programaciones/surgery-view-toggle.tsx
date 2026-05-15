@@ -223,21 +223,54 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
     const [isListFullscreen, setIsListFullscreen] = useState<boolean>(false);
 
-    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>({ key: 'hora', direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState<Array<{ key: string, direction: 'asc' | 'desc' }>>([]);
+    const [showSortLimitAlert, setShowSortLimitAlert] = useState(false);
 
     const handleSort = (key: string) => {
-        let direction: 'asc' | 'desc' = 'asc';
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc';
-        }
-        setSortConfig({ key, direction });
+        setSortConfig(prev => {
+            const existingIndex = prev.findIndex(c => c.key === key);
+            
+            if (existingIndex >= 0) {
+                const existing = prev[existingIndex];
+                if (existing.direction === 'asc') {
+                    // Clic 2: Cambiar a desc
+                    const next = [...prev];
+                    next[existingIndex] = { key, direction: 'desc' };
+                    return next;
+                } else {
+                    // Clic 3: Remover
+                    return prev.filter((_, idx) => idx !== existingIndex);
+                }
+            } else {
+                // Clic 1: Nuevo
+                if (prev.length >= 3) {
+                    setShowSortLimitAlert(true);
+                    setTimeout(() => setShowSortLimitAlert(false), 4500);
+                    return prev;
+                }
+                return [...prev, { key, direction: 'asc' }];
+            }
+        });
     };
 
     const SortIcon = ({ columnKey }: { columnKey: string }) => {
-        if (sortConfig?.key !== columnKey) return <ArrowUp size={12} className="text-zinc-300 dark:text-zinc-500 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />;
-        return sortConfig.direction === 'asc' 
-            ? <ArrowUp size={12} className="text-[var(--color-hospital-blue)] ml-1 opacity-100" />
-            : <ArrowDown size={12} className="text-[var(--color-hospital-blue)] ml-1 opacity-100" />;
+        const idx = sortConfig.findIndex(c => c.key === columnKey);
+        if (idx === -1) return <ArrowUp size={12} className="text-zinc-300 dark:text-zinc-500 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />;
+        
+        const config = sortConfig[idx];
+        return (
+            <div className="flex items-center ml-1">
+                {config.direction === 'asc' 
+                    ? <ArrowUp size={12} className="text-[var(--color-hospital-blue)] opacity-100" />
+                    : <ArrowDown size={12} className="text-[var(--color-hospital-blue)] opacity-100" />
+                }
+                {sortConfig.length > 0 && (
+                    <span className="text-[9px] font-bold text-[var(--color-hospital-blue)] ml-0.5 leading-none bg-blue-50 dark:bg-blue-900/30 px-1 py-[1px] rounded" title={`Prioridad ${idx + 1}`}>
+                        {idx + 1}
+                    </span>
+                )}
+            </div>
+        );
     };
 
     const handleDateChange = (newDate: string) => {
@@ -335,20 +368,16 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
         return true;
     });
 
-    const sortedSurgeries = [...filteredSurgeries].sort((a, b) => {
-        if (!sortConfig) return 0;
-        const { key, direction } = sortConfig;
-        const multiplier = direction === 'asc' ? 1 : -1;
-
+    const compareByKey = (a: any, b: any, key: string) => {
         if (key === 'especialidad') {
             const nameA = a.specialty?.name || '';
             const nameB = b.specialty?.name || '';
-            return nameA.localeCompare(nameB) * multiplier;
+            return nameA.localeCompare(nameB);
         }
         if (key === 'sala') {
             const nameA = a.operatingRoom?.name || '';
             const nameB = b.operatingRoom?.name || '';
-            return nameA.localeCompare(nameB) * multiplier;
+            return nameA.localeCompare(nameB);
         }
         if (key === 'hora') {
             const isDefA = a.surgery.isTimeDefined;
@@ -359,19 +388,31 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             
             const timeA = a.surgery.scheduledDate ? new Date(a.surgery.scheduledDate).getTime() : 0;
             const timeB = b.surgery.scheduledDate ? new Date(b.surgery.scheduledDate).getTime() : 0;
-            return (timeA - timeB) * multiplier;
+            return timeA - timeB;
         }
         if (key === 'paciente') {
             const nameA = `${a.patientPii?.nombres || ''} ${a.patientPii?.apellidos || ''}`.trim();
             const nameB = `${b.patientPii?.nombres || ''} ${b.patientPii?.apellidos || ''}`.trim();
-            return nameA.localeCompare(nameB) * multiplier;
+            return nameA.localeCompare(nameB);
         }
         if (key === 'tipo') {
             const typeA = a.surgery.surgeryType || '';
             const typeB = b.surgery.surgeryType || '';
-            return typeA.localeCompare(typeB) * multiplier;
+            return typeA.localeCompare(typeB);
         }
+        return 0;
+    };
 
+    const sortedSurgeries = [...filteredSurgeries].sort((a, b) => {
+        if (!sortConfig || sortConfig.length === 0) return 0;
+        
+        for (const config of sortConfig) {
+            const multiplier = config.direction === 'asc' ? 1 : -1;
+            const comp = compareByKey(a, b, config.key);
+            if (comp !== 0) {
+                return comp * multiplier;
+            }
+        }
         return 0;
     });
 
@@ -410,7 +451,15 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     };
 
     return (
-        <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 overflow-hidden shadow-sm flex flex-col ${isListFullscreen ? 'fixed inset-0 z-[100] w-screen h-screen rounded-none' : 'rounded-3xl h-full ring-1 ring-zinc-100 dark:ring-zinc-800/50'}`}>
+        <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 overflow-hidden shadow-sm flex flex-col relative ${isListFullscreen ? 'fixed inset-0 z-[100] w-screen h-screen rounded-none' : 'rounded-3xl h-full ring-1 ring-zinc-100 dark:ring-zinc-800/50'}`}>
+            {/* Notificación de límite de ordenamiento */}
+            <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-[200] transition-all duration-300 pointer-events-none ${showSortLimitAlert ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+                <div className="bg-rose-50 dark:bg-rose-900/90 text-rose-700 dark:text-rose-100 px-5 py-3 rounded-2xl shadow-2xl border border-rose-200 dark:border-rose-800 flex items-center gap-3 backdrop-blur-md">
+                    <AlertCircle size={20} className="text-rose-500 shrink-0" />
+                    <p className="text-sm font-bold tracking-tight">Solo se permite un máximo de 3 criterios de ordenamiento simultáneos. Quite un criterio para continuar.</p>
+                </div>
+            </div>
+            
             {/* Header de Configuración y Toggles */}
             <div className="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/20">
                 <div>
