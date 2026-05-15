@@ -799,43 +799,43 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                     <table className="w-full text-left border-collapse">
                                         <thead className="sticky top-0 z-20">
                                             <tr className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/95 dark:bg-zinc-800/95 backdrop-blur-md">
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[40px]">N°</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[85px] max-w-[120px]">
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[30px]">N°</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px] max-w-[100px]">
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('especialidad')}>
                                                         Especialidad
                                                         <SortIcon columnKey="especialidad" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[40px] text-center">
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[35px] text-center">
                                                     <div className="flex items-center justify-center cursor-pointer group select-none" onClick={() => handleSort('sala')}>
                                                         Sala
                                                         <SortIcon columnKey="sala" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px] text-center">
                                                     <div className="flex items-center justify-center cursor-pointer group select-none" onClick={() => handleSort('hora')}>
                                                         Hora-Dur
                                                         <SortIcon columnKey="hora" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[150px] max-w-[200px]">
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[130px] max-w-[180px]">
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('paciente')}>
                                                         Paciente
                                                         <SortIcon columnKey="paciente" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px]">
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('tipo')}>
                                                         Tipo / Urg.
                                                         <SortIcon columnKey="tipo" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[400px] max-w-[750px]">Diagnóstico / Intervención</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[247px]">Equipo</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[90px] text-center">F. Sol-Pro</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px]">Estado</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[250px] max-w-[350px]">Diagnóstico / Intervención</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[160px]">Equipo</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[85px]">Estado</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">F. Sol-Pro</th>
                                                 {!isListFullscreen && (
-                                                    <th scope="col" className="px-3 py-4 pl-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[100px] sticky right-0 z-30 bg-zinc-50/95 dark:bg-zinc-800/95 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-200 dark:before:bg-zinc-700">Gestión</th>
+                                                    <th scope="col" className="px-3 py-4 pl-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] sticky right-0 z-30 bg-zinc-50/95 dark:bg-zinc-800/95 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-200 dark:before:bg-zinc-700">Gestión</th>
                                                 )}
                                             </tr>
                                         </thead>
@@ -939,7 +939,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             )} */}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle min-w-[400px] max-w-[750px]">
+                                                    <td className="px-3 py-3 align-middle min-w-[250px] max-w-[350px]">
                                                         <div className="flex flex-col gap-1.5 w-full">
                                                             {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
                                                                 <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
@@ -962,7 +962,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle max-w-[297px]">
+                                                    <td className="px-3 py-3 align-middle max-w-[250px]">
                                                         {row.team && row.team.length > 0 ? (() => {
                                                             const surgeons = row.team.filter((t: any) => t.role === 'CIRUJANO');
                                                             const anesthesiologists = row.team.filter((t: any) => t.role === 'ANESTESIOLOGO');
@@ -1012,16 +1012,6 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         })() : <span className="text-xs text-zinc-400">-</span>}
                                                     </td>
 
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
-                                                        <div className="flex flex-col items-center justify-center gap-1.5">
-                                                            <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
-                                                                {formatDateOnly(row.surgery.requestDate)}
-                                                            </div>
-                                                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
-                                                                {formatDateOnly(row.surgery.scheduledDate)}
-                                                            </div>
-                                                        </div>
-                                                    </td>
                                                     <td className="px-3 py-3 whitespace-nowrap align-middle">
                                                         <button 
                                                             onClick={() => handleQuickStatusCycle(row.surgery.id, row.surgery.status)}
@@ -1032,6 +1022,16 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             {pillContent}
                                                         </button>
 
+                                                    </td>
+                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
+                                                        <div className="flex flex-col items-center justify-center gap-1.5">
+                                                            <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
+                                                                {formatDateOnly(row.surgery.requestDate)}
+                                                            </div>
+                                                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
+                                                                {formatDateOnly(row.surgery.scheduledDate)}
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                     {!isListFullscreen && (
                                                         <td className="px-3 py-3 whitespace-nowrap text-right align-middle sticky right-0 z-10 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50/50 dark:group-hover:bg-zinc-800/50 transition-colors shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-100 dark:before:bg-zinc-800/50">
