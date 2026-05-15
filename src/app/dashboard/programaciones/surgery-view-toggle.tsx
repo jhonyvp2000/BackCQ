@@ -138,6 +138,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const canDuplicate = permissions.includes('duplicar:programacion');
     const canDelete = permissions.includes('eliminar:programacion');
     const canViewReport = permissions.includes('ver:reporte_operatorio');
+    const canChangeStatus = permissions.includes('ciclar_estado:programacion');
     const router = useRouter();
     const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, string>>({});
     const [pendingStatuses, setPendingStatuses] = useState<Record<string, boolean>>({});
@@ -873,7 +874,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         <SortIcon columnKey="tipo" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[250px] max-w-[350px]">Diagnóstico / Intervención</th>
+                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[330px] max-w-[430px]">Diagnóstico / Intervención</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[160px]">Equipo</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[85px]">Estado</th>
                                                 <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">F. Sol-Pro</th>
@@ -989,7 +990,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             )} */}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle min-w-[250px] max-w-[350px]">
+                                                    <td className="px-3 py-3 align-middle min-w-[330px] max-w-[430px]">
                                                         <div className="flex flex-col gap-1.5 w-full">
                                                             {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
                                                                 <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
@@ -1063,14 +1064,23 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     </td>
 
                                                     <td className="px-3 py-3 whitespace-nowrap align-middle">
-                                                        <button 
-                                                            onClick={() => handleQuickStatusCycle(row.surgery.id, row.surgery.status)}
-                                                            disabled={isPending}
-                                                            className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold border flex flex-nowrap items-center justify-center gap-1.5 shadow-sm transition-all duration-300 cursor-pointer ${pillClasses} ${isPending ? 'opacity-50 scale-95' : 'hover:scale-105 active:scale-95'}`}
-                                                            title="Clic para cambiar estado visual"
-                                                        >
-                                                            {pillContent}
-                                                        </button>
+                                                        {canChangeStatus ? (
+                                                            <button 
+                                                                onClick={() => handleQuickStatusCycle(row.surgery.id, row.surgery.status)}
+                                                                disabled={isPending}
+                                                                className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold border flex flex-nowrap items-center justify-center gap-1.5 shadow-sm transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 ${pillClasses} ${isPending ? 'opacity-50 scale-95' : ''}`}
+                                                                title="Clic para cambiar estado visual"
+                                                            >
+                                                                {pillContent}
+                                                            </button>
+                                                        ) : (
+                                                            <div 
+                                                                className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold border flex flex-nowrap items-center justify-center gap-1.5 shadow-sm cursor-default opacity-90 ${pillClasses}`}
+                                                                title="No tienes permisos para cambiar el estado rápidamente"
+                                                            >
+                                                                {pillContent}
+                                                            </div>
+                                                        )}
 
                                                     </td>
                                                     <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
