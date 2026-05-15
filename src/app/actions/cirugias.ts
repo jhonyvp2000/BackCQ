@@ -323,12 +323,13 @@ export async function createSurgery(formData: FormData) {
     const instrumentistaIds = formData.getAll("instrumentistas") as string[];
     const circulanteIds = formData.getAll("circulantes") as string[];
 
+    const isPorDefinir = patientId === "00000000" || patientId.toUpperCase() === "POR DEFINIR";
     let faltantes = [];
     if (!patientId) faltantes.push("Paciente");
     if (!scheduledDateStr) faltantes.push("Fecha Programada");
-    if (diagnosesIds.length === 0) faltantes.push("Diagnóstico");
-    if (!surgeryType) faltantes.push("Tipo de Cirugía");
-    if (!specialtyId) faltantes.push("Especialidad");
+    if (!isPorDefinir && diagnosesIds.length === 0) faltantes.push("Diagnóstico");
+    if (!isPorDefinir && !surgeryType) faltantes.push("Tipo de Cirugía");
+    if (!isPorDefinir && !specialtyId) faltantes.push("Especialidad");
 
     if (faltantes.length > 0) {
         return { error: `Faltan campos obligatorios para agendar: ${faltantes.join(", ")}.` };
@@ -527,7 +528,7 @@ export async function createSurgery(formData: FormData) {
         origin,
         bedNumber: bedNumber || null,
         internalCode: internalCode || null,
-        specialtyId,
+        specialtyId: specialtyId || null,
         notes,
     }).returning({ id: cqSurgeries.id });
 
@@ -712,6 +713,7 @@ export async function editSurgery(formData: FormData) {
     const id = formData.get("id") as string;
     const patientIdRaw = formData.get("patient_id") as string;
     const patientId = patientIdRaw ? patientIdRaw.trim() : "";
+    const isPorDefinir = patientId === "00000000" || patientId.toUpperCase() === "POR DEFINIR";
     const operatingRoomId = formData.get("operating_room_id") as string | null;
     const scheduledDateStr = formData.get("scheduled_date") as string;
     const scheduledTimeStr = formData.get("scheduled_time") as string;
@@ -739,10 +741,10 @@ export async function editSurgery(formData: FormData) {
     let faltantes = [];
     if (!patientId) faltantes.push("Paciente");
     if (!scheduledDateStr) faltantes.push("Fecha Programada");
-    if (diagnosesIds.length === 0) faltantes.push("Diagnóstico");
-    if (!surgeryType) faltantes.push("Tipo de Cirugía");
-    if (!specialtyId) faltantes.push("Especialidad");
-    if (!requestDateStr) faltantes.push("Fecha Solicitud");
+    if (!isPorDefinir && diagnosesIds.length === 0) faltantes.push("Diagnóstico");
+    if (!isPorDefinir && !surgeryType) faltantes.push("Tipo de Cirugía");
+    if (!isPorDefinir && !specialtyId) faltantes.push("Especialidad");
+    if (!isPorDefinir && !requestDateStr) faltantes.push("Fecha Solicitud");
 
     if (faltantes.length > 0) {
         return { error: `Faltan campos obligatorios para agendar: ${faltantes.join(", ")}.` };
@@ -884,7 +886,7 @@ export async function editSurgery(formData: FormData) {
         origin,
         bedNumber: bedNumber || null,
         internalCode: internalCode || null,
-        specialtyId,
+        specialtyId: specialtyId || null,
         notes,
         updatedAt: new Date(),
     }).where(eq(cqSurgeries.id, id));

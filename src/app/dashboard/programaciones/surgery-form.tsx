@@ -472,12 +472,14 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             }
         };
 
+        const isPorDefinir = patSearchTerm === "00000000" || patSearchTerm.toUpperCase() === "POR DEFINIR" || selectedPatList[0]?.pii?.dni === "00000000";
+
         if (!selectedPatId) setError('patient_id', "Selecciona un paciente de la lista", 'patient');
-        if (selectedDxIds.size === 0) setError('diagnoses', "Selecciona al menos un diagnóstico", 'patient');
-        if (!formData.get("surgery_type")) setError('surgery_type', "Requerido", 'classification');
-        if (!formData.get("urgency_type")) setError('urgency_type', "Requerido", 'classification');
-        if (!formData.get("specialty_id")) setError('specialty_id', "Requerido", 'classification');
-        if (!formData.get("origin")) setError('origin', "Requerido", 'classification');
+        if (!isPorDefinir && selectedDxIds.size === 0) setError('diagnoses', "Selecciona al menos un diagnóstico", 'patient');
+        if (!isPorDefinir && !formData.get("surgery_type")) setError('surgery_type', "Requerido", 'classification');
+        if (!isPorDefinir && !formData.get("urgency_type")) setError('urgency_type', "Requerido", 'classification');
+        if (!isPorDefinir && !formData.get("specialty_id")) setError('specialty_id', "Requerido", 'classification');
+        if (!isPorDefinir && !formData.get("origin")) setError('origin', "Requerido", 'classification');
         if (!formData.get("scheduled_date")) setError('scheduled_date', "Requerido", 'schedule');
         if (!formData.get("estimated_duration")) setError('estimated_duration', "Requerido", 'schedule');
 

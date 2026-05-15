@@ -380,12 +380,6 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             return nameA.localeCompare(nameB);
         }
         if (key === 'hora') {
-            const isDefA = a.surgery.isTimeDefined;
-            const isDefB = b.surgery.isTimeDefined;
-            
-            if (!isDefA && isDefB) return -1;
-            if (isDefA && !isDefB) return 1;
-            
             const timeA = a.surgery.scheduledDate ? new Date(a.surgery.scheduledDate).getTime() : 0;
             const timeB = b.surgery.scheduledDate ? new Date(b.surgery.scheduledDate).getTime() : 0;
             return timeA - timeB;
@@ -451,7 +445,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     };
 
     return (
-        <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 overflow-hidden shadow-sm flex flex-col relative ${isListFullscreen ? 'fixed inset-0 z-[100] w-screen h-screen rounded-none' : 'rounded-3xl h-full ring-1 ring-zinc-100 dark:ring-zinc-800/50'}`}>
+        <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 overflow-hidden shadow-sm flex flex-col ${isListFullscreen ? 'fixed inset-0 z-[100] w-screen h-screen rounded-none' : 'relative rounded-3xl h-full ring-1 ring-zinc-100 dark:ring-zinc-800/50'}`}>
             {/* Notificación de límite de ordenamiento */}
             <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-[200] transition-all duration-300 pointer-events-none ${showSortLimitAlert ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
                 <div className="bg-rose-50 dark:bg-rose-900/90 text-rose-700 dark:text-rose-100 px-5 py-3 rounded-2xl shadow-2xl border border-rose-200 dark:border-rose-800 flex items-center gap-3 backdrop-blur-md">
@@ -942,7 +936,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
                                                         <div className="flex flex-col items-center justify-center gap-1.5">
                                                             <div className="text-[13px] font-bold text-amber-700 dark:text-amber-400">
-                                                                {row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : 'TBD'}
+                                                                {row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : '00:00'}
                                                             </div>
                                                             <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
                                                                 {row.surgery.estimatedDuration || '-'}
