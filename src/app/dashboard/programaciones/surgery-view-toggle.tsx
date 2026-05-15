@@ -902,19 +902,25 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                     </td>
                                                     <td className="px-3 py-3 align-middle max-w-[200px]">
                                                         <div className="text-xs whitespace-normal break-words leading-tight">
-                                                            <span className="font-bold text-zinc-900 dark:text-white mr-1" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
-                                                                {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}
-                                                            </span>
-                                                            <span className="text-[11px] text-zinc-900 dark:text-white font-mono tracking-tight mr-1">
-                                                                {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'S/Doc'}
-                                                            </span>
-                                                            <span className="text-[11px] text-zinc-900 dark:text-white font-sans tracking-normal mr-1">
-                                                                {formatDemographicsOnly(row.patientPii, row.patient, row.surgery?.bedNumber)}
-                                                            </span>
-                                                            {row.surgery.insuranceType && (
-                                                                <span className="text-[8px] px-1 py-[1px] rounded border font-bold uppercase bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 inline-block align-text-bottom leading-none">
-                                                                    {row.surgery.insuranceType}
-                                                                </span>
+                                                            {row.patientPii?.dni === '00000000' || row.patientPii?.nombres === 'POR DEFINIR' ? (
+                                                                <span className="font-bold text-zinc-500 italic uppercase tracking-wider">POR DEFINIR</span>
+                                                            ) : (
+                                                                <>
+                                                                    <span className="font-bold text-zinc-900 dark:text-white mr-1" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
+                                                                        {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}
+                                                                    </span>
+                                                                    <span className="text-[11px] text-zinc-900 dark:text-white font-mono tracking-tight mr-1">
+                                                                        {row.patientPii?.dni || row.patientPii?.carnetExtranjeria || row.patientPii?.pasaporte || 'S/Doc'}
+                                                                    </span>
+                                                                    <span className="text-[11px] text-zinc-900 dark:text-white font-sans tracking-normal mr-1">
+                                                                        {formatDemographicsOnly(row.patientPii, row.patient, row.surgery?.bedNumber)}
+                                                                    </span>
+                                                                    {row.surgery.insuranceType && (
+                                                                        <span className="text-[8px] px-1 py-[1px] rounded border font-bold uppercase bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 inline-block align-text-bottom leading-none">
+                                                                            {row.surgery.insuranceType}
+                                                                        </span>
+                                                                    )}
+                                                                </>
                                                             )}
                                                         </div>
                                                     </td>

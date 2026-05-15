@@ -26,7 +26,7 @@ const ANESTHESIA_TYPES = [
     { id: 'AGI', name: 'Anestesia General Inhalatoria' },
     { id: 'BLOQ', name: 'Bloqueo Regional' },
     { id: 'LOCL', name: 'Local' },
-    { id: 'ANES', name: 'Anestesia' }
+    { id: 'SEDA', name: 'Sedación' }
 ];
 
 export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, diagnoses, procedures, interventions = [], patients, editMode, editData, isOpenOverride, onCloseOverride }: {
