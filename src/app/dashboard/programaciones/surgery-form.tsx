@@ -19,14 +19,14 @@ const FieldError = ({ msg }: { msg?: string }) => {
 };
 
 const ANESTHESIA_TYPES = [
-    { id: 'RAQ', name: 'Raquídea (o Subaracnoidea)' },
+    { id: 'RAQ', name: 'RaquÃ­dea (o Subaracnoidea)' },
     { id: 'EPI', name: 'Epidural' },
     { id: 'AGB', name: 'Anestesia General Balanceada' },
     { id: 'AGE', name: 'Anestesia General Endovenosa' },
     { id: 'AGI', name: 'Anestesia General Inhalatoria' },
     { id: 'BLOQ', name: 'Bloqueo Regional' },
     { id: 'LOCL', name: 'Local' },
-    { id: 'SEDA', name: 'Sedación' }
+    { id: 'SEDA', name: 'SedaciÃ³n' }
 ];
 
 export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, diagnoses, procedures, interventions = [], patients, editMode, editData, isOpenOverride, onCloseOverride }: {
@@ -456,6 +456,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        console.log("=== SUBMIT BUTTON CLICKED ===");
         e.preventDefault();
         const form = e.currentTarget;
         const formData = new FormData(form);
@@ -475,7 +476,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         const isPorDefinir = patSearchTerm === "00000000" || patSearchTerm.toUpperCase() === "POR DEFINIR" || selectedPatList[0]?.pii?.dni === "00000000";
 
         if (!selectedPatId) setError('patient_id', "Selecciona un paciente de la lista", 'patient');
-        if (!isPorDefinir && selectedDxIds.size === 0) setError('diagnoses', "Selecciona al menos un diagnóstico", 'patient');
+        if (!isPorDefinir && selectedDxIds.size === 0) setError('diagnoses', "Selecciona al menos un diagnÃ³stico", 'patient');
         if (!isPorDefinir && !formData.get("surgery_type")) setError('surgery_type', "Requerido", 'classification');
         if (!isPorDefinir && !formData.get("urgency_type")) setError('urgency_type', "Requerido", 'classification');
         if (!isPorDefinir && !formData.get("specialty_id")) setError('specialty_id', "Requerido", 'classification');
@@ -489,12 +490,13 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             if (firstErrorSection) setOpenSection(firstErrorSection);
             
             setTimeout(() => {
-                const els = document.getElementsByName(firstErrorField || "");
-                if (els.length > 0) {
-                    const el = els[0] as HTMLElement;
+                const elName = document.getElementsByName(firstErrorField || "");
+                const elId = document.getElementById(firstErrorField || "");
+                const el = (elName.length > 0 ? elName[0] : elId) as HTMLElement;
+                
+                if (el) {
                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     el.focus();
-                    
                     el.classList.add('animate-pulse', 'ring-4', 'ring-red-500', 'border-red-600');
                     setTimeout(() => {
                         el.classList.remove('animate-pulse', 'ring-4', 'ring-red-500', 'border-red-600');
@@ -573,10 +575,25 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     } else {
                         setApiDownPats(false);
                         setLocalPatients(prev => {
-                            const newPats = resArray.filter(
-                                (apiPat: any) => !prev.find(p => p.pii?.dni === apiPat.pii.dni)
-                            );
-                            return [...newPats, ...prev];
+                            const updatedPats = [...prev];
+                            for (const apiPat of resArray) {
+                                const existingIndex = updatedPats.findIndex(p => p.pii?.dni === apiPat.pii.dni);
+                                if (existingIndex >= 0) {
+                                    // Si existe, le inyectamos la apiData y actualizamos nombres (por si era NO IDENTIFICADO)
+                                    updatedPats[existingIndex] = {
+                                        ...updatedPats[existingIndex],
+                                        pii: {
+                                            ...updatedPats[existingIndex].pii,
+                                            nombres: apiPat.pii.nombres,
+                                            apellidos: apiPat.pii.apellidos
+                                        },
+                                        apiData: apiPat.apiData
+                                    };
+                                } else {
+                                    updatedPats.unshift(apiPat);
+                                }
+                            }
+                            return updatedPats;
                         });
                     }
                 } else {
@@ -675,7 +692,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                 onClick={() => setInternalIsOpen(true)}
                 className="flex items-center text-sm font-semibold justify-center py-2.5 px-6 rounded-xl shadow-[0_2px_12px_rgba(33,121,202,0.3)] text-white bg-[var(--color-hospital-blue)] hover:bg-[#09357a] hover:shadow-[0_6px_20px_rgba(33,121,202,0.4)] transition-all uppercase tracking-wider gap-2 shrink-0"
             >
-                <Plus size={18} /> Nueva Cirugía
+                <Plus size={18} /> Nueva CirugÃ­a
             </button>
 
             <AnimatePresence>
@@ -699,9 +716,9 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-t-3xl shrink-0">
                                 <div>
                                     <h3 className="font-bold text-xl text-zinc-900 dark:text-white flex items-center gap-2">
-                                        <Plus size={24} className="text-[var(--color-hospital-blue)] dark:text-blue-400" /> {editMode ? "Actualizar Cirugía" : "Registrar Cirugía"}
+                                        <Plus size={24} className="text-[var(--color-hospital-blue)] dark:text-blue-400" /> {editMode ? "Actualizar CirugÃ­a" : "Registrar CirugÃ­a"}
                                     </h3>
-                                    <p className="text-xs text-zinc-500 mt-1 font-medium">{editMode ? "Verifica y actualiza la planificacion pre-operatoria" : "Completa los datos preoperatorios y asigna el equipo quirúrgico."}</p>
+                                    <p className="text-xs text-zinc-500 mt-1 font-medium">{editMode ? "Verifica y actualiza la planificacion pre-operatoria" : "Completa los datos preoperatorios y asigna el equipo quirÃºrgico."}</p>
                                 </div>
                                 <button
                                     type="button"
@@ -718,16 +735,16 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                 <div className="mb-5 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-sm rounded-xl border border-amber-200 dark:border-amber-800/50 flex flex-col gap-1 shadow-sm">
                     <div className="flex items-center font-semibold">
                         <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
-                        Bloque Quirúrgico Lleno
+                        Bloque QuirÃºrgico Lleno
                     </div>
-                    <p className="pl-7 text-amber-700/80 dark:text-amber-300/80">No hay salas operativas disponibles para esta fecha. Espera su liberación.</p>
+                    <p className="pl-7 text-amber-700/80 dark:text-amber-300/80">No hay salas operativas disponibles para esta fecha. Espera su liberaciÃ³n.</p>
                 </div>
             )}
             {clonedData && (
                 <div className="mb-5 px-4 py-3 bg-blue-50 dark:bg-blue-900/20 text-[var(--color-hospital-blue)] dark:text-blue-300 text-sm rounded-xl border border-blue-200 dark:border-blue-800/50 flex flex-col gap-1 shadow-sm font-semibold">
                     <div className="flex items-center">
                         <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
-                        Modo Clonación Activo
+                        Modo ClonaciÃ³n Activo
                     </div>
                     <p className="pl-7 text-xs opacity-90 font-medium">Se han precargado los datos. Selecciona una nueva fecha y sala.</p>
                 </div>
@@ -842,7 +859,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                             {patSearchTerm && filteredUnselectedPat.length === 0 && selectedPatList.length === 0 && !isSearching && (
                                                 <div className="p-4 text-center text-xs text-zinc-500 font-medium flex flex-col items-center">
                                                     <User size={24} className="text-zinc-300 mb-2" />
-                                                    Ningún paciente coincide con "{patSearchTerm}"
+                                                    NingÃºn paciente coincide con "{patSearchTerm}"
                                                 </div>
                                             )}
                                         </div>
@@ -859,13 +876,13 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     {apiDownPats && (
                                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
                                             <AlertTriangle size={14} className="shrink-0" />
-                                            <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                                            <span>Servidor API no accesible. Solo se realizÃ³ bÃºsqueda en base de datos local.</span>
                                         </motion.div>
                                     )}
                                 </div>
                                 <div className="space-y-4 w-32 shrink-0">
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
+                                        <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">NÂ° Cama</label>
                                         <input
                                             type="text"
                                             name="bed_number"
@@ -914,7 +931,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             <div className={`p-1.5 rounded-lg ${openSection === 'classification' ? 'bg-blue-100 dark:bg-blue-900/40 text-[var(--color-hospital-blue)]' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}>
                                 <Shield size={18} />
                             </div>
-                            <span className="text-sm">2. Clasificación Clínica</span>
+                            <span className="text-sm">2. ClasificaciÃ³n ClÃ­nica</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'classification' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
@@ -939,11 +956,11 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.specialty_id} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
-                                    <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || "Cirugía Mayor"} className={getSelectCls("surgery_type")}>
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo OperaciÃ³n</label>
+                                    <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || "CirugÃ­a Mayor"} className={getSelectCls("surgery_type")}>
                                         <option value="">- Seleccionar -</option>
-                                        <option value="Cirugía Menor">Cirugía Menor</option>
-                                        <option value="Cirugía Mayor">Cirugía Mayor</option>
+                                        <option value="CirugÃ­a Menor">CirugÃ­a Menor</option>
+                                        <option value="CirugÃ­a Mayor">CirugÃ­a Mayor</option>
                                     </select>
                                     <FieldError msg={errors.surgery_type} />
                                 </div>
@@ -972,7 +989,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <select name="origin" disabled={!canSchedule} defaultValue={clonedData?.surgery?.origin || ""} className={getSelectCls("origin")}>
                                         <option value="">- Seleccionar -</option>
                                         <option value="Consultorio Externo">Consultorio Externo</option>
-                                        <option value="Hospitalización">Hospitalización</option>
+                                        <option value="HospitalizaciÃ³n">HospitalizaciÃ³n</option>
                                         <option value="Emergencia">Emergencia</option>
                                         <option value="Urgencia">Urgencia</option>
                                     </select>
@@ -981,9 +998,10 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
                             <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos (Dx)</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">DiagnÃ³sticos (Dx)</label>
                                 <div className="relative mb-2">
                                     <input
+                                        id="diagnoses"
                                         type="text"
                                         placeholder="Buscar patología por código CIE o nombre..."
                                         value={dxSearchTerm}
@@ -1047,7 +1065,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     ))}
                                     {filteredUnselectedDx.length === 0 && selectedDxList.length === 0 && (
                                         <div className="p-4 text-center">
-                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron diagnósticos que coincidan con la búsqueda.</p>
+                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron diagnÃ³sticos que coincidan con la bÃºsqueda.</p>
                                             {dxSearchTerm && (
                                                 <button 
                                                     type="button" 
@@ -1056,13 +1074,13 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                     className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-[11px] font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
                                                 >
                                                     {isCreatingDx ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                                    ✨ Añadir rápidamente "{dxSearchTerm}" al sistema
+                                                    âœ¨ AÃ±adir rÃ¡pidamente "{dxSearchTerm}" al sistema
                                                 </button>
                                             )}
                                         </div>
                                     )}
                                     {diagnoses.length > 0 && filteredUnselectedDx.length === 50 && (
-                                        <p className="text-[10px] text-zinc-400 p-2 text-center uppercase tracking-widest font-bold">Mostrando los primeros 50 resultados. Continúa escribiendo para afinar.</p>
+                                        <p className="text-[10px] text-zinc-400 p-2 text-center uppercase tracking-widest font-bold">Mostrando los primeros 50 resultados. ContinÃºa escribiendo para afinar.</p>
                                     )}
                                 </div>
                                 <FieldError msg={errors.diagnoses} />
@@ -1070,17 +1088,17 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 {apiDownDx && (
                                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
                                         <AlertTriangle size={14} className="shrink-0" />
-                                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                                        <span>Servidor API no accesible. Solo se realizÃ³ bÃºsqueda en base de datos local.</span>
                                     </motion.div>
                                 )}
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Catálogo de Procedimientos (Opcional)</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">CatÃ¡logo de Procedimientos (Opcional)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
-                                        placeholder="Buscar procedimiento por código o nombre..."
+                                        placeholder="Buscar procedimiento por cÃ³digo o nombre..."
                                         value={procSearchTerm}
                                         onChange={e => setProcSearchTerm(e.target.value)}
                                         className={getInputCls("", "pl-9 py-2")}
@@ -1142,7 +1160,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     ))}
                                     {filteredUnselectedProc.length === 0 && selectedProcList.length === 0 && (
                                         <div className="p-4 text-center">
-                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron procedimientos que coincidan con la búsqueda.</p>
+                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron procedimientos que coincidan con la bÃºsqueda.</p>
                                             {procSearchTerm && (
                                                 <button 
                                                     type="button" 
@@ -1151,7 +1169,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                     className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-[11px] font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
                                                 >
                                                     {isCreatingProc ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                                    ✨ Añadir rápidamente "{procSearchTerm}" al sistema
+                                                    âœ¨ AÃ±adir rÃ¡pidamente "{procSearchTerm}" al sistema
                                                 </button>
                                             )}
                                         </div>
@@ -1164,11 +1182,11 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de Intervención (Opcional)</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de IntervenciÃ³n (Opcional)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
-                                        placeholder="Buscar tipo de intervención..."
+                                        placeholder="Buscar tipo de intervenciÃ³n..."
                                         value={intSearchTerm}
                                         onChange={e => setIntSearchTerm(e.target.value)}
                                         className={getInputCls("", "pl-9 py-2")}
@@ -1216,7 +1234,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     ))}
                                     {filteredUnselectedInt.length === 0 && selectedIntList.length === 0 && (
                                         <div className="p-4 text-center">
-                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron intervenciones que coincidan con la búsqueda.</p>
+                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron intervenciones que coincidan con la bÃºsqueda.</p>
                                             {intSearchTerm && (
                                                 <button 
                                                     type="button" 
@@ -1225,7 +1243,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                     className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-[11px] font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
                                                 >
                                                     {isCreatingInt ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                                    ✨ Añadir rápidamente "{intSearchTerm}" al sistema
+                                                    âœ¨ AÃ±adir rÃ¡pidamente "{intSearchTerm}" al sistema
                                                 </button>
                                             )}
                                         </div>
@@ -1236,7 +1254,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 {apiDownProc && (
                                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
                                         <AlertTriangle size={14} className="shrink-0" />
-                                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                                        <span>Servidor API no accesible. Solo se realizÃ³ bÃºsqueda en base de datos local.</span>
                                     </motion.div>
                                 )}
                             </div>
@@ -1249,7 +1267,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     disabled={!canSchedule}
                                     defaultValue={clonedData?.surgery?.notes || ""}
                                     className={getInputCls("", "resize-none h-20 w-full")}
-                                    placeholder="Observaciones, procedimiento, insumos especiales o materiales médicos (Opcional)..."
+                                    placeholder="Observaciones, procedimiento, insumos especiales o materiales mÃ©dicos (Opcional)..."
                                 ></textarea>
                             </div>
 
@@ -1295,7 +1313,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.request_date} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Fecha Programación</label>
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Fecha ProgramaciÃ³n</label>
                                     <input type="date" name="scheduled_date" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'yyyy-MM-dd') : ""} className={getInputCls("scheduled_date")} />
                                     <FieldError msg={errors.scheduled_date} />
                                 </div>
@@ -1305,7 +1323,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.scheduled_time} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sala Quirúrgica</label>
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sala QuirÃºrgica</label>
                                     <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
                                         <option value="">- Seleccionar -</option>
                                         {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
@@ -1315,14 +1333,14 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.operating_room_id} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Duración Estimada</label>
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">DuraciÃ³n Estimada</label>
                                     <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || "1 hora"} className={getSelectCls("estimated_duration", "px-2")}>
                                         <option value="">- Seleccionar -</option>
                                         <option value="30 minutos">30 min (Exp.)</option>
                                         <option value="1 hora">1 hora o menos</option>
                                         <option value="2 horas">Hasta 2 horas</option>
                                         <option value="3 horas">Hasta 3 horas</option>
-                                        <option value="4+ horas">4 horas a más</option>
+                                        <option value="4+ horas">4 horas a mÃ¡s</option>
                                     </select>
                                     <FieldError msg={errors.estimated_duration} />
                                 </div>
@@ -1414,7 +1432,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Anestesiólogo(s)</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">AnestesiÃ³logo(s)</label>
                                 <div className="relative mb-2">
                                     <input
                                         type="text"
@@ -1457,7 +1475,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         </label>
                                     ))}
                                     {filteredUnselectedAnes.length === 0 && selectedAnesList.length === 0 && (
-                                        <p className="text-sm text-zinc-500 p-4 text-center">No se encontraron anestesiólogos.</p>
+                                        <p className="text-sm text-zinc-500 p-4 text-center">No se encontraron anestesiÃ³logos.</p>
                                     )}
                                 </div>
                             </div>
@@ -1655,7 +1673,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 className="group relative flex justify-center py-3.5 px-6 rounded-xl shadow-sm text-sm font-bold text-[var(--color-hospital-blue)] bg-blue-50 hover:bg-blue-100 border border-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 overflow-hidden"
                             >
                                 <span className="relative flex items-center gap-2">
-                                    {submitting && actionType === 'plus' ? "Procesando..." : "Confirmar Cirugía +"}
+                                    {submitting && actionType === 'plus' ? "Procesando..." : "Confirmar CirugÃ­a +"}
                                 </span>
                             </button>
                         )}
@@ -1666,7 +1684,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             className="group relative flex justify-center py-3.5 px-8 rounded-xl shadow-md text-sm font-normal text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none transition-all duration-200 overflow-hidden"
                         >
                             <div className="absolute inset-0 w-full h-full -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                            <span className="relative">{(submitting && actionType === 'normal') ? (editMode ? "Actualizando..." : "Aprobando Agenda...") : (editMode ? "Guardar Cambios" : "Confirmar Cirugía")}</span>
+                            <span className="relative">{(submitting && actionType === 'normal') ? (editMode ? "Actualizando..." : "Aprobando Agenda...") : (editMode ? "Guardar Cambios" : "Confirmar CirugÃ­a")}</span>
                         </button>
                     </div>
                 </div>

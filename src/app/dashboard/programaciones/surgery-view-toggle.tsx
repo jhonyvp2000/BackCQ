@@ -139,6 +139,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const canDelete = permissions.includes('eliminar:programacion');
     const canViewReport = permissions.includes('ver:reporte_operatorio');
     const canChangeStatus = permissions.includes('ciclar_estado:programacion');
+    const canEditTimes = permissions.includes('editar_tiempos_fases:programacion');
     const router = useRouter();
     const [optimisticStatuses, setOptimisticStatuses] = useState<Record<string, string>>({});
     const [pendingStatuses, setPendingStatuses] = useState<Record<string, boolean>>({});
@@ -1231,14 +1232,18 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                     </button>
                                                                 )}
 
-                                                                {specialties && staff && canEdit && (
+                                                                {specialties && staff && (
                                                                     <>
-                                                                        <button onClick={() => setEditingTimesSurgery(row)} className="text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 p-2.5 rounded-xl transition-all" title="Ver/Editar Tiempos y Fases">
-                                                                            <Clock size={18} />
-                                                                        </button>
-                                                                        <button onClick={() => setEditingSurgery(row)} className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="Editar Programación">
-                                                                            <Pencil size={18} />
-                                                                        </button>
+                                                                        {canEditTimes && (
+                                                                            <button onClick={() => setEditingTimesSurgery(row)} className="text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 p-2.5 rounded-xl transition-all" title="Ver/Editar Tiempos y Fases">
+                                                                                <Clock size={18} />
+                                                                            </button>
+                                                                        )}
+                                                                        {canEdit && (
+                                                                            <button onClick={() => setEditingSurgery(row)} className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all" title="Editar Programación">
+                                                                                <Pencil size={18} />
+                                                                            </button>
+                                                                        )}
                                                                     </>
                                                                 )}
 

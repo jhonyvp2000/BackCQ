@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { db } from "@/db";
 import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions } from "@/db/schema";
@@ -88,7 +88,7 @@ export async function lookupProcedureInApi(query: string) {
                     }
                 }
             } else {
-                console.warn(`[lookupProcedure] ApiNetHos falló con status ${res.status}`);
+                console.warn(`[lookupProcedure] ApiNetHos fallÃƒÂ³ con status ${res.status}`);
                 apiFailed = true;
             }
         } catch (error) {
@@ -135,7 +135,7 @@ export async function lookupDiagnosisInApi(query: string) {
                         if (!dx) continue;
                         
                         const resolvedCode = String(dx.codigo || dx.code || dx.id_diagnostico || query).trim().substring(0, 20);
-                        const resolvedName = String(dx.descripcion || dx.nombre || dx.name || "DIAGNÓSTICO ENCONTRADO").trim().toUpperCase();
+                        const resolvedName = String(dx.descripcion || dx.nombre || dx.name || "DIAGNÃƒâ€œSTICO ENCONTRADO").trim().toUpperCase();
 
                         const existing = await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.code, resolvedCode)).limit(1);
                         
@@ -154,7 +154,7 @@ export async function lookupDiagnosisInApi(query: string) {
                     }
                 }
             } else {
-                console.warn(`[lookupDiagnosis] ApiNetHos falló con status ${res.status}`);
+                console.warn(`[lookupDiagnosis] ApiNetHos fallÃƒÂ³ con status ${res.status}`);
                 apiFailed = true;
             }
         } catch (error) {
@@ -327,8 +327,8 @@ export async function createSurgery(formData: FormData) {
     let faltantes = [];
     if (!patientId) faltantes.push("Paciente");
     if (!scheduledDateStr) faltantes.push("Fecha Programada");
-    if (!isPorDefinir && diagnosesIds.length === 0) faltantes.push("Diagnóstico");
-    if (!isPorDefinir && !surgeryType) faltantes.push("Tipo de Cirugía");
+    if (!isPorDefinir && diagnosesIds.length === 0) faltantes.push("DiagnÃƒÂ³stico");
+    if (!isPorDefinir && !surgeryType) faltantes.push("Tipo de CirugÃƒÂ­a");
     if (!isPorDefinir && !specialtyId) faltantes.push("Especialidad");
 
     if (faltantes.length > 0) {
@@ -424,7 +424,7 @@ export async function createSurgery(formData: FormData) {
             if (newStartMs < existingEndMs && newEndMs > existingStartMs) {
                 const dateStr = surgery.scheduledDate.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
                 const timeStr = surgery.scheduledDate.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-                return { error: `La sala seleccionada sufre un cruce de horarios.\n\nExiste una cirugía programada para el ${dateStr} a las ${timeStr} que durará aprox. ${surgery.estimatedDuration || "1 hora"}. Sus lapsos de ocupación se sobreponen.` };
+                return { error: `La sala seleccionada sufre un cruce de horarios.\n\nExiste una cirugÃƒÂ­a programada para el ${dateStr} a las ${timeStr} que durarÃƒÂ¡ aprox. ${surgery.estimatedDuration || "1 hora"}. Sus lapsos de ocupaciÃƒÂ³n se sobreponen.` };
             }
         }
     }
@@ -493,7 +493,7 @@ export async function createSurgery(formData: FormData) {
                 bloodGroupRh
             });
         } catch (dbErr) {
-            // Fallback total: si algo falló en la inserción (carrera de procesos), buscamos de nuevo
+            // Fallback total: si algo fallÃƒÂ³ en la inserciÃƒÂ³n (carrera de procesos), buscamos de nuevo
             const lastHope = await db.select().from(cqPatientPii).where(
                 or(
                     eq(cqPatientPii.dni, patientId),
@@ -503,13 +503,13 @@ export async function createSurgery(formData: FormData) {
             if (lastHope.length > 0) {
                 finalPatientId = lastHope[0].patientId;
             } else {
-                return { error: "No se pudo registrar ni encontrar al paciente. Por favor verifique el DNI." };
+                return { error: `No se pudo registrar el paciente (posible error FK o restricciÃ³n). Detalle tÃ©cnico: ${dbErr instanceof Error ? dbErr.message : String(dbErr)}` };
             }
         }
     }
 
     if (!finalPatientId) {
-        return { error: "Error crítico: No se pudo resolver la identidad del paciente." };
+        return { error: "Error crÃƒÂ­tico: No se pudo resolver la identidad del paciente." };
     }
 
     const newSurgery = await db.insert(cqSurgeries).values({
@@ -569,6 +569,7 @@ export async function createSurgery(formData: FormData) {
     }
 
     revalidatePath("/dashboard/programaciones");
+    revalidatePath("/dashboard/pacientes");
     revalidatePath("/dashboard", "layout");
 
     return { success: true, surgeryId: surgeryRecordId };
@@ -581,7 +582,7 @@ export async function updateSurgeryStatus(formData: FormData) {
     if (!id || !status) throw new Error("Missing identification or payload");
 
     const surgeryRow = await db.select().from(cqSurgeries).where(eq(cqSurgeries.id, id)).limit(1);
-    if (surgeryRow.length === 0) return { error: "Cirugía no encontrada" };
+    if (surgeryRow.length === 0) return { error: "CirugÃƒÂ­a no encontrada" };
     const targetSurgery = surgeryRow[0];
 
     if (status === 'scheduled') {
@@ -606,7 +607,7 @@ export async function updateSurgeryStatus(formData: FormData) {
                 if (newStartMs < existingEndMs && newEndMs > existingStartMs) {
                     const dateStr = existing.scheduledDate.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
                     const timeStr = existing.scheduledDate.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-                    return { error: `No es posible reactivar la cirugía: La sala asignada está actualmente ocupada por otra cirugía programada para el ${dateStr} a las ${timeStr}.` };
+                    return { error: `No es posible reactivar la cirugÃƒÂ­a: La sala asignada estÃƒÂ¡ actualmente ocupada por otra cirugÃƒÂ­a programada para el ${dateStr} a las ${timeStr}.` };
                 }
             }
         }
@@ -629,25 +630,25 @@ export async function updateSurgeryStatus(formData: FormData) {
                 break;
             case 'anesthesia_start':
                 if (targetSurgery.actualStartTime && tdMs < targetSurgery.actualStartTime.getTime()) {
-                    return { error: "Error de consistencia temporal:\n\nEl 'Inicio de Anestesia' debe ser igual o posterior al tiempo de 'Ingreso a Quirófano'." };
+                    return { error: "Error de consistencia temporal:\n\nEl 'Inicio de Anestesia' debe ser igual o posterior al tiempo de 'Ingreso a QuirÃƒÂ³fano'." };
                 }
                 updatePayload.anesthesiaStartTime = transitionDate;
                 break;
             case 'pre_incision':
                 if (targetSurgery.anesthesiaStartTime && tdMs < targetSurgery.anesthesiaStartTime.getTime()) {
-                    return { error: "Error de consistencia temporal:\n\nEl tiempo 'Antes de Incisión' debe ser igual o posterior al tiempo de 'Inicio de Anestesia'." };
+                    return { error: "Error de consistencia temporal:\n\nEl tiempo 'Antes de IncisiÃƒÂ³n' debe ser igual o posterior al tiempo de 'Inicio de Anestesia'." };
                 }
                 updatePayload.preIncisionTime = transitionDate;
                 break;
             case 'surgery_end':
                 if (targetSurgery.preIncisionTime && tdMs < targetSurgery.preIncisionTime.getTime()) {
-                    return { error: "Error de consistencia temporal:\n\nEl 'Término de Cirugía' debe ser igual o posterior al tiempo 'Antes de Incisión'." };
+                    return { error: "Error de consistencia temporal:\n\nEl 'TÃƒÂ©rmino de CirugÃƒÂ­a' debe ser igual o posterior al tiempo 'Antes de IncisiÃƒÂ³n'." };
                 }
                 updatePayload.surgeryEndTime = transitionDate;
                 break;
             case 'patient_exit':
                 if (targetSurgery.surgeryEndTime && tdMs < targetSurgery.surgeryEndTime.getTime()) {
-                    return { error: "Error de consistencia temporal:\n\nLa 'Salida del Paciente' debe ser igual o posterior al tiempo de 'Término de Cirugía'." };
+                    return { error: "Error de consistencia temporal:\n\nLa 'Salida del Paciente' debe ser igual o posterior al tiempo de 'TÃƒÂ©rmino de CirugÃƒÂ­a'." };
                 }
                 updatePayload.patientExitTime = transitionDate;
                 break;
@@ -659,13 +660,13 @@ export async function updateSurgeryStatus(formData: FormData) {
                 break;
             case 'completed':
                 if (targetSurgery.urpaExitTime && tdMs < targetSurgery.urpaExitTime.getTime()) {
-                    return { error: "Error de consistencia temporal:\n\nLa 'Finalización' debe ser igual o posterior a la 'Salida de URPA'." };
+                    return { error: "Error de consistencia temporal:\n\nLa 'FinalizaciÃƒÂ³n' debe ser igual o posterior a la 'Salida de URPA'." };
                 } else if (!targetSurgery.urpaExitTime && targetSurgery.patientExitTime && tdMs < targetSurgery.patientExitTime.getTime()) {
-                    return { error: "Error de consistencia temporal:\n\nLa 'Finalización' debe ser igual o posterior a la 'Salida del Paciente'." };
+                    return { error: "Error de consistencia temporal:\n\nLa 'FinalizaciÃƒÂ³n' debe ser igual o posterior a la 'Salida del Paciente'." };
                 }
                 updatePayload.completedTime = transitionDate;
                 
-                // Capturar fallecimiento si se envía en el form
+                // Capturar fallecimiento si se envÃƒÂ­a en el form
                 const isDeath = formData.get("isDeathByEmergency") === "true";
                 updatePayload.isDeathByEmergency = isDeath;
                 break;
@@ -676,36 +677,38 @@ export async function updateSurgeryStatus(formData: FormData) {
     const updated = await db.select().from(cqSurgeries).where(eq(cqSurgeries.id, id)).limit(1);
 
     revalidatePath("/dashboard/programaciones");
+    revalidatePath("/dashboard/pacientes");
     return { success: true, surgery: updated[0] };
 }
 
 export async function deleteSurgery(formData: FormData) {
     const id = formData.get("id") as string;
 
-    if (!id) return { error: "ID de cirugía obligatorio para eliminar" };
+    if (!id) return { error: "ID de cirugÃƒÂ­a obligatorio para eliminar" };
 
     try {
         const { cqSurgicalReports } = await import("@/db/schema");
         const targetSurgery = await db.select().from(cqSurgeries).where(eq(cqSurgeries.id, id)).limit(1);
 
         if (targetSurgery.length === 0) {
-            return { error: "No se encontró el registro especificado." };
+            return { error: "No se encontrÃƒÂ³ el registro especificado." };
         }
 
         if (targetSurgery[0].status === 'completed') {
-            return { error: "Prohibido: Esta cirugía ya ha sido completada. No puede eliminarse, solo auditarse en el historial." };
+            return { error: "Prohibido: Esta cirugÃƒÂ­a ya ha sido completada. No puede eliminarse, solo auditarse en el historial." };
         }
 
         const associated = await db.select().from(cqSurgicalReports).where(eq(cqSurgicalReports.surgeryId, id)).limit(1);
 
         if (associated.length > 0) {
-            return { error: "No se puede eliminar la Programación Quirúrgica: Ya cuenta con un Reporte Operatorio firmado en el historial legal." };
+            return { error: "No se puede eliminar la ProgramaciÃƒÂ³n QuirÃƒÂºrgica: Ya cuenta con un Reporte Operatorio firmado en el historial legal." };
         }
 
         await db.delete(cqSurgeries).where(eq(cqSurgeries.id, id));
         revalidatePath("/dashboard/programaciones");
+    revalidatePath("/dashboard/pacientes");
     } catch (error: any) {
-        return { error: "Ocurrió un error inesperado al intentar borrar el registro de programación." };
+        return { error: "OcurriÃƒÂ³ un error inesperado al intentar borrar el registro de programaciÃƒÂ³n." };
     }
 }
 
@@ -737,12 +740,12 @@ export async function editSurgery(formData: FormData) {
     const proceduresIds = formData.getAll("procedures") as string[];
     const interventionsIds = formData.getAll("interventions") as string[];
 
-    if (!id) return { error: "ID de cirugía no proporcionado." };
+    if (!id) return { error: "ID de cirugÃƒÂ­a no proporcionado." };
     let faltantes = [];
     if (!patientId) faltantes.push("Paciente");
     if (!scheduledDateStr) faltantes.push("Fecha Programada");
-    if (!isPorDefinir && diagnosesIds.length === 0) faltantes.push("Diagnóstico");
-    if (!isPorDefinir && !surgeryType) faltantes.push("Tipo de Cirugía");
+    if (!isPorDefinir && diagnosesIds.length === 0) faltantes.push("DiagnÃƒÂ³stico");
+    if (!isPorDefinir && !surgeryType) faltantes.push("Tipo de CirugÃƒÂ­a");
     if (!isPorDefinir && !specialtyId) faltantes.push("Especialidad");
     if (!isPorDefinir && !requestDateStr) faltantes.push("Fecha Solicitud");
 
@@ -837,7 +840,7 @@ export async function editSurgery(formData: FormData) {
             if (newStartMs < existingEndMs && newEndMs > existingStartMs) {
                 const dateStr = surgery.scheduledDate.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
                 const timeStr = surgery.scheduledDate.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-                return { error: `La sala seleccionada sufre un cruce de horarios.\n\nExiste una cirugía programada para el ${dateStr} a las ${timeStr} que durará aprox. ${surgery.estimatedDuration || "1 hora"}. Sus lapsos de ocupación se sobreponen.` };
+                return { error: `La sala seleccionada sufre un cruce de horarios.\n\nExiste una cirugÃƒÂ­a programada para el ${dateStr} a las ${timeStr} que durarÃƒÂ¡ aprox. ${surgery.estimatedDuration || "1 hora"}. Sus lapsos de ocupaciÃƒÂ³n se sobreponen.` };
             }
         }
     }
@@ -859,16 +862,65 @@ export async function editSurgery(formData: FormData) {
             await db.update(cqPatientPii).set({ bloodGroupRh }).where(eq(cqPatientPii.patientId, finalPatientId));
         }
     } else {
-        const newPat = await db.insert(cqPatients).values({}).returning({ id: cqPatients.id });
-        finalPatientId = newPat[0].id;
-        const bloodGroupRh = formData.get("blood_group_rh") as string | null;
-        await db.insert(cqPatientPii).values({
-            patientId: finalPatientId,
-            dni: patientId,
-            nombres: 'No Identificado',
-            apellidos: 'No Identificado',
-            bloodGroupRh
-        });
+        const apiPatientDataRaw = formData.get("api_patient_data") as string | null;
+        let pName = 'NO IDENTIFICADO';
+        let pLastName = 'NO IDENTIFICADO';
+        let pSexo = null;
+        let pFechaNac = null;
+        let pUbigeo = null;
+        let pHistoriaClinica = patientId;
+        let pDireccion = null;
+
+        if (apiPatientDataRaw) {
+            try {
+                const parsed = JSON.parse(apiPatientDataRaw);
+                pName = parsed.nombres || pName;
+                pLastName = parsed.apellidos || pLastName;
+                pSexo = parsed.sexo || null;
+                pFechaNac = parsed.fechaNacimiento ? new Date(parsed.fechaNacimiento) : null;
+                pUbigeo = parsed.ubigeo || null;
+                pHistoriaClinica = parsed.historiaClinica || pHistoriaClinica;
+                pDireccion = parsed.direccion || null;
+            } catch (e) {
+                console.error("Failed to parse api_patient_data", e);
+            }
+        }
+
+        try {
+            // Demographics
+            const [newPat] = await db.insert(cqPatients).values({
+                sexo: pSexo,
+                fechaNacimiento: pFechaNac,
+                ubigeo: pUbigeo,
+            }).returning({ id: cqPatients.id });
+            
+            finalPatientId = newPat.id;
+
+            // Identity Vault
+            const bloodGroupRh = formData.get("blood_group_rh") as string | null;
+            await db.insert(cqPatientPii).values({
+                patientId: finalPatientId,
+                dni: patientId,
+                nombres: pName,
+                apellidos: pLastName,
+                historiaClinica: pHistoriaClinica,
+                direccion: pDireccion,
+                bloodGroupRh
+            });
+        } catch (dbErr) {
+            // Fallback total: si algo fallÃ³ en la inserciÃ³n (carrera de procesos), buscamos de nuevo
+            const lastHope = await db.select().from(cqPatientPii).where(
+                or(
+                    eq(cqPatientPii.dni, patientId),
+                    eq(cqPatientPii.historiaClinica, patientId)
+                )
+            ).limit(1);
+            if (lastHope.length > 0) {
+                finalPatientId = lastHope[0].patientId;
+            } else {
+                throw dbErr; // Si no existe de verdad, dejamos que falle
+            }
+        }
     }
 
     await db.update(cqSurgeries).set({
@@ -934,6 +986,7 @@ export async function editSurgery(formData: FormData) {
     }
 
     revalidatePath("/dashboard/programaciones");
+    revalidatePath("/dashboard/pacientes");
 }
 
 export async function updateSurgeryPhaseTimes(data: {
@@ -945,7 +998,7 @@ export async function updateSurgeryPhaseTimes(data: {
     patientExitTime?: string | null;
     urpaExitTime?: string | null;
 }) {
-    if (!data.surgeryId) return { error: "ID de cirugía es requerido" };
+    if (!data.surgeryId) return { error: "ID de cirugÃƒÂ­a es requerido" };
     
     try {
         await db.update(cqSurgeries).set({
@@ -959,9 +1012,10 @@ export async function updateSurgeryPhaseTimes(data: {
         }).where(eq(cqSurgeries.id, data.surgeryId));
         
         revalidatePath("/dashboard/programaciones");
+    revalidatePath("/dashboard/pacientes");
         return { success: true };
     } catch (error: any) {
         console.error("Error updating phase times:", error);
-        return { error: "Ocurrió un error al actualizar los tiempos." };
+        return { error: "OcurriÃƒÂ³ un error al actualizar los tiempos." };
     }
 }
