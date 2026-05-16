@@ -1,4 +1,4 @@
-﻿"use server";
+"use server";
 
 import { db } from "@/db";
 import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions } from "@/db/schema";
@@ -317,6 +317,7 @@ export async function createSurgery(formData: FormData) {
     const bedNumber = formData.get("bed_number") as string;
     const internalCode = formData.get("internal_code") as string;
     const specialtyId = formData.get("specialty_id") as string;
+    const isFromCopri = formData.get("is_from_copri") === "on";
 
     const surgeonIds = formData.getAll("surgeons") as string[];
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
@@ -503,7 +504,7 @@ export async function createSurgery(formData: FormData) {
             if (lastHope.length > 0) {
                 finalPatientId = lastHope[0].patientId;
             } else {
-                return { error: `No se pudo registrar el paciente (posible error FK o restricciÃ³n). Detalle tÃ©cnico: ${dbErr instanceof Error ? dbErr.message : String(dbErr)}` };
+                return { error: `No se pudo registrar el paciente (posible error FK o restricción). Detalle técnico: ${dbErr instanceof Error ? dbErr.message : String(dbErr)}` };
             }
         }
     }
@@ -530,6 +531,7 @@ export async function createSurgery(formData: FormData) {
         internalCode: internalCode || null,
         specialtyId: specialtyId || null,
         notes,
+        isFromCopri,
     }).returning({ id: cqSurgeries.id });
 
     const surgeryRecordId = newSurgery[0].id;
@@ -730,6 +732,7 @@ export async function editSurgery(formData: FormData) {
     const bedNumber = formData.get("bed_number") as string;
     const internalCode = formData.get("internal_code") as string;
     const specialtyId = formData.get("specialty_id") as string;
+    const isFromCopri = formData.get("is_from_copri") === "on";
     const anesthesiaType = formData.get("anesthesia_type") as string;
 
     const surgeonIds = formData.getAll("surgeons") as string[];
@@ -908,7 +911,7 @@ export async function editSurgery(formData: FormData) {
                 bloodGroupRh
             });
         } catch (dbErr) {
-            // Fallback total: si algo fallÃ³ en la inserciÃ³n (carrera de procesos), buscamos de nuevo
+            // Fallback total: si algo falló en la inserción (carrera de procesos), buscamos de nuevo
             const lastHope = await db.select().from(cqPatientPii).where(
                 or(
                     eq(cqPatientPii.dni, patientId),
@@ -940,6 +943,7 @@ export async function editSurgery(formData: FormData) {
         internalCode: internalCode || null,
         specialtyId: specialtyId || null,
         notes,
+        isFromCopri,
         updatedAt: new Date(),
     }).where(eq(cqSurgeries.id, id));
 

@@ -926,6 +926,13 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         <div className="text-xs text-zinc-900 dark:text-zinc-100 font-bold line-clamp-3 leading-tight break-words whitespace-normal" title={row.specialty?.name || ''}>
                                                             {row.specialty?.name || '-'}
                                                         </div>
+                                                        {row.surgery.isFromCopri && (
+                                                            <div className="mt-1.5 block">
+                                                                <span className="text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center bg-blue-50 text-blue-600 border-blue-200">
+                                                                    Viene COPRI
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
                                                         <div className="flex items-start justify-center text-[13px] font-bold text-left">
@@ -970,7 +977,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             {row.surgery.surgeryType && (
                                                                 <div className="mt-1.5 block">
                                                                     <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
-                                                                        {row.surgery.surgeryType.replace('Cirugía ', 'C. ')}
+                                                                        {row.surgery.surgeryType}
                                                                     </span>
                                                                 </div>
                                                             )}
@@ -980,7 +987,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         <div className="flex flex-col gap-1 items-start">
                                                             {row.surgery.surgeryType && (
                                                                 <div className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
-                                                                    {row.surgery.surgeryType.replace('Cirugía ', 'C. ')}
+                                                                    {row.surgery.surgeryType}
                                                                 </div>
                                                             )}
                                                             {/* row.surgery.urgencyType oculta a petición del usuario
