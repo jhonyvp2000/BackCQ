@@ -634,7 +634,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                     <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer flex justify-between items-center transition-all bg-white dark:bg-zinc-900 group-hover/specialty-select:border-blue-500/50">
                                         <span className="truncate pr-2">
                                             {filterSpecialty.length === 0 
-                                                ? "Cualquier Espec." 
+                                                ? "Cualquier Especialidad" 
                                                 : filterSpecialty.length === 1
                                                     ? (specialties?.find(s => s.id === filterSpecialty[0])?.name || filterSpecialty[0])
                                                     : `${filterSpecialty.length} Espec. Selecc.`}
@@ -677,7 +677,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                     <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer flex justify-between items-center transition-all bg-white dark:bg-zinc-900 group-hover/staff-select:border-blue-500/50">
                                         <span className="truncate pr-2">
                                             {filterStaff.length === 0 
-                                                ? "Cualquier Prof." 
+                                                ? "Cualquier Profesional" 
                                                 : filterStaff.length === 1
                                                     ? (() => {
                                                         const allStaff = [...(staff?.surgeons || []), ...(staff?.anesthesiologists || []), ...(staff?.nurses || [])];
