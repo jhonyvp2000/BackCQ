@@ -222,6 +222,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [filterStaff, setFilterStaff] = useState<string[]>([]);
     const [searchStaffFilter, setSearchStaffFilter] = useState<string>("");
     const [filterStatus, setFilterStatus] = useState<string[]>([]);
+    const [filterCopri, setFilterCopri] = useState<string>("all");
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
     const [isListFullscreen, setIsListFullscreen] = useState<boolean>(false);
 
@@ -367,6 +368,12 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
             if (!hasMatchedStaff) return false;
         }
 
+        if (filterCopri !== 'all') {
+            const isCopri = s.surgery.isFromCopri === true;
+            if (filterCopri === 'true' && !isCopri) return false;
+            if (filterCopri === 'false' && isCopri) return false;
+        }
+
         return true;
     });
 
@@ -507,9 +514,9 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             <Filter size={16} />
                             Filtros Dinámicos
                         </button>
-                        {(filterDate || filterPatient || filterRoom.length > 0 || filterStatus.length > 0 || filterSpecialty.length > 0 || filterStaff.length > 0) && (
+                        {(filterDate || filterPatient || filterRoom.length > 0 || filterStatus.length > 0 || filterSpecialty.length > 0 || filterStaff.length > 0 || filterCopri !== 'all') && (
                             <button
-                                onClick={() => { handleDateChange(''); setFilterPatient(''); setFilterRoom([]); setFilterStatus([]); setFilterSpecialty([]); setFilterStaff([]); }}
+                                onClick={() => { handleDateChange(''); setFilterPatient(''); setFilterRoom([]); setFilterStatus([]); setFilterSpecialty([]); setFilterStaff([]); setFilterCopri('all'); }}
                                 className="text-xs font-semibold text-zinc-500 hover:text-red-500 hover:underline px-2 transition-colors"
                             >
                                 Limpiar Filtros
@@ -541,7 +548,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                             animate={{ height: 'auto', opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-4 pt-2 pb-2">
+                            <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-7 gap-4 pt-2 pb-2">
                                 {/* Buscador de Paciente */}
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -809,6 +816,25 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                 ))}
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Filtro Viene COPRI */}
+                                <div className="relative group z-10">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <Filter size={14} className="text-zinc-400 group-focus-within:text-[var(--color-hospital-blue)] transition-colors" />
+                                    </div>
+                                    <select
+                                        value={filterCopri}
+                                        onChange={(e) => setFilterCopri(e.target.value)}
+                                        className="w-full pl-9 pr-8 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200 appearance-none"
+                                    >
+                                        <option value="all">Filtro COPRI: Todos</option>
+                                        <option value="true">Solo Viene COPRI</option>
+                                        <option value="false">Sin COPRI</option>
+                                    </select>
+                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                        <svg className="w-4 h-4 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                     </div>
                                 </div>
                             </div>

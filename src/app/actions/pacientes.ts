@@ -55,10 +55,10 @@ export async function lookupPatientByDni(rawId: string) {
                 const data = await response.json();
                 
                 // Mapear según la estructura de tu API: data.data es un array
-                if (data.success && data.data && data.data.length > 0) {
+                if (data.data && Array.isArray(data.data) && data.data.length > 0) {
                     externalPatientData = data.data[0]; 
-                } else if (data && !data.success && data.data && data.data.nombres) {
-                    // Por si la estructura viniera directamente envuelta en otra forma
+                } else if (data.data && !Array.isArray(data.data) && data.data.nombres) {
+                    // Por si la estructura viniera directamente envuelta en otra forma sin array
                     externalPatientData = data.data;
                 }
             }
@@ -174,7 +174,7 @@ export async function lookupPatientsInApi(query: string) {
         if (!response.ok) return [{ __apiError: true }];
         const data = await response.json();
         
-        if (data.success && data.data && Array.isArray(data.data)) {
+        if (data.data && Array.isArray(data.data)) {
             return data.data.map((externalPatientData: any) => {
                 const dni = externalPatientData.documentoNumero || "";
                 const pName = (externalPatientData.nombres || "").trim() || "NO IDENTIFICADO";
@@ -501,9 +501,9 @@ export async function syncOrphan(dni: string) {
         const data = await response.json();
         
         let externalPatientData = null;
-        if (data.success && data.data && data.data.length > 0) {
+        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
             externalPatientData = data.data[0]; 
-        } else if (data && !data.success && data.data && data.data.nombres) {
+        } else if (data.data && !Array.isArray(data.data) && data.data.nombres) {
             externalPatientData = data.data;
         }
 
@@ -582,9 +582,9 @@ export async function mergeOrphan(orphanPatientId: string, realDniToMergeWith: s
                     const response = await fetch(`${apiUrl}/api/pacientes/search?documento=${realDniToMergeWith}`, { cache: 'no-store' });
                     const data = await response.json();
                     
-                    if (data.success && data.data && data.data.length > 0) {
+                    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
                         pFoundInApi = true;
-                    } else if (data && !data.success && data.data && data.data.nombres) {
+                    } else if (data.data && !Array.isArray(data.data) && data.data.nombres) {
                         pFoundInApi = true; // Por estructura variada del API NetHos
                     }
                 } catch (e) {
