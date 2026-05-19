@@ -1,0 +1,1 @@
+﻿import { sql } from 'drizzle-orm'; import { db } from './src/db/index.js'; async function run() { try { const r = await db.execute(sql\select id, surgery_type from cq_surgeries\); console.log(r); } catch (e) { console.error(e); } process.exit(0); } run();

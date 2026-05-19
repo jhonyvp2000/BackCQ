@@ -131,7 +131,7 @@ export const formatDemographicsOnly = (patientPii: any, patient: any, bedNumber?
     return `(${sexStr} ${ageStr} HC: ${hcStr}${bloodGroupRh ? ` GFS: ${bloodGroupRh}` : ''})${bedNumber ? ` C: ${bedNumber}` : ''}`;
 };
 
-export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialties, staff, permissions = [], diagnoses = [], procedures = [], interventions = [], patients = [], initialDate = "" }: { surgeriesData: any[], salas: any[], sortParams: any, specialties?: any[], staff?: any, permissions?: string[], diagnoses?: any[], procedures?: any[], interventions?: any[], patients?: any[], initialDate?: string }) {
+export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialties, staff, permissions = [], diagnoses = [], procedures = [], interventions = [], patients = [], initialDate = "", forceTvMode = false }: { surgeriesData: any[], salas: any[], sortParams: any, specialties?: any[], staff?: any, permissions?: string[], diagnoses?: any[], procedures?: any[], interventions?: any[], patients?: any[], initialDate?: string, forceTvMode?: boolean }) {
     const canEdit = permissions.includes('editar:programacion');
     const canCancel = permissions.includes('cancelar:programacion');
     const canAdvancePhase = permissions.includes('avanzar_fase:programacion');
@@ -224,7 +224,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
     const [filterStatus, setFilterStatus] = useState<string[]>([]);
     const [filterCopri, setFilterCopri] = useState<string>("all");
     const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
-    const [isListFullscreen, setIsListFullscreen] = useState<boolean>(false);
+    const [isListFullscreen, setIsListFullscreen] = useState<boolean>(forceTvMode || false);
 
     const [sortConfig, setSortConfig] = useState<Array<{ key: string, direction: 'asc' | 'desc' }>>([]);
     const [showSortLimitAlert, setShowSortLimitAlert] = useState(false);
@@ -867,29 +867,29 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                 </div>
                             ) : (
                                 <div className="overflow-auto flex-grow bg-white dark:bg-zinc-900 custom-scrollbar">
-                                    <table className="w-full text-left border-collapse">
+                                    <table className="w-full text-left border-collapse border border-zinc-300 dark:border-zinc-700">
                                         <thead className="sticky top-0 z-20">
-                                            <tr className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/95 dark:bg-zinc-800/95 backdrop-blur-md">
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[30px]">N°</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px] max-w-[100px]">
+                                            <tr className="border-b border-zinc-300 dark:border-zinc-700 bg-zinc-50/95 dark:bg-zinc-800/95 backdrop-blur-md divide-x divide-zinc-300 dark:divide-zinc-700">
+                                                <th scope="col" className="px-1 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest w-[1%] whitespace-nowrap text-center">N°</th>
+                                                <th scope="col" className={`px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 max-w-[150px] truncate' : 'min-w-[70px] max-w-[100px]'}`}>
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('especialidad')}>
                                                         Especialidad
                                                         <SortIcon columnKey="especialidad" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[35px] text-center">
+                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest text-center ${forceTvMode ? 'px-1 w-[1%] whitespace-nowrap' : 'px-3 min-w-[35px]'}`}>
                                                     <div className="flex items-center justify-center cursor-pointer group select-none" onClick={() => handleSort('sala')}>
                                                         Sala
                                                         <SortIcon columnKey="sala" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[70px] text-center">
+                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest text-center ${forceTvMode ? 'px-1 w-[1%] whitespace-nowrap' : 'px-3 min-w-[70px]'}`}>
                                                     <div className="flex items-center justify-center cursor-pointer group select-none" onClick={() => handleSort('hora')}>
-                                                        Hora-Dur
+                                                        {forceTvMode ? 'Hora' : 'Hora-Dur'}
                                                         <SortIcon columnKey="hora" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[130px] max-w-[180px]">
+                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 max-w-[200px] truncate' : 'px-3 min-w-[130px] max-w-[180px]'}`}>
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('paciente')}>
                                                         Paciente
                                                         <SortIcon columnKey="paciente" />
@@ -901,16 +901,16 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         <SortIcon columnKey="tipo" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[330px] max-w-[430px]">Diagnóstico / Intervención</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[160px]">Equipo</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[85px]">Estado</th>
-                                                <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">F. Sol-Pro</th>
-                                                {!isListFullscreen && (
+                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 max-w-[800px] truncate' : 'px-3 min-w-[330px] max-w-[430px]'}`}>Diagnóstico / Intervención</th>
+                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 min-w-[100px] whitespace-nowrap' : 'px-3 min-w-[160px]'}`}>Equipo</th>
+                                                {!forceTvMode && <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[85px]">Estado</th>}
+                                                {!forceTvMode && <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">F. Sol-Pro</th>}
+                                                {!isListFullscreen && !forceTvMode && (
                                                     <th scope="col" className="px-3 py-4 pl-4 text-right text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] sticky right-0 z-30 bg-zinc-50/95 dark:bg-zinc-800/95 shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-200 dark:before:bg-zinc-700">Gestión</th>
                                                 )}
                                             </tr>
                                         </thead>
-                                        <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800/50">
+                                        <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-300 dark:divide-zinc-700">
                                             {sortedSurgeries.map((row, index) => {
                                                 const effectiveStatus = optimisticStatuses[row.surgery.id] || row.surgery.status;
                                                 const isPending = pendingStatuses[row.surgery.id] || false;
@@ -944,46 +944,50 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                 }
 
                                                 return (
-                                                <tr key={row.surgery.id} className={`transition-all duration-300 group text-sm border-b border-zinc-100 dark:border-zinc-800/50 last:border-0 hover:brightness-95 dark:hover:brightness-125 ${getRowBgColor(effectiveStatus)}`}>
-                                                    <td className="px-3 py-3 whitespace-nowrap text-zinc-500 font-medium align-middle">
+                                                <tr key={row.surgery.id} className={`transition-all duration-300 group text-sm border-b border-zinc-300 dark:border-zinc-700 last:border-0 hover:brightness-95 dark:hover:brightness-125 divide-x divide-zinc-300 dark:divide-zinc-700 ${getRowBgColor(effectiveStatus)}`}>
+                                                    <td className="px-1 py-3 whitespace-nowrap text-zinc-500 font-medium align-middle text-center w-[1%]">
                                                         {index + 1}
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle max-w-[120px]">
-                                                        <div className="text-xs text-zinc-900 dark:text-zinc-100 font-bold line-clamp-3 leading-tight break-words whitespace-normal" title={row.specialty?.name || ''}>
-                                                            {row.specialty?.name || '-'}
-                                                        </div>
-                                                        {row.surgery.isFromCopri && (
-                                                            <div className="mt-1.5 block">
-                                                                <span className="text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center bg-blue-50 text-blue-600 border-blue-200">
-                                                                    Viene COPRI
-                                                                </span>
+                                                    <td className={`px-3 py-3 align-middle ${forceTvMode ? 'px-1 max-w-[150px]' : 'max-w-[120px]'}`}>
+                                                        <div className={`flex ${forceTvMode ? 'flex-row items-center gap-x-2 min-w-0' : 'flex-col'}`}>
+                                                            <div className={`text-xs text-zinc-900 dark:text-zinc-100 font-bold leading-tight ${forceTvMode ? 'truncate' : 'line-clamp-3 break-words whitespace-normal'}`} title={row.specialty?.name || ''}>
+                                                                {row.specialty?.name || '-'}
                                                             </div>
-                                                        )}
+                                                            {row.surgery.isFromCopri && (
+                                                                <div className={`${forceTvMode ? 'shrink-0' : 'mt-1.5 block'}`}>
+                                                                    <span className="text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center bg-blue-50 text-blue-600 border-blue-200">
+                                                                        Viene COPRI
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
-                                                        <div className="flex items-start justify-center text-[13px] font-bold text-left">
-                                                            <div className={`w-1.5 h-1.5 rounded-full mr-1.5 shrink-0 mt-1.5 ${row.operatingRoom?.name ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
-                                                            <span className="whitespace-normal break-words leading-tight max-w-[40px]" title={row.operatingRoom?.name || 'S/A'}>
+                                                    <td className={`py-3 whitespace-nowrap align-middle text-center ${forceTvMode ? 'px-1 w-[1%]' : 'px-3'}`}>
+                                                        <div className={`flex justify-center text-[13px] font-bold text-left ${forceTvMode ? 'items-center' : 'items-start'}`}>
+                                                            <div className={`w-1.5 h-1.5 rounded-full mr-1.5 shrink-0 ${forceTvMode ? '' : 'mt-1.5'} ${row.operatingRoom?.name ? 'bg-emerald-500' : 'bg-red-500'}`}></div>
+                                                            <span className={`leading-tight ${forceTvMode ? 'whitespace-nowrap' : 'whitespace-normal break-words max-w-[40px]'}`} title={row.operatingRoom?.name || 'S/A'}>
                                                                 {row.operatingRoom?.name || 'S/A'}
                                                             </span>
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
-                                                        <div className="flex flex-col items-center justify-center gap-1.5">
+                                                    <td className={`py-3 whitespace-nowrap align-middle text-center ${forceTvMode ? 'px-1 w-[1%]' : 'px-3'}`}>
+                                                        <div className={`flex items-center justify-center ${forceTvMode ? 'flex-row gap-2' : 'flex-col gap-1.5'}`}>
                                                             <div className="text-[13px] font-bold text-amber-700 dark:text-amber-400">
                                                                 {row.surgery.isTimeDefined ? formatTimeOnly(row.surgery.scheduledDate) : '00:00'}
                                                             </div>
-                                                            <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-                                                                {row.surgery.estimatedDuration || '-'}
-                                                            </div>
+                                                            {!forceTvMode && (
+                                                                <div className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+                                                                    {row.surgery.estimatedDuration || '-'}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle max-w-[200px]">
-                                                        <div className="text-xs whitespace-normal break-words leading-tight">
+                                                    <td className={`py-3 align-middle ${forceTvMode ? 'px-1 max-w-[200px]' : 'px-3 max-w-[200px]'}`}>
+                                                        <div className={`text-xs leading-tight ${forceTvMode ? 'truncate block w-full' : 'flex flex-col whitespace-normal break-words'}`}>
                                                             {row.patientPii?.dni === '00000000' || row.patientPii?.nombres === 'POR DEFINIR' ? (
                                                                 <span className="font-bold text-zinc-500 italic uppercase tracking-wider">POR DEFINIR</span>
                                                             ) : (
-                                                                <>
+                                                                <span className={`${forceTvMode ? '' : 'flex flex-wrap'}`}>
                                                                     <span className="font-bold text-zinc-900 dark:text-white mr-1" title={row.patientPii?.nombres ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}>
                                                                         {row.patientPii?.nombres && row.patientPii.nombres !== 'Desconocido' ? `${row.patientPii.nombres} ${row.patientPii.apellidos}` : 'Desconocido'}
                                                                     </span>
@@ -994,18 +998,18 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                                         {formatDemographicsOnly(row.patientPii, row.patient, row.surgery?.bedNumber)}
                                                                     </span>
                                                                     {row.surgery.insuranceType && (
-                                                                        <span className="text-[8px] px-1 py-[1px] rounded border font-bold uppercase bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 inline-block align-text-bottom leading-none">
+                                                                        <span className="text-[8px] px-1 py-[1px] rounded border font-bold uppercase bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 inline-block align-middle leading-none mr-1">
                                                                             {row.surgery.insuranceType}
                                                                         </span>
                                                                     )}
-                                                                </>
+                                                                </span>
                                                             )}
                                                             {row.surgery.surgeryType && (
-                                                                <div className="mt-1.5 block">
+                                                                <span className={`${forceTvMode ? 'ml-1' : 'mt-1.5 block'}`}>
                                                                     <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
                                                                         {row.surgery.surgeryType}
                                                                     </span>
-                                                                </div>
+                                                                </span>
                                                             )}
                                                         </div>
                                                     </td>
@@ -1024,30 +1028,35 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             )} */}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle min-w-[330px] max-w-[430px]">
-                                                        <div className="flex flex-col gap-1.5 w-full">
-                                                            {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
-                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
-                                                                    <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} - {diagnoses.find(dx => dx.id === row.diagnoses[0])?.name || ''} {row.diagnoses.length > 1 ? `(+${row.diagnoses.length - 1})` : ''}
-                                                                </div>
-                                                            ) : row.surgery.diagnosis ? (
-                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal" title={row.surgery.diagnosis}>
-                                                                    <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
-                                                                </div>
-                                                            ) : null}
-                                                            {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
-                                                                <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium line-clamp-3 leading-tight break-words whitespace-normal" title={interventions.find(int => int.id === row.interventions[0])?.name}>
-                                                                    <span className="opacity-80 font-bold">In:</span> {interventions.find(int => int.id === row.interventions[0])?.name || row.interventions[0]} {row.interventions.length > 1 ? `(+${row.interventions.length - 1})` : ''}
-                                                                </div>
-                                                            )}
+                                                    <td className={`py-3 align-middle ${forceTvMode ? 'px-1 max-w-[800px]' : 'px-3 min-w-[330px] max-w-[430px]'}`}>
+                                                        <div className={`flex w-full ${forceTvMode ? 'flex-row gap-x-3 items-center' : 'flex-col gap-1.5'}`}>
                                                             {row.surgery.notes && (
-                                                                <div className="text-[10px] text-black dark:text-white line-clamp-2 leading-tight font-medium" title={row.surgery.notes}>
+                                                                <div className={`text-[10px] text-black dark:text-white leading-tight font-medium ${forceTvMode ? 'whitespace-nowrap shrink-0' : 'line-clamp-2'}`} title={row.surgery.notes}>
                                                                     {row.surgery.notes}
                                                                 </div>
                                                             )}
+                                                            {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
+                                                                <div className={`text-[11px] text-emerald-700 dark:text-emerald-400 font-medium leading-tight ${forceTvMode ? 'whitespace-nowrap shrink-0' : 'line-clamp-3 break-words whitespace-normal'}`} title={interventions.find(int => int.id === row.interventions[0])?.name}>
+                                                                    <span className="opacity-80 font-bold">In:</span> {interventions.find(int => int.id === row.interventions[0])?.name || row.interventions[0]} {row.interventions.length > 1 ? `(+${row.interventions.length - 1})` : ''}
+                                                                </div>
+                                                            )}
+                                                            {row.procedures && row.procedures.length > 0 && typeof procedures !== 'undefined' && (
+                                                                <div className={`text-[11px] text-purple-700 dark:text-purple-400 font-medium leading-tight ${forceTvMode ? 'truncate min-w-0' : 'line-clamp-3 break-words whitespace-normal'}`} title={procedures.find(pr => pr.id === row.procedures[0])?.name}>
+                                                                    <span className="opacity-80 font-bold">Pr:</span> {procedures.find(pr => pr.id === row.procedures[0])?.name || row.procedures[0]} {row.procedures.length > 1 ? `(+${row.procedures.length - 1})` : ''}
+                                                                </div>
+                                                            )}
+                                                            {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
+                                                                <div className={`text-[11px] text-blue-700 dark:text-blue-400 font-semibold leading-tight ${forceTvMode ? 'truncate min-w-0' : 'line-clamp-3 break-words whitespace-normal'}`} title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
+                                                                    <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} - {diagnoses.find(dx => dx.id === row.diagnoses[0])?.name || ''} {row.diagnoses.length > 1 ? `(+${row.diagnoses.length - 1})` : ''}
+                                                                </div>
+                                                            ) : row.surgery.diagnosis ? (
+                                                                <div className={`text-[11px] text-blue-700 dark:text-blue-400 font-semibold leading-tight ${forceTvMode ? 'truncate min-w-0' : 'line-clamp-3 break-words whitespace-normal'}`} title={row.surgery.diagnosis}>
+                                                                    <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
+                                                                </div>
+                                                            ) : null}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-3 align-middle max-w-[250px]">
+                                                    <td className={`py-3 align-middle ${forceTvMode ? 'px-1 min-w-[100px]' : 'px-3 max-w-[250px]'}`}>
                                                         {row.team && row.team.length > 0 ? (() => {
                                                             const surgeons = row.team.filter((t: any) => t.role === 'CIRUJANO');
                                                             const anesthesiologists = row.team.filter((t: any) => t.role === 'ANESTESIOLOGO');
@@ -1072,9 +1081,9 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             const renderTeamGroup = (members: any[], prefix: string, colorClass: string) => {
                                                                 if (!members || members.length === 0) return null;
                                                                 return (
-                                                                    <div className="flex items-start gap-x-1">
+                                                                    <div className={`flex items-start gap-x-1 ${forceTvMode ? 'shrink-0' : ''}`}>
                                                                         <span className={`font-bold ${colorClass} shrink-0`}>{prefix}:</span>
-                                                                        <div className="flex flex-wrap gap-x-1.5">
+                                                                        <div className={`flex gap-x-1.5 ${forceTvMode ? 'flex-nowrap' : 'flex-wrap'}`}>
                                                                             {members.map((t: any, idx: number) => (
                                                                                 <span key={`${row.surgery.id}-${t.staff.id}`} className="text-zinc-900 dark:text-zinc-100 font-bold" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
                                                                                     {t.staff.name?.split(' ')[0]} {t.staff.lastname?.split(' ')[0]}{idx < members.length - 1 ? ',' : ''}
@@ -1086,7 +1095,7 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                             };
 
                                                             return (
-                                                                <div className="text-[11px] leading-tight flex flex-col gap-0.5">
+                                                                <div className={`text-[11px] leading-tight flex ${forceTvMode ? 'flex-row gap-x-3' : 'flex-col gap-0.5'}`}>
                                                                     {renderTeamGroup(surgeons, 'Cx', 'text-blue-700 dark:text-blue-400')}
                                                                     {renderTeamGroup(anesthesiologists, 'An', 'text-emerald-700 dark:text-emerald-400')}
                                                                     {renderTeamGroup(instrumentistas, 'In', 'text-sky-700 dark:text-sky-400')}
@@ -1097,37 +1106,40 @@ export function SurgeryViewToggle({ surgeriesData, salas, sortParams, specialtie
                                                         })() : <span className="text-xs text-zinc-400">-</span>}
                                                     </td>
 
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle">
-                                                        {canChangeStatus ? (
-                                                            <button 
-                                                                onClick={() => handleQuickStatusCycle(row.surgery.id, row.surgery.status)}
-                                                                disabled={isPending}
-                                                                className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold border flex flex-nowrap items-center justify-center gap-1.5 shadow-sm transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 ${pillClasses} ${isPending ? 'opacity-50 scale-95' : ''}`}
-                                                                title="Clic para cambiar estado visual"
-                                                            >
-                                                                {pillContent}
-                                                            </button>
-                                                        ) : (
-                                                            <div 
-                                                                className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold border flex flex-nowrap items-center justify-center gap-1.5 shadow-sm cursor-default opacity-90 ${pillClasses}`}
-                                                                title="No tienes permisos para cambiar el estado rápidamente"
-                                                            >
-                                                                {pillContent}
+                                                    {!forceTvMode && (
+                                                        <td className="px-3 py-3 whitespace-nowrap align-middle">
+                                                            {canChangeStatus ? (
+                                                                <button 
+                                                                    onClick={() => handleQuickStatusCycle(row.surgery.id, row.surgery.status)}
+                                                                    disabled={isPending}
+                                                                    className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold border flex flex-nowrap items-center justify-center gap-1.5 shadow-sm transition-all duration-300 cursor-pointer hover:scale-105 active:scale-95 ${pillClasses} ${isPending ? 'opacity-50 scale-95' : ''}`}
+                                                                    title="Clic para cambiar estado visual"
+                                                                >
+                                                                    {pillContent}
+                                                                </button>
+                                                            ) : (
+                                                                <div 
+                                                                    className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold border flex flex-nowrap items-center justify-center gap-1.5 shadow-sm cursor-default opacity-90 ${pillClasses}`}
+                                                                    title="No tienes permisos para cambiar el estado rápidamente"
+                                                                >
+                                                                    {pillContent}
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    )}
+                                                    {!forceTvMode && (
+                                                        <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
+                                                            <div className="flex flex-col items-center justify-center gap-1.5">
+                                                                <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
+                                                                    {formatDateOnly(row.surgery.requestDate)}
+                                                                </div>
+                                                                <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
+                                                                    {formatDateOnly(row.surgery.scheduledDate)}
+                                                                </div>
                                                             </div>
-                                                        )}
-
-                                                    </td>
-                                                    <td className="px-3 py-3 whitespace-nowrap align-middle text-center">
-                                                        <div className="flex flex-col items-center justify-center gap-1.5">
-                                                            <div className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium tracking-tight">
-                                                                {formatDateOnly(row.surgery.requestDate)}
-                                                            </div>
-                                                            <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold tracking-tight">
-                                                                {formatDateOnly(row.surgery.scheduledDate)}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    {!isListFullscreen && (
+                                                        </td>
+                                                    )}
+                                                    {!isListFullscreen && !forceTvMode && (
                                                         <td className="px-3 py-3 whitespace-nowrap text-right align-middle sticky right-0 z-10 bg-white dark:bg-zinc-900 group-hover:bg-zinc-50/50 dark:group-hover:bg-zinc-800/50 transition-colors shadow-[-5px_0_10px_-5px_rgba(0,0,0,0.1)] before:content-[''] before:absolute before:inset-y-0 before:-left-[1px] before:w-[1px] before:bg-zinc-100 dark:before:bg-zinc-800/50">
                                                             <div className="flex justify-end gap-2 items-center opacity-70 group-hover:opacity-100 transition-opacity duration-300">
                                                                 {/* Flujo de Estados con Modal de Tiempo */}
