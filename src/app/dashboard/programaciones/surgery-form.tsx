@@ -530,6 +530,12 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             setAnesSearchTerm("");
             setSelectedInstIds(new Set());
             setSelectedCircIds(new Set());
+            setInstSearchTerm("");
+            setCircSearchTerm("");
+            setAnesTypeSearchTerm("");
+            setSelectedAnesTypes(new Set());
+            setClonedData(null);
+            setErrors({});
             setOpenSection('patient');
             
             if (!keepOpen || editMode) {
