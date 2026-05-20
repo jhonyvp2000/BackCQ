@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { LayoutGrid, List as ListIcon, Calendar, ArrowUp, ArrowDown, User, Clock, Hourglass, CheckCircle2, XCircle, FileText, Activity, AlertCircle, Pencil, CopyPlus, AlertTriangle, X, Filter, Search, Maximize2, Minimize2 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -914,7 +914,7 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                         <SortIcon columnKey="hora" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 max-w-[200px] truncate' : 'px-3 min-w-[130px] max-w-[180px]'}`}>
+                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 max-w-[350px] truncate' : 'px-3 min-w-[130px] max-w-[200px]'}`}>
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('paciente')}>
                                                         Paciente
                                                         <SortIcon columnKey="paciente" />
@@ -926,7 +926,7 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                         <SortIcon columnKey="tipo" />
                                                     </div>
                                                 </th>
-                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 max-w-[800px] truncate' : 'px-3 min-w-[330px] max-w-[430px]'}`}>Diagnóstico / Intervención</th>
+                                                <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 max-w-[650px] truncate' : 'px-3 min-w-[330px] max-w-[430px]'}`}>Diagnóstico / Intervención</th>
                                                 <th scope="col" className={`py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 min-w-[100px] whitespace-nowrap' : 'px-3 min-w-[160px]'}`}>Equipo</th>
                                                 {!forceTvMode && <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[85px]">Estado</th>}
                                                 {!forceTvMode && <th scope="col" className="px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest min-w-[80px] text-center">F. Sol-Pro</th>}
@@ -967,25 +967,35 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                     pillClasses = "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-400 dark:border-red-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800";
                                                     pillContent = <><XCircle size={12} className="text-red-500" /> Suspendido</>;
                                                 }
-
                                                 return (
                                                 <tr key={row.surgery.id} className={`transition-all duration-300 group text-sm border-b border-zinc-300 dark:border-zinc-700 last:border-0 hover:brightness-95 dark:hover:brightness-125 divide-x divide-zinc-300 dark:divide-zinc-700 ${getRowBgColor(effectiveStatus)}`}>
                                                     <td className={`px-1 whitespace-nowrap text-zinc-500 font-medium align-middle text-center w-[1%] ${forceTvMode ? 'py-1' : 'py-3'}`}>
                                                         {index + 1}
                                                     </td>
                                                     <td className={`px-3 align-middle ${forceTvMode ? 'py-1 px-1 max-w-[150px]' : 'py-3 max-w-[120px]'}`}>
-                                                        <div className={`flex ${forceTvMode ? 'flex-row items-center gap-x-2 min-w-0' : 'flex-col'}`}>
-                                                            <div className={`text-xs text-zinc-900 dark:text-zinc-100 font-bold leading-tight ${forceTvMode ? 'truncate' : 'line-clamp-3 break-words whitespace-normal'}`} title={row.specialty?.name || ''}>
-                                                                {row.specialty?.name || '-'}
-                                                            </div>
-                                                            {row.surgery.isFromCopri && (
-                                                                <div className={`${forceTvMode ? 'shrink-0' : 'mt-1.5 block'}`}>
-                                                                    <span className="text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center bg-blue-50 text-blue-600 border-blue-200">
+                                                        {forceTvMode ? (
+                                                            <div className="line-clamp-2 whitespace-normal break-words text-xs text-zinc-900 dark:text-zinc-100 font-bold leading-tight w-full" title={row.specialty?.name || ''}>
+                                                                <span className="mr-1">{row.specialty?.name || '-'}</span>
+                                                                {row.surgery.isFromCopri && (
+                                                                    <span className="text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center bg-blue-50 text-blue-600 border-blue-200 align-middle leading-none">
                                                                         Viene COPRI
                                                                     </span>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex flex-col">
+                                                                <div className="text-xs text-zinc-900 dark:text-zinc-100 font-bold leading-tight line-clamp-3 break-words whitespace-normal" title={row.specialty?.name || ''}>
+                                                                    {row.specialty?.name || '-'}
                                                                 </div>
-                                                            )}
-                                                        </div>
+                                                                {row.surgery.isFromCopri && (
+                                                                    <div className="mt-1.5 block">
+                                                                        <span className="text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center bg-blue-50 text-blue-600 border-blue-200">
+                                                                            Viene COPRI
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className={`whitespace-nowrap align-middle text-center ${forceTvMode ? 'py-1 px-1 w-[1%]' : 'py-3 px-3'}`}>
                                                         <div className={`flex justify-center text-[13px] font-bold text-left ${forceTvMode ? 'items-center' : 'items-start'}`}>
@@ -1007,8 +1017,8 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                             )}
                                                         </div>
                                                     </td>
-                                                    <td className={`align-middle ${forceTvMode ? 'py-1 px-1 max-w-[200px]' : 'py-3 px-3 max-w-[200px]'}`}>
-                                                        <div className={`text-xs leading-tight ${forceTvMode ? 'truncate block w-full' : 'flex flex-col whitespace-normal break-words'}`}>
+                                                    <td className={`align-middle ${forceTvMode ? 'py-1 px-1 max-w-[350px]' : 'py-3 px-3 max-w-[200px]'}`}>
+                                                        <div className={`text-xs leading-tight ${forceTvMode ? 'line-clamp-2 whitespace-normal break-words w-full' : 'flex flex-col whitespace-normal break-words'}`}>
                                                             {row.patientPii?.dni === '00000000' || row.patientPii?.nombres === 'POR DEFINIR' ? (
                                                                 <span className="font-bold text-zinc-500 italic uppercase tracking-wider">POR DEFINIR</span>
                                                             ) : (
@@ -1045,73 +1055,153 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                                     {row.surgery.surgeryType}
                                                                 </div>
                                                             )}
-                                                            {/* row.surgery.urgencyType oculta a petición del usuario
-                                                            {row.surgery.urgencyType && (
-                                                                <div className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.urgencyType === 'EMERGENCIA' ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
-                                                                    {row.surgery.urgencyType}
-                                                                </div>
-                                                            )} */}
                                                         </div>
                                                     </td>
-                                                    <td className={`align-middle ${forceTvMode ? 'py-1 px-1 max-w-[800px]' : 'py-3 px-3 min-w-[330px] max-w-[430px]'}`}>
-                                                        <div className={`flex w-full ${forceTvMode ? 'flex-col gap-0.5' : 'flex-col gap-1.5'}`}>
-                                                            {/* 1. Diagnósticos */}
-                                                            {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
-                                                                <div className={`text-[11px] text-blue-700 dark:text-blue-400 font-semibold leading-tight ${forceTvMode ? 'truncate min-w-0' : 'line-clamp-3 break-words whitespace-normal'}`} title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
-                                                                    <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} - {diagnoses.find(dx => dx.id === row.diagnoses[0])?.name || ''} {row.diagnoses.length > 1 ? `(+${row.diagnoses.length - 1})` : ''}
-                                                                </div>
-                                                            ) : row.surgery.diagnosis ? (
-                                                                <div className={`text-[11px] text-blue-700 dark:text-blue-400 font-semibold leading-tight ${forceTvMode ? 'truncate min-w-0' : 'line-clamp-3 break-words whitespace-normal'}`} title={row.surgery.diagnosis}>
-                                                                    <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
-                                                                </div>
-                                                            ) : null}
+                                                    <td className={`align-middle ${forceTvMode ? 'py-1 px-1 max-w-[650px]' : 'py-3 px-3 min-w-[330px] max-w-[430px]'}`}>
+                                                        {forceTvMode ? (
+                                                            (() => {
+                                                                const items: React.ReactNode[] = [];
 
-                                                            {/* 2. Procedimientos */}
-                                                            {row.procedures && row.procedures.length > 0 && typeof procedures !== 'undefined' && (
-                                                                <div className={`text-[11px] text-purple-700 dark:text-purple-400 font-medium leading-tight ${forceTvMode ? 'truncate min-w-0' : 'line-clamp-3 break-words whitespace-normal'}`} title={procedures.find(pr => pr.id === row.procedures[0])?.name}>
-                                                                    <span className="opacity-80 font-bold">Pr:</span> {procedures.find(pr => pr.id === row.procedures[0])?.name || row.procedures[0]} {row.procedures.length > 1 ? `(+${row.procedures.length - 1})` : ''}
-                                                                </div>
-                                                            )}
+                                                                // 1. Notas internas
+                                                                if (row.surgery.notes) {
+                                                                    items.push(
+                                                                        <span key="notes" className="text-zinc-750 dark:text-zinc-300 font-medium" title={row.surgery.notes}>
+                                                                            <span className="opacity-85 font-bold text-zinc-900 dark:text-zinc-100">Nota:</span> {row.surgery.notes}
+                                                                        </span>
+                                                                    );
+                                                                }
 
-                                                            {/* 3. Tipo de intervención */}
-                                                            {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
-                                                                <div className={`text-[11px] text-emerald-700 dark:text-emerald-400 font-medium leading-tight ${forceTvMode ? 'whitespace-nowrap shrink-0' : 'line-clamp-3 break-words whitespace-normal'}`} title={interventions.find(int => int.id === row.interventions[0])?.name}>
-                                                                    <span className="opacity-80 font-bold">In:</span> {interventions.find(int => int.id === row.interventions[0])?.name || row.interventions[0]} {row.interventions.length > 1 ? `(+${row.interventions.length - 1})` : ''}
-                                                                </div>
-                                                            )}
+                                                                // 2. Tipo de intervención
+                                                                if (row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined') {
+                                                                    items.push(
+                                                                        <span key="interventions" className="text-emerald-700 dark:text-emerald-400 font-medium" title={interventions.find(int => int.id === row.interventions[0])?.name}>
+                                                                            <span className="opacity-80 font-bold">In:</span> {interventions.find(int => int.id === row.interventions[0])?.name || row.interventions[0]} {row.interventions.length > 1 ? ` (+${row.interventions.length - 1})` : ''}
+                                                                        </span>
+                                                                    );
+                                                                }
 
-                                                            {/* 4. Notas internas */}
-                                                            {row.surgery.notes && (
-                                                                <div className={`text-[10px] text-black dark:text-white leading-tight font-medium ${forceTvMode ? 'whitespace-nowrap shrink-0' : 'line-clamp-2'}`} title={row.surgery.notes}>
-                                                                    {row.surgery.notes}
-                                                                </div>
-                                                            )}
+                                                                // 3. Diagnósticos
+                                                                if (row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined') {
+                                                                    items.push(
+                                                                        <span key="diagnosis" className="text-blue-700 dark:text-blue-400 font-semibold" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
+                                                                            <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} - {diagnoses.find(dx => dx.id === row.diagnoses[0])?.name || ''} {row.diagnoses.length > 1 ? ` (+${row.diagnoses.length - 1})` : ''}
+                                                                        </span>
+                                                                    );
+                                                                } else if (row.surgery.diagnosis) {
+                                                                    items.push(
+                                                                        <span key="diagnosis" className="text-blue-700 dark:text-blue-400 font-semibold" title={row.surgery.diagnosis}>
+                                                                            <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
+                                                                        </span>
+                                                                    );
+                                                                }
 
-                                                            {/* 5. Tipo de anestesia */}
-                                                            {row.surgery.anesthesiaType && (
-                                                                <div className="flex flex-wrap gap-1 mt-1">
-                                                                    {row.surgery.anesthesiaType.split(',').filter(Boolean).map((typeCode: string) => {
-                                                                        const trimmed = typeCode.trim();
-                                                                        const anesthesiaMap: Record<string, string> = {
-                                                                            'RAQ': 'Raquídea',
-                                                                            'EPI': 'Epidural',
-                                                                            'AGB': 'Gen. Balanceada',
-                                                                            'AGE': 'Gen. Endovenosa',
-                                                                            'AGI': 'Gen. Inhalatoria',
-                                                                            'BLOQ': 'Bloqueo Reg.',
-                                                                            'LOCL': 'Local',
-                                                                            'SEDA': 'Sedación'
-                                                                        };
-                                                                        const label = anesthesiaMap[trimmed] || trimmed;
-                                                                        return (
-                                                                            <span key={trimmed} className="text-[9px] px-1.5 py-0.5 rounded-full border font-bold uppercase bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border-sky-200/60 dark:border-sky-800/60 shadow-sm inline-flex items-center leading-none">
-                                                                                Anestesia: {label}
-                                                                            </span>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            )}
-                                                        </div>
+                                                                // 4. Procedimientos
+                                                                if (row.procedures && row.procedures.length > 0 && typeof procedures !== 'undefined') {
+                                                                    items.push(
+                                                                        <span key="procedures" className="text-purple-700 dark:text-purple-400 font-medium" title={procedures.find(pr => pr.id === row.procedures[0])?.name}>
+                                                                            <span className="opacity-80 font-bold">Pr:</span> {procedures.find(pr => pr.id === row.procedures[0])?.name || row.procedures[0]} {row.procedures.length > 1 ? ` (+${row.procedures.length - 1})` : ''}
+                                                                        </span>
+                                                                    );
+                                                                }
+
+                                                                // 5. Tipo de anestesia
+                                                                if (row.surgery.anesthesiaType) {
+                                                                    items.push(
+                                                                        <span key="anesthesia" className="inline-flex gap-1 align-middle">
+                                                                            {row.surgery.anesthesiaType.split(',').filter(Boolean).map((typeCode: string) => {
+                                                                                const trimmed = typeCode.trim();
+                                                                                const anesthesiaMap: Record<string, string> = {
+                                                                                    'RAQ': 'Raquídea',
+                                                                                    'EPI': 'Epidural',
+                                                                                    'AGB': 'Gen. Balanceada',
+                                                                                    'AGE': 'Gen. Endovenosa',
+                                                                                    'AGI': 'Gen. Inhalatoria',
+                                                                                    'BLOQ': 'Bloqueo Reg.',
+                                                                                    'LOCL': 'Local',
+                                                                                    'SEDA': 'Sedación'
+                                                                                };
+                                                                                const label = anesthesiaMap[trimmed] || trimmed;
+                                                                                return (
+                                                                                    <span key={trimmed} className="text-[9px] px-1 py-[0.5px] rounded border font-bold uppercase bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border-sky-200/60 dark:border-sky-800/60 inline-flex items-center leading-none align-middle">
+                                                                                        {label}
+                                                                                    </span>
+                                                                                );
+                                                                            })}
+                                                                        </span>
+                                                                    );
+                                                                }
+
+                                                                return (
+                                                                    <div className="line-clamp-2 text-[11px] leading-tight break-words text-zinc-700 dark:text-zinc-300 w-full whitespace-normal">
+                                                                        {items.map((item, idx) => (
+                                                                            <Fragment key={idx}>
+                                                                                {idx > 0 && <span className="text-zinc-300 dark:text-zinc-700 font-normal mx-1 align-middle">•</span>}
+                                                                                {item}
+                                                                            </Fragment>
+                                                                        ))}
+                                                                    </div>
+                                                                );
+                                                            })()
+                                                        ) : (
+                                                            <div className="flex w-full flex-col gap-1.5">
+                                                                {/* 1. Diagnósticos */}
+                                                                {row.diagnoses && row.diagnoses.length > 0 && typeof diagnoses !== 'undefined' ? (
+                                                                    <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold leading-tight line-clamp-3 break-words whitespace-normal" title={diagnoses.find(dx => dx.id === row.diagnoses[0])?.name}>
+                                                                        <span className="opacity-80">Dx:</span> {diagnoses.find(dx => dx.id === row.diagnoses[0])?.code || row.diagnoses[0]} - {diagnoses.find(dx => dx.id === row.diagnoses[0])?.name || ''} {row.diagnoses.length > 1 ? `(+${row.diagnoses.length - 1})` : ''}
+                                                                    </div>
+                                                                ) : row.surgery.diagnosis ? (
+                                                                    <div className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold leading-tight line-clamp-3 break-words whitespace-normal" title={row.surgery.diagnosis}>
+                                                                        <span className="opacity-80">Dx:</span> {row.surgery.diagnosis}
+                                                                    </div>
+                                                                ) : null}
+
+                                                                {/* 2. Procedimientos */}
+                                                                {row.procedures && row.procedures.length > 0 && typeof procedures !== 'undefined' && (
+                                                                    <div className="text-[11px] text-purple-700 dark:text-purple-400 font-medium leading-tight line-clamp-3 break-words whitespace-normal" title={procedures.find(pr => pr.id === row.procedures[0])?.name}>
+                                                                        <span className="opacity-80 font-bold">Pr:</span> {procedures.find(pr => pr.id === row.procedures[0])?.name || row.procedures[0]} {row.procedures.length > 1 ? `(+${row.procedures.length - 1})` : ''}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* 3. Tipo de intervención */}
+                                                                {row.interventions && row.interventions.length > 0 && typeof interventions !== 'undefined' && (
+                                                                    <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium leading-tight line-clamp-3 break-words whitespace-normal" title={interventions.find(int => int.id === row.interventions[0])?.name}>
+                                                                        <span className="opacity-80 font-bold">In:</span> {interventions.find(int => int.id === row.interventions[0])?.name || row.interventions[0]} {row.interventions.length > 1 ? `(+${row.interventions.length - 1})` : ''}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* 4. Notas internas */}
+                                                                {row.surgery.notes && (
+                                                                    <div className="text-[10px] text-black dark:text-white leading-tight font-medium line-clamp-2" title={row.surgery.notes}>
+                                                                        {row.surgery.notes}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* 5. Tipo de anestesia */}
+                                                                {row.surgery.anesthesiaType && (
+                                                                    <div className="flex flex-wrap gap-1 mt-1">
+                                                                        {row.surgery.anesthesiaType.split(',').filter(Boolean).map((typeCode: string) => {
+                                                                            const trimmed = typeCode.trim();
+                                                                            const anesthesiaMap: Record<string, string> = {
+                                                                                'RAQ': 'Raquídea',
+                                                                                'EPI': 'Epidural',
+                                                                                'AGB': 'Gen. Balanceada',
+                                                                                'AGE': 'Gen. Endovenosa',
+                                                                                'AGI': 'Gen. Inhalatoria',
+                                                                                'BLOQ': 'Bloqueo Reg.',
+                                                                                'LOCL': 'Local',
+                                                                                'SEDA': 'Sedación'
+                                                                            };
+                                                                            const label = anesthesiaMap[trimmed] || trimmed;
+                                                                            return (
+                                                                                <span key={trimmed} className="text-[9px] px-1.5 py-0.5 rounded-full border font-bold uppercase bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border-sky-200/60 dark:border-sky-800/60 shadow-sm inline-flex items-center leading-none">
+                                                                                    Anestesia: {label}
+                                                                                </span>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                     <td className={`align-middle ${forceTvMode ? 'py-1 px-1 min-w-[100px]' : 'py-3 px-3 max-w-[250px]'}`}>
                                                         {row.team && row.team.length > 0 ? (() => {
@@ -1137,10 +1227,22 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
 
                                                             const renderTeamGroup = (members: any[], prefix: string, colorClass: string) => {
                                                                 if (!members || members.length === 0) return null;
+                                                                if (forceTvMode) {
+                                                                    return (
+                                                                        <span className="font-medium">
+                                                                            <span className={`font-bold ${colorClass}`}>{prefix}:</span>{' '}
+                                                                            {members.map((t: any, idx: number) => (
+                                                                                <span key={`${row.surgery.id}-${t.staff.id}`} className="text-zinc-900 dark:text-zinc-100 font-bold" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
+                                                                                    {t.staff.name?.split(' ')[0]} {t.staff.lastname?.split(' ')[0]}{idx < members.length - 1 ? ', ' : ''}
+                                                                                </span>
+                                                                            ))}
+                                                                        </span>
+                                                                    );
+                                                                }
                                                                 return (
-                                                                    <div className={`flex items-start gap-x-1 ${forceTvMode ? 'shrink-0' : ''}`}>
+                                                                    <div className="flex items-start gap-x-1">
                                                                         <span className={`font-bold ${colorClass} shrink-0`}>{prefix}:</span>
-                                                                        <div className={`flex gap-x-1.5 ${forceTvMode ? 'flex-nowrap' : 'flex-wrap'}`}>
+                                                                        <div className="flex gap-x-1.5 flex-wrap">
                                                                             {members.map((t: any, idx: number) => (
                                                                                 <span key={`${row.surgery.id}-${t.staff.id}`} className="text-zinc-900 dark:text-zinc-100 font-bold" title={`${t.role}: ${t.staff.name} ${t.staff.lastname}`}>
                                                                                     {t.staff.name?.split(' ')[0]} {t.staff.lastname?.split(' ')[0]}{idx < members.length - 1 ? ',' : ''}
@@ -1151,8 +1253,29 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                                 );
                                                             };
 
+                                                            if (forceTvMode) {
+                                                                const groups = [
+                                                                    { members: surgeons, prefix: 'Cx', color: 'text-blue-700 dark:text-blue-400' },
+                                                                    { members: anesthesiologists, prefix: 'An', color: 'text-emerald-700 dark:text-emerald-400' },
+                                                                    { members: instrumentistas, prefix: 'In', color: 'text-sky-700 dark:text-sky-400' },
+                                                                    { members: circulantes, prefix: 'Ci', color: 'text-sky-700 dark:text-sky-400' },
+                                                                    { members: others, prefix: 'CI', color: 'text-zinc-500 dark:text-zinc-400' }
+                                                                ].filter(g => g.members && g.members.length > 0);
+
+                                                                return (
+                                                                    <div className="line-clamp-2 text-[11px] leading-tight break-words text-zinc-700 dark:text-zinc-300 w-full whitespace-normal">
+                                                                        {groups.map((group, idx) => (
+                                                                            <Fragment key={idx}>
+                                                                                {idx > 0 && <span className="text-zinc-300 dark:text-zinc-700 font-normal mx-1 align-middle">•</span>}
+                                                                                {renderTeamGroup(group.members, group.prefix, group.color)}
+                                                                            </Fragment>
+                                                                        ))}
+                                                                    </div>
+                                                                );
+                                                            }
+
                                                             return (
-                                                                <div className={`text-[11px] leading-tight flex ${forceTvMode ? 'flex-row gap-x-3' : 'flex-col gap-0.5'}`}>
+                                                                <div className="text-[11px] leading-tight flex flex-col gap-0.5">
                                                                     {renderTeamGroup(surgeons, 'Cx', 'text-blue-700 dark:text-blue-400')}
                                                                     {renderTeamGroup(anesthesiologists, 'An', 'text-emerald-700 dark:text-emerald-400')}
                                                                     {renderTeamGroup(instrumentistas, 'In', 'text-sky-700 dark:text-sky-400')}
