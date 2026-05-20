@@ -892,9 +892,9 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                 </div>
                             ) : (
                                 <div className="overflow-auto flex-grow bg-white dark:bg-zinc-900 custom-scrollbar">
-                                    <table className="w-full text-left border-collapse border border-zinc-300 dark:border-zinc-700">
+                                    <table className="w-full text-left border-collapse border-y border-zinc-300 dark:border-zinc-700">
                                         <thead className="sticky top-0 z-20">
-                                            <tr className="border-b border-zinc-300 dark:border-zinc-700 bg-zinc-50/95 dark:bg-zinc-800/95 backdrop-blur-md divide-x divide-zinc-300 dark:divide-zinc-700">
+                                            <tr className="border-b border-zinc-300 dark:border-zinc-700 bg-zinc-50/95 dark:bg-zinc-800/95 backdrop-blur-md">
                                                 <th scope="col" className="px-1 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest w-[1%] whitespace-nowrap text-center">N°</th>
                                                 <th scope="col" className={`px-3 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest ${forceTvMode ? 'px-1 max-w-[150px] truncate' : 'min-w-[70px] max-w-[100px]'}`}>
                                                     <div className="flex items-center cursor-pointer group select-none" onClick={() => handleSort('especialidad')}>
@@ -935,7 +935,7 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                 )}
                                             </tr>
                                         </thead>
-                                        <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-300 dark:divide-zinc-700">
+                                        <tbody className="bg-white dark:bg-zinc-900 border-b border-zinc-300 dark:border-zinc-700">
                                             {sortedSurgeries.map((row, index) => {
                                                 const effectiveStatus = optimisticStatuses[row.surgery.id] || row.surgery.status;
                                                 const isPending = pendingStatuses[row.surgery.id] || false;
@@ -968,7 +968,7 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                     pillContent = <><XCircle size={12} className="text-red-500" /> Suspendido</>;
                                                 }
                                                 return (
-                                                <tr key={row.surgery.id} className={`transition-all duration-300 group text-sm border-b border-zinc-300 dark:border-zinc-700 last:border-0 hover:brightness-95 dark:hover:brightness-125 divide-x divide-zinc-300 dark:divide-zinc-700 ${getRowBgColor(effectiveStatus)}`}>
+                                                <tr key={row.surgery.id} className={`transition-all duration-300 group text-sm border-b border-zinc-300 dark:border-zinc-700 last:border-0 hover:brightness-95 dark:hover:brightness-125 ${getRowBgColor(effectiveStatus)}`}>
                                                     <td className={`px-1 whitespace-nowrap text-zinc-500 font-medium align-middle text-center w-[1%] ${forceTvMode ? 'py-1' : 'py-3'}`}>
                                                         {index + 1}
                                                     </td>
