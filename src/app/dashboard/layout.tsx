@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ReactNode } from "react";
 
 import { MegaMenu } from "./mega-menu";
+import { MobileMenu } from "./mobile-menu";
 import { getOrphans } from "@/app/actions/pacientes";
 import { LogoutButton } from "@/components/layout/logout-button";
 
@@ -27,6 +28,8 @@ export default async function DashboardLayout({ children }: { children: ReactNod
                 
                 {/* Branding Left */}
                 <div className="flex items-center gap-6 h-full">
+                    <MobileMenu permissions={user.permissions || []} user={{ name: user.name, lastname: user.lastname, dni: user.dni }} />
+                    
                     <Link href="/dashboard" className="flex items-center gap-2.5 mr-4 hover:opacity-90 transition-opacity">
                         <div className="w-9 h-9 bg-[var(--color-hospital-blue)] text-white rounded-lg flex items-center justify-center shadow-md">
                             <Stethoscope size={18} />
