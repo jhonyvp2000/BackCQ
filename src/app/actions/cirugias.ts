@@ -1001,10 +1001,35 @@ export async function updateSurgeryPhaseTimes(data: {
     surgeryEndTime?: string | null;
     patientExitTime?: string | null;
     urpaExitTime?: string | null;
+    completedTime?: string | null;
 }) {
-    if (!data.surgeryId) return { error: "ID de cirugÃƒÂ­a es requerido" };
+    if (!data.surgeryId) return { error: "ID de cirugía es requerido" };
     
     try {
+        const surgeryRow = await db.select({ status: cqSurgeries.status }).from(cqSurgeries).where(eq(cqSurgeries.id, data.surgeryId)).limit(1);
+        if (surgeryRow.length === 0) return { error: "Cirugía no encontrada" };
+        let status = surgeryRow[0].status;
+
+        if (status !== 'cancelled') {
+            if (data.completedTime) {
+                status = 'completed';
+            } else if (data.urpaExitTime) {
+                status = 'urpa_exit';
+            } else if (data.patientExitTime) {
+                status = 'patient_exit';
+            } else if (data.surgeryEndTime) {
+                status = 'surgery_end';
+            } else if (data.preIncisionTime) {
+                status = 'pre_incision';
+            } else if (data.anesthesiaStartTime) {
+                status = 'anesthesia_start';
+            } else if (data.actualStartTime) {
+                status = 'in_progress';
+            } else {
+                status = 'scheduled';
+            }
+        }
+
         await db.update(cqSurgeries).set({
             actualStartTime: data.actualStartTime ? new Date(data.actualStartTime) : null,
             anesthesiaStartTime: data.anesthesiaStartTime ? new Date(data.anesthesiaStartTime) : null,
@@ -1012,14 +1037,16 @@ export async function updateSurgeryPhaseTimes(data: {
             surgeryEndTime: data.surgeryEndTime ? new Date(data.surgeryEndTime) : null,
             patientExitTime: data.patientExitTime ? new Date(data.patientExitTime) : null,
             urpaExitTime: data.urpaExitTime ? new Date(data.urpaExitTime) : null,
+            completedTime: data.completedTime ? new Date(data.completedTime) : null,
+            status,
             updatedAt: new Date(),
         }).where(eq(cqSurgeries.id, data.surgeryId));
         
         revalidatePath("/dashboard/programaciones");
-    revalidatePath("/dashboard/pacientes");
+        revalidatePath("/dashboard/pacientes");
         return { success: true };
     } catch (error: any) {
         console.error("Error updating phase times:", error);
-        return { error: "OcurriÃƒÂ³ un error al actualizar los tiempos." };
+        return { error: "Ocurrió un error al actualizar los tiempos." };
     }
 }

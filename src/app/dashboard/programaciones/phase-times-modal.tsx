@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Clock, Save, Activity, CalendarClock, UserCheck } from "lucide-react";
+import { X, Clock, Save, Activity, CalendarClock, UserCheck, CheckCircle2, CalendarDays } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { updateSurgeryPhaseTimes } from "@/app/actions/cirugias";
 
@@ -20,14 +20,101 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
 
-    const [times, setTimes] = useState({
-        actualStartTime: formatForInput(surgery.surgery.actualStartTime),
-        anesthesiaStartTime: formatForInput(surgery.surgery.anesthesiaStartTime),
-        preIncisionTime: formatForInput(surgery.surgery.preIncisionTime),
-        surgeryEndTime: formatForInput(surgery.surgery.surgeryEndTime),
-        patientExitTime: formatForInput(surgery.surgery.patientExitTime),
-        urpaExitTime: formatForInput(surgery.surgery.urpaExitTime),
+    const [times, setTimes] = useState(() => {
+        const rawValues = {
+            actualStartTime: formatForInput(surgery.surgery.actualStartTime),
+            anesthesiaStartTime: formatForInput(surgery.surgery.anesthesiaStartTime),
+            preIncisionTime: formatForInput(surgery.surgery.preIncisionTime),
+            surgeryEndTime: formatForInput(surgery.surgery.surgeryEndTime),
+            patientExitTime: formatForInput(surgery.surgery.patientExitTime),
+            urpaExitTime: formatForInput(surgery.surgery.urpaExitTime),
+            completedTime: formatForInput(surgery.surgery.completedTime),
+        };
+
+        const keys = [
+            "actualStartTime",
+            "anesthesiaStartTime",
+            "preIncisionTime",
+            "surgeryEndTime",
+            "patientExitTime",
+            "urpaExitTime",
+            "completedTime"
+        ];
+
+        const allEmpty = keys.every(key => !rawValues[key as keyof typeof rawValues]);
+
+        if (allEmpty) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const todayMidnight = `${year}-${month}-${day}T00:00`;
+            
+            return {
+                actualStartTime: todayMidnight,
+                anesthesiaStartTime: todayMidnight,
+                preIncisionTime: todayMidnight,
+                surgeryEndTime: todayMidnight,
+                patientExitTime: todayMidnight,
+                urpaExitTime: todayMidnight,
+                completedTime: todayMidnight,
+            };
+        }
+
+        const resolved = { ...rawValues };
+        let firstSetValue = "";
+        for (const key of keys) {
+            if (resolved[key as keyof typeof resolved]) {
+                firstSetValue = resolved[key as keyof typeof resolved];
+                break;
+            }
+        }
+
+        let currentActiveValue = firstSetValue;
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            if (resolved[key as keyof typeof resolved]) {
+                currentActiveValue = resolved[key as keyof typeof resolved];
+            } else {
+                resolved[key as keyof typeof resolved] = currentActiveValue;
+            }
+        }
+
+        return resolved;
     });
+
+    const [bulkDate, setBulkDate] = useState(() => {
+        const keys = ["actualStartTime", "anesthesiaStartTime", "preIncisionTime", "surgeryEndTime", "patientExitTime", "urpaExitTime", "completedTime"];
+        let initialDateStr = "";
+        for (const key of keys) {
+            const val = formatForInput(surgery.surgery[key]);
+            if (val) {
+                initialDateStr = val.split('T')[0];
+                break;
+            }
+        }
+        if (initialDateStr) return initialDateStr;
+
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    });
+
+    const handleApplyBulkDate = () => {
+        if (!bulkDate) return;
+        const newTime = `${bulkDate}T00:00`;
+        setTimes({
+            actualStartTime: newTime,
+            anesthesiaStartTime: newTime,
+            preIncisionTime: newTime,
+            surgeryEndTime: newTime,
+            patientExitTime: newTime,
+            urpaExitTime: newTime,
+            completedTime: newTime,
+        });
+    };
 
     const phasesList = [
         { key: "actualStartTime", label: "Ingreso a Quirófano" },
@@ -35,7 +122,8 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
         { key: "preIncisionTime", label: "Antes de Incisión" },
         { key: "surgeryEndTime", label: "Fin de Cirugía" },
         { key: "patientExitTime", label: "Salida de Paciente" },
-        { key: "urpaExitTime", label: "Salida URPA" }
+        { key: "urpaExitTime", label: "Salida URPA" },
+        { key: "completedTime", label: "Alta Definitiva" }
     ];
 
     const validateTimes = () => {
@@ -85,6 +173,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
             surgeryEndTime: times.surgeryEndTime || null,
             patientExitTime: times.patientExitTime || null,
             urpaExitTime: times.urpaExitTime || null,
+            completedTime: times.completedTime || null,
         };
 
         const res = await updateSurgeryPhaseTimes(payload);
@@ -141,6 +230,35 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             {errorMsg}
                         </div>
                     )}
+
+                    {/* Panel de Ajuste Rápido de Fecha */}
+                    <div className="mb-6 p-4 bg-zinc-50/50 dark:bg-zinc-800/20 border border-zinc-200/60 dark:border-zinc-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 bg-[var(--color-hospital-blue)]/10 text-[var(--color-hospital-blue)] rounded-xl hidden sm:block">
+                                <CalendarDays size={20} />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold text-zinc-800 dark:text-zinc-200">Ajustar Día General</span>
+                                <span className="text-xs text-zinc-500 dark:text-zinc-400">Establece la fecha seleccionada con hora 00:00 para todas las fases.</span>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 self-stretch sm:self-auto">
+                            <input 
+                                type="date"
+                                value={bulkDate}
+                                onChange={(e) => setBulkDate(e.target.value)}
+                                className="flex-grow sm:flex-grow-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-3 py-2 rounded-xl text-sm focus:ring-2 focus:ring-[var(--color-hospital-blue)] focus:border-transparent outline-none [color-scheme:light] dark:[color-scheme:dark] text-zinc-900 dark:text-white"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleApplyBulkDate}
+                                className="px-4 py-2 bg-[var(--color-hospital-blue)] hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition-all shadow-md shadow-blue-500/10 active:scale-95 flex items-center gap-1.5"
+                            >
+                                <CalendarDays size={16} />
+                                Aplicar
+                            </button>
+                        </div>
+                    </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <PhaseInput 
@@ -190,6 +308,14 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<CalendarClock size={16} className="text-indigo-500" />}
                             error={errors.urpaExitTime}
+                        />
+                        <PhaseInput 
+                            name="completedTime" 
+                            label="Alta Definitiva" 
+                            value={times.completedTime} 
+                            onChange={handleChange} 
+                            icon={<CheckCircle2 size={16} className="text-emerald-500" />}
+                            error={errors.completedTime}
                         />
                     </div>
                 </div>
