@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Activity, FileText, Users, UserSquare2, Stethoscope, ActivitySquare, SplitSquareHorizontal, BarChart, Files, ChevronDown, LayoutDashboard } from "lucide-react";
+import { Activity, FileText, Users, UserSquare2, Stethoscope, ActivitySquare, SplitSquareHorizontal, BarChart, Files, ChevronDown, LayoutDashboard, MonitorPlay } from "lucide-react";
 import { MegaMenuItem } from "@/components/layout/mega-menu-item";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -44,6 +44,7 @@ export function MegaMenu({ permissions = [] }: { permissions?: string[] }) {
             label: 'Gestión Operativa',
             items: [
                 { name: "Agenda de Intervenciones", href: "/dashboard/programaciones", icon: FileText, description: "Programación central de cirugías.", requiredPermission: "ver:programacion" },
+                { name: "Proyectar Agenda", href: "/dashboard/programaciones/tv", icon: MonitorPlay, description: "Vista maximizada solo lectura para TV." },
                 { name: "Pacientes", href: "/dashboard/pacientes", icon: UserSquare2, description: "Registro y perfil clínico de pacientes." },
             ]
         },

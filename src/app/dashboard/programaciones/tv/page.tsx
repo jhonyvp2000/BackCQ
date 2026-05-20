@@ -3,7 +3,7 @@ import { getOperatingRooms } from "@/app/actions/salas";
 import { getSpecialties } from "@/app/actions/especialidades";
 import { getMedicalStaffByProfession } from "@/app/actions/personal";
 import { getPacientes } from "@/app/actions/pacientes";
-import { SurgeryViewToggle } from "../surgery-view-toggle";
+import { SurgeryTvTable } from "./surgery-tv-table";
 
 export default async function ProgramacionesTVPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string }> }) {
     const sortParams = await searchParams;
@@ -32,7 +32,7 @@ export default async function ProgramacionesTVPage({ searchParams }: { searchPar
 
     return (
         <div className="w-full h-full min-h-screen">
-            <SurgeryViewToggle 
+            <SurgeryTvTable 
                 surgeriesData={surgeriesData} 
                 salas={salas} 
                 sortParams={sortParams} 
