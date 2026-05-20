@@ -74,6 +74,35 @@ function formatForDateTimeLocal(dateValue: Date | string | null | undefined): st
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
+function calculateDetailedAge(dobValue: Date | string | null | undefined): string {
+    if (!dobValue) return "?";
+    const birthDate = typeof dobValue === "string" ? new Date(dobValue) : dobValue;
+    if (isNaN(birthDate.getTime())) return "?";
+
+    const today = new Date();
+    let years = today.getFullYear() - birthDate.getFullYear();
+    let months = today.getMonth() - birthDate.getMonth();
+    let days = today.getDate() - birthDate.getDate();
+
+    if (days < 0) {
+        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        days += prevMonth.getDate();
+        months--;
+    }
+
+    if (months < 0) {
+        months += 12;
+        years--;
+    }
+
+    if (years < 1) {
+        const mStr = String(months).padStart(2, "0");
+        const dStr = String(days).padStart(2, "0");
+        return `${mStr}m${dStr}d`;
+    }
+
+    return String(years).padStart(2, "0");
+}
 
 export const formatPatientDemographics = (patientPii: any, patient: any, bedNumber?: string | null) => {
     const fullName = `${patientPii?.nombres || ''} ${patientPii?.apellidos || ''}`.trim();
@@ -90,9 +119,7 @@ export const formatPatientDemographics = (patientPii: any, patient: any, bedNumb
     let ageStr = '?';
     const dob = patient?.fechaNacimiento || patientPii?.fechaNacimiento || patientPii?.fecha_nacimiento;
     if (dob) {
-        const diff_ms = Date.now() - new Date(dob).getTime();
-        const age = Math.abs(new Date(diff_ms).getUTCFullYear() - 1970);
-        ageStr = String(age).padStart(2, '0');
+        ageStr = calculateDetailedAge(dob);
     }
 
     const hcStr = patientPii?.historiaClinica || '?';
@@ -121,9 +148,7 @@ export const formatDemographicsOnly = (patientPii: any, patient: any, bedNumber?
     let ageStr = '?';
     const dob = patient?.fechaNacimiento || patientPii?.fecha_nacimiento || patientPii?.fechaNacimiento;
     if (dob) {
-        const diff_ms = Date.now() - new Date(dob).getTime();
-        const age = Math.abs(new Date(diff_ms).getUTCFullYear() - 1970);
-        ageStr = String(age).padStart(2, '0');
+        ageStr = calculateDetailedAge(dob);
     }
 
     const hcStr = patientPii?.historiaClinica || '?';
@@ -1059,6 +1084,31 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                             {row.surgery.notes && (
                                                                 <div className={`text-[10px] text-black dark:text-white leading-tight font-medium ${forceTvMode ? 'whitespace-nowrap shrink-0' : 'line-clamp-2'}`} title={row.surgery.notes}>
                                                                     {row.surgery.notes}
+                                                                </div>
+                                                            )}
+
+                                                            {/* 5. Tipo de anestesia */}
+                                                            {row.surgery.anesthesiaType && (
+                                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                                    {row.surgery.anesthesiaType.split(',').filter(Boolean).map((typeCode: string) => {
+                                                                        const trimmed = typeCode.trim();
+                                                                        const anesthesiaMap: Record<string, string> = {
+                                                                            'RAQ': 'Raquídea',
+                                                                            'EPI': 'Epidural',
+                                                                            'AGB': 'Gen. Balanceada',
+                                                                            'AGE': 'Gen. Endovenosa',
+                                                                            'AGI': 'Gen. Inhalatoria',
+                                                                            'BLOQ': 'Bloqueo Reg.',
+                                                                            'LOCL': 'Local',
+                                                                            'SEDA': 'Sedación'
+                                                                        };
+                                                                        const label = anesthesiaMap[trimmed] || trimmed;
+                                                                        return (
+                                                                            <span key={trimmed} className="text-[9px] px-1.5 py-0.5 rounded-full border font-bold uppercase bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-400 border-sky-200/60 dark:border-sky-800/60 shadow-sm inline-flex items-center leading-none">
+                                                                                Anestesia: {label}
+                                                                            </span>
+                                                                        );
+                                                                    })}
                                                                 </div>
                                                             )}
                                                         </div>
