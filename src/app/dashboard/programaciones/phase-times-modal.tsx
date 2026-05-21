@@ -20,6 +20,18 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
 
+    const keys = [
+        "actualStartTime",
+        "anesthesiaStartTime",
+        "preIncisionTime",
+        "surgeryEndTime",
+        "patientExitTime",
+        "urpaExitTime",
+        "completedTime"
+    ];
+    
+    const hasAnyRegisteredTime = keys.some(key => surgery.surgery[key]);
+
     const [times, setTimes] = useState(() => {
         const rawValues = {
             actualStartTime: formatForInput(surgery.surgery.actualStartTime),
@@ -30,16 +42,6 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
             urpaExitTime: formatForInput(surgery.surgery.urpaExitTime),
             completedTime: formatForInput(surgery.surgery.completedTime),
         };
-
-        const keys = [
-            "actualStartTime",
-            "anesthesiaStartTime",
-            "preIncisionTime",
-            "surgeryEndTime",
-            "patientExitTime",
-            "urpaExitTime",
-            "completedTime"
-        ];
 
         const allEmpty = keys.every(key => !rawValues[key as keyof typeof rawValues]);
 
@@ -61,26 +63,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
             };
         }
 
-        const resolved = { ...rawValues };
-        let firstSetValue = "";
-        for (const key of keys) {
-            if (resolved[key as keyof typeof resolved]) {
-                firstSetValue = resolved[key as keyof typeof resolved];
-                break;
-            }
-        }
-
-        let currentActiveValue = firstSetValue;
-        for (let i = 0; i < keys.length; i++) {
-            const key = keys[i];
-            if (resolved[key as keyof typeof resolved]) {
-                currentActiveValue = resolved[key as keyof typeof resolved];
-            } else {
-                resolved[key as keyof typeof resolved] = currentActiveValue;
-            }
-        }
-
-        return resolved;
+        return { ...rawValues };
     });
 
     const [bulkDate, setBulkDate] = useState(() => {
@@ -104,16 +87,18 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
 
     const handleApplyBulkDate = () => {
         if (!bulkDate) return;
-        const newTime = `${bulkDate}T00:00`;
-        setTimes({
-            actualStartTime: newTime,
-            anesthesiaStartTime: newTime,
-            preIncisionTime: newTime,
-            surgeryEndTime: newTime,
-            patientExitTime: newTime,
-            urpaExitTime: newTime,
-            completedTime: newTime,
-        });
+        const newTimes = { ...times };
+        let currentActiveValue = `${bulkDate}T00:00`;
+
+        for (const key of keys) {
+            const currentVal = times[key as keyof typeof times];
+            if (currentVal) {
+                currentActiveValue = currentVal;
+            } else {
+                newTimes[key as keyof typeof newTimes] = currentActiveValue;
+            }
+        }
+        setTimes(newTimes);
     };
 
     const phasesList = [
@@ -268,6 +253,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<Activity size={16} className="text-amber-500" />}
                             error={errors.actualStartTime}
+                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.actualStartTime}
                         />
                         <PhaseInput 
                             name="anesthesiaStartTime" 
@@ -276,6 +262,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<Activity size={16} className="text-purple-500" />}
                             error={errors.anesthesiaStartTime}
+                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.anesthesiaStartTime}
                         />
                         <PhaseInput 
                             name="preIncisionTime" 
@@ -284,6 +271,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<Activity size={16} className="text-fuchsia-500" />}
                             error={errors.preIncisionTime}
+                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.preIncisionTime}
                         />
                         <PhaseInput 
                             name="surgeryEndTime" 
@@ -292,6 +280,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<Activity size={16} className="text-cyan-500" />}
                             error={errors.surgeryEndTime}
+                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.surgeryEndTime}
                         />
                         <PhaseInput 
                             name="patientExitTime" 
@@ -300,6 +289,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<UserCheck size={16} className="text-orange-500" />}
                             error={errors.patientExitTime}
+                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.patientExitTime}
                         />
                         <PhaseInput 
                             name="urpaExitTime" 
@@ -308,6 +298,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<CalendarClock size={16} className="text-indigo-500" />}
                             error={errors.urpaExitTime}
+                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.urpaExitTime}
                         />
                         <PhaseInput 
                             name="completedTime" 
@@ -316,6 +307,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<CheckCircle2 size={16} className="text-emerald-500" />}
                             error={errors.completedTime}
+                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.completedTime}
                         />
                     </div>
                 </div>
@@ -343,21 +335,27 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
     );
 }
 
-function PhaseInput({ label, name, value, onChange, icon, error }: any) {
+function PhaseInput({ label, name, value, onChange, icon, error, isInitiallyEmpty }: any) {
     return (
-        <div className={`bg-white dark:bg-zinc-800 p-4 rounded-2xl border ${error ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,1)]' : 'border-zinc-200/60 dark:border-zinc-700'} shadow-sm flex flex-col gap-2 transition-all`}>
-            <div className="flex items-center gap-2">
-                <div className={`p-1.5 rounded-lg border ${error ? 'bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-800' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800'}`}>
+        <div className={`bg-white dark:bg-zinc-800 p-4 rounded-2xl border ${error ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,1)]' : isInitiallyEmpty ? 'border-amber-300 dark:border-amber-700/60 bg-amber-50/20 dark:bg-amber-950/10' : 'border-zinc-200/60 dark:border-zinc-700'} shadow-sm flex flex-col gap-2 transition-all`}>
+            <div className="flex items-center gap-2 w-full">
+                <div className={`p-1.5 rounded-lg border ${error ? 'bg-red-50 border-red-200 dark:bg-red-900/30 dark:border-red-800' : isInitiallyEmpty ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800' : 'bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800'}`}>
                     {icon}
                 </div>
                 <label className="text-sm font-bold text-zinc-700 dark:text-zinc-200">{label}</label>
+                {isInitiallyEmpty && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 rounded-full border border-amber-200 dark:border-amber-800 ml-auto flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Pendiente
+                    </span>
+                )}
             </div>
             <input 
                 type="datetime-local" 
                 name={name}
                 value={value}
                 onChange={onChange}
-                className={`w-full mt-1 bg-zinc-50 dark:bg-zinc-900 border ${error ? 'border-red-300 dark:border-red-700 focus:ring-red-500' : 'border-zinc-200 dark:border-zinc-700 focus:ring-[var(--color-hospital-blue)]'} rounded-xl px-3 py-2.5 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
+                className={`w-full mt-1 bg-zinc-50 dark:bg-zinc-900 border ${error ? 'border-red-300 dark:border-red-700 focus:ring-red-500' : isInitiallyEmpty ? 'border-amber-200 dark:border-amber-700/80 focus:ring-amber-500' : 'border-zinc-200 dark:border-zinc-700 focus:ring-[var(--color-hospital-blue)]'} rounded-xl px-3 py-2.5 text-sm text-zinc-900 dark:text-white focus:ring-2 focus:border-transparent outline-none transition-all`}
             />
             {error && (
                 <span className="text-xs text-red-500 font-medium leading-tight mt-0.5">{error}</span>
