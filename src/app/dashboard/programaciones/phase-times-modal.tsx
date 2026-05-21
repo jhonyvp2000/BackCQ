@@ -91,11 +91,22 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
         let currentActiveValue = `${bulkDate}T00:00`;
 
         for (const key of keys) {
+            const isPendiente = !surgery.surgery[key];
             const currentVal = times[key as keyof typeof times];
-            if (currentVal) {
-                currentActiveValue = currentVal;
+
+            if (isPendiente) {
+                if (currentVal) {
+                    const timePart = currentVal.split('T')[1] || "00:00";
+                    newTimes[key as keyof typeof newTimes] = `${bulkDate}T${timePart}`;
+                } else {
+                    newTimes[key as keyof typeof newTimes] = currentActiveValue;
+                }
+                currentActiveValue = newTimes[key as keyof typeof newTimes];
             } else {
-                newTimes[key as keyof typeof newTimes] = currentActiveValue;
+                if (currentVal) {
+                    const timePart = currentVal.split('T')[1] || "00:00";
+                    currentActiveValue = `${bulkDate}T${timePart}`;
+                }
             }
         }
         setTimes(newTimes);
