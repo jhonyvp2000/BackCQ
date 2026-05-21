@@ -2220,8 +2220,16 @@ export function SurgeryViewToggle({
                                           onClick={() =>
                                             setEditingTimesSurgery(row)
                                           }
-                                          className="text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 p-2.5 rounded-xl transition-all"
-                                          title="Ver/Editar Tiempos y Fases"
+                                          className={`${
+                                            !row.surgery.completedTime
+                                              ? "text-amber-500 animate-pulse hover:text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:text-amber-300 dark:hover:bg-amber-950/20"
+                                              : "text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:text-zinc-500 dark:hover:text-indigo-400 dark:hover:bg-zinc-800/50"
+                                          } p-2.5 rounded-xl transition-all`}
+                                          title={
+                                            !row.surgery.completedTime
+                                              ? "Alta Definitiva pendiente - Ver/Editar Tiempos y Fases"
+                                              : "Ver/Editar Tiempos y Fases"
+                                          }
                                         >
                                           <Clock size={18} />
                                         </button>
