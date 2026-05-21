@@ -10,7 +10,7 @@ import { DeleteSurgeryButton } from "./delete-button";
 import { SurgerySchedulerForm } from "./surgery-form";
 import { StartSurgeryButton } from "./start-surgery-button";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
 export default async function ProgramacionesPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string }> }) {
     const session = await getServerSession(authOptions);

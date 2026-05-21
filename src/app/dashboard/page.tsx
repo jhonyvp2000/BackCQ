@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 import { getDashboardStats } from "@/app/actions/dashboard";
 import { db } from "@/db";
 import { staffProfiles, professions } from "@/db/schema";
