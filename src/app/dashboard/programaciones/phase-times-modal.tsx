@@ -86,8 +86,19 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
     });
 
     const handleApplyBulkDate = () => {
-        if (!bulkDate) return;
         const newTimes = { ...times };
+        
+        if (!bulkDate) {
+            for (const key of keys) {
+                const isPendiente = !surgery.surgery[key];
+                if (isPendiente) {
+                    newTimes[key as keyof typeof newTimes] = "";
+                }
+            }
+            setTimes(newTimes);
+            return;
+        }
+
         let currentActiveValue = `${bulkDate}T00:00`;
 
         for (const key of keys) {
