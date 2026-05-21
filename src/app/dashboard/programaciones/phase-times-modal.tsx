@@ -253,7 +253,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<Activity size={16} className="text-amber-500" />}
                             error={errors.actualStartTime}
-                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.actualStartTime}
+                            isInitiallyEmpty={!surgery.surgery.actualStartTime}
                         />
                         <PhaseInput 
                             name="anesthesiaStartTime" 
@@ -262,7 +262,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<Activity size={16} className="text-purple-500" />}
                             error={errors.anesthesiaStartTime}
-                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.anesthesiaStartTime}
+                            isInitiallyEmpty={!surgery.surgery.anesthesiaStartTime}
                         />
                         <PhaseInput 
                             name="preIncisionTime" 
@@ -271,7 +271,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<Activity size={16} className="text-fuchsia-500" />}
                             error={errors.preIncisionTime}
-                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.preIncisionTime}
+                            isInitiallyEmpty={!surgery.surgery.preIncisionTime}
                         />
                         <PhaseInput 
                             name="surgeryEndTime" 
@@ -280,7 +280,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<Activity size={16} className="text-cyan-500" />}
                             error={errors.surgeryEndTime}
-                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.surgeryEndTime}
+                            isInitiallyEmpty={!surgery.surgery.surgeryEndTime}
                         />
                         <PhaseInput 
                             name="patientExitTime" 
@@ -289,7 +289,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<UserCheck size={16} className="text-orange-500" />}
                             error={errors.patientExitTime}
-                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.patientExitTime}
+                            isInitiallyEmpty={!surgery.surgery.patientExitTime}
                         />
                         <PhaseInput 
                             name="urpaExitTime" 
@@ -298,7 +298,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<CalendarClock size={16} className="text-indigo-500" />}
                             error={errors.urpaExitTime}
-                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.urpaExitTime}
+                            isInitiallyEmpty={!surgery.surgery.urpaExitTime}
                         />
                         <PhaseInput 
                             name="completedTime" 
@@ -307,7 +307,7 @@ export function PhaseTimesModal({ surgery, onClose }: { surgery: any, onClose: (
                             onChange={handleChange} 
                             icon={<CheckCircle2 size={16} className="text-emerald-500" />}
                             error={errors.completedTime}
-                            isInitiallyEmpty={hasAnyRegisteredTime && !surgery.surgery.completedTime}
+                            isInitiallyEmpty={!surgery.surgery.completedTime}
                         />
                     </div>
                 </div>
