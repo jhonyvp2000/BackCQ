@@ -219,7 +219,7 @@ export async function getSurgeries(startDate?: Date, endDate?: Date) {
     return await query;
 }
 
-export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', dateFilter?: string) {
+export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', startDateFilter?: string, endDateFilter?: string) {
     const orderFn = sortDir === 'asc' ? asc : desc;
     
     let baseQuery = db.select({
@@ -235,11 +235,35 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', d
         .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
         .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id));
 
-    if (dateFilter) {
-        // filter from 00:00:00 to 23:59:59 of the given date
-        const startDate = new Date(`${dateFilter}T00:00:00`);
-        const endDate = new Date(`${dateFilter}T23:59:59.999`);
-        baseQuery = baseQuery.where(and(gte(cqSurgeries.scheduledDate, startDate), lte(cqSurgeries.scheduledDate, endDate))) as any;
+    let whereClause = undefined;
+
+    if (endDateFilter) {
+        if (startDateFilter) {
+            // Regla 1: Rango [startDateFilter, endDateFilter]
+            const start = new Date(`${startDateFilter}T00:00:00`);
+            const end = new Date(`${endDateFilter}T23:59:59.999`);
+            whereClause = and(gte(cqSurgeries.scheduledDate, start), lte(cqSurgeries.scheduledDate, end));
+        } else {
+            // Regla 2: Día puntual [endDateFilter, endDateFilter]
+            const start = new Date(`${endDateFilter}T00:00:00`);
+            const end = new Date(`${endDateFilter}T23:59:59.999`);
+            whereClause = and(gte(cqSurgeries.scheduledDate, start), lte(cqSurgeries.scheduledDate, end));
+        }
+    } else {
+        if (startDateFilter) {
+            // Regla 6: Desde startDateFilter hasta hoy
+            const start = new Date(`${startDateFilter}T00:00:00`);
+            const todayStr = new Date().toLocaleString("sv-SE", { timeZone: "America/Lima" }).split(' ')[0];
+            const end = new Date(`${todayStr}T23:59:59.999`);
+            whereClause = and(gte(cqSurgeries.scheduledDate, start), lte(cqSurgeries.scheduledDate, end));
+        } else {
+            // Regla 6 (excepcional): Sin filtros
+            whereClause = undefined;
+        }
+    }
+
+    if (whereClause) {
+        baseQuery = baseQuery.where(whereClause) as any;
     }
 
     const surgeries = await baseQuery.orderBy(orderFn(cqSurgeries.scheduledDate));

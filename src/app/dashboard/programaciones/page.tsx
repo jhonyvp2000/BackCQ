@@ -12,7 +12,7 @@ import { StartSurgeryButton } from "./start-surgery-button";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
 
-export default async function ProgramacionesPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string }> }) {
+export default async function ProgramacionesPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string, dateNew?: string }> }) {
     const session = await getServerSession(authOptions);
     const permissions = (session?.user as any)?.permissions || [];
     const canCreate = permissions.includes('crear:programacion');
@@ -20,15 +20,27 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
     const sortParams = await searchParams;
     const currentSort = sortParams?.sort === 'asc' ? 'asc' : 'desc';
     
-    // Default to today in Lima timezone if no date provided, but allow "all" to fetch everything
-    let currentDate: string | undefined = sortParams?.date;
-    if (currentDate === 'all') {
-        currentDate = undefined;
-    } else if (!currentDate) {
-        currentDate = new Date().toLocaleString("sv-SE", { timeZone: "America/Lima" }).split(' ')[0];
+    // Obtener hoy en zona horaria Lima
+    const todayStr = new Date().toLocaleString("sv-SE", { timeZone: "America/Lima" }).split(' ')[0];
+
+    // Por defecto hoy si no se especifica en la URL. Si es "all", se deja undefined.
+    let dateAntigua: string | undefined = sortParams?.date;
+    if (dateAntigua === 'all') {
+        dateAntigua = undefined;
+    } else if (dateAntigua === undefined) {
+        dateAntigua = todayStr;
     }
 
-    const surgeriesData = await getSurgeriesByDateDesc(currentSort, currentDate);
+    let dateNueva: string | undefined = sortParams?.dateNew;
+    if (dateNueva === undefined) {
+        dateNueva = todayStr;
+    }
+
+    const surgeriesData = await getSurgeriesByDateDesc(
+        currentSort, 
+        dateNueva || undefined, 
+        dateAntigua || undefined
+    );
     const salas = await getOperatingRooms();
     const specialties = await getSpecialties();
     const diagnoses = await getActiveDiagnoses();
@@ -88,7 +100,7 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
 
             <div className="w-full">
                 {/* Lista / Timeline de Agenda (Envuelto en Client Component)  Expandido a ancho total */}
-                <SurgeryViewToggle surgeriesData={surgeriesData} salas={salas} sortParams={sortParams} specialties={specialties} staff={staff} permissions={permissions} diagnoses={diagnoses} procedures={procedures} interventions={interventions} patients={patients} initialDate={currentDate || ""} />
+                <SurgeryViewToggle surgeriesData={surgeriesData} salas={salas} sortParams={sortParams} specialties={specialties} staff={staff} permissions={permissions} diagnoses={diagnoses} procedures={procedures} interventions={interventions} patients={patients} initialDate={dateAntigua || ""} initialDateNew={dateNueva || ""} />
             </div>
         </div>
     );
