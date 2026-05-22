@@ -101,7 +101,7 @@ function calculateDetailedAge(dobValue: Date | string | null | undefined): strin
         return `${mStr}m${dStr}d`;
     }
 
-    return String(years).padStart(2, "0");
+    return String(years).padStart(2, "0") + "a";
 }
 
 export const formatPatientDemographics = (patientPii: any, patient: any, bedNumber?: string | null) => {

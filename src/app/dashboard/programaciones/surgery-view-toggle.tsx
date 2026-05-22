@@ -23,6 +23,7 @@ import {
   Search,
   Maximize2,
   Minimize2,
+  Download,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -147,7 +148,7 @@ function calculateDetailedAge(dobValue: Date | string | null | undefined): strin
     return `${mStr}m${dStr}d`;
   }
 
-  return String(years).padStart(2, "0");
+  return String(years).padStart(2, "0") + "a";
 }
 
 export const formatPatientDemographics = (
@@ -307,6 +308,380 @@ export function SurgeryViewToggle({
       setOptimisticStatuses((prev) => ({ ...prev, [id]: optStatus }));
     } finally {
       setPendingStatuses((prev) => ({ ...prev, [id]: false }));
+    }
+  };
+
+  const exportToExcel = async () => {
+    if (sortedSurgeries.length === 0) return;
+
+    try {
+      const ExcelJS = (await import("exceljs")).default;
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet("Agenda de Cirugías");
+
+      // Congelar primeras 4 filas
+      sheet.views = [{ state: "frozen", xSplit: 0, ySplit: 4 }];
+
+      // Fila 1: Título principal
+      const titleRow = sheet.addRow(["AGENDA CENTRAL DE INTERVENCIONES QUIRÚRGICAS"]);
+      titleRow.font = { name: "Arial", size: 16, bold: true, color: { argb: "FF0A5C99" } };
+
+      // Fila 2: Subtítulo / Metadatos de exportación
+      const printDateObj = new Date();
+      const printDate = new Intl.DateTimeFormat("es-PE", {
+        timeZone: "America/Lima",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }).format(printDateObj);
+      const printTime = new Intl.DateTimeFormat("es-PE", {
+        timeZone: "America/Lima",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(printDateObj);
+
+      const subtitleText = `Rango: ${filterDateNew || "Inicio"} al ${filterDate || "Fin"} | Registros: ${sortedSurgeries.length} | Exportado el: ${printDate} a las ${printTime}`;
+      const subtitleRow = sheet.addRow([subtitleText]);
+      subtitleRow.font = { name: "Arial", size: 10, italic: true, color: { argb: "FF555555" } };
+
+      // Fila 3: Fila en blanco
+      sheet.addRow([]);
+
+      // Fila 4: Cabeceras
+      const headers = [
+        "N°",
+        "ESPECIALIDAD",
+        "SALA PROGRAMADA",
+        "FECHA SOLICITUD",
+        "FECHA PROGRAMADA",
+        "HORA PROGRAMADA",
+        "DURACIÓN EST.",
+        "PACIENTE NOMBRES",
+        "PACIENTE APELLIDOS",
+        "DOCUMENTO (DNI/CE/PAS)",
+        "SEXO",
+        "EDAD",
+        "HISTORIA CLÍNICA",
+        "GRUPO Y FACTOR SANGUÍNEO",
+        "CAMA",
+        "SEGURO",
+        "TIPO CIRUGÍA",
+        "URGENCIA",
+        "DIAGNÓSTICOS",
+        "PROCEDIMIENTO",
+        "TIPO INTERVENCIÓN",
+        "NOTAS INTERNAS",
+        "TIPO ANESTESIA",
+        "CIRUJANO(S)",
+        "ANESTESIÓLOGO(S)",
+        "INSTRUMENTISTA(S)",
+        "CIRCULANTE(S)",
+        "OTROS DEL EQUIPO",
+        "ESTADO",
+        "HORA INGRESO QX",
+        "HORA INICIO ANESTESIA",
+        "HORA ANTES INCISIÓN",
+        "HORA TÉRMINO CIRUGÍA",
+        "HORA SALIDA PACIENTE",
+        "HORA SALIDA URPA"
+      ];
+
+      const headerRow = sheet.addRow(headers);
+      headerRow.height = 28;
+      headerRow.font = { name: "Arial", size: 9, bold: true, color: { argb: "FFFFFFFF" } };
+      headerRow.eachCell((cell) => {
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0A5C99" } }; // Azul hospital
+        cell.border = {
+          top: { style: "thin", color: { argb: "FFCCCCCC" } },
+          left: { style: "thin", color: { argb: "FFCCCCCC" } },
+          bottom: { style: "thin", color: { argb: "FFCCCCCC" } },
+          right: { style: "thin", color: { argb: "FFCCCCCC" } },
+        };
+        cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+      });
+
+      // Formateadores auxiliares
+      const formatDateExcel = (dateVal: any) => {
+        if (!dateVal) return "";
+        const date = new Date(dateVal);
+        if (isNaN(date.getTime())) return "";
+        return new Intl.DateTimeFormat("es-PE", {
+          timeZone: "America/Lima",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(date);
+      };
+
+      const formatTimeExcel = (dateVal: any) => {
+        if (!dateVal) return "";
+        const date = new Date(dateVal);
+        if (isNaN(date.getTime())) return "";
+        return new Intl.DateTimeFormat("es-PE", {
+          timeZone: "America/Lima",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(date);
+      };
+
+      const getAnesthesiaLabel = (anesthesiaType: string) => {
+        if (!anesthesiaType) return "";
+        const anesthesiaMap: Record<string, string> = {
+          RAQ: "Raquídea",
+          EPI: "Epidural",
+          AGB: "Gen. Balanceada",
+          AGE: "Gen. Endovenosa",
+          AGI: "Gen. Inhalatoria",
+          BLOQ: "Bloqueo Reg.",
+          LOCL: "Local",
+          SEDA: "Sedación",
+        };
+        return anesthesiaType
+          .split(",")
+          .filter(Boolean)
+          .map((t) => {
+            const trimmed = t.trim();
+            return anesthesiaMap[trimmed] || trimmed;
+          })
+          .join("; ");
+      };
+
+      const getStatusLabel = (status: string) => {
+        switch (status) {
+          case "scheduled": return "Programada";
+          case "in_progress": return "En Quirófano";
+          case "anesthesia_start": return "Anestesia Inducida";
+          case "pre_incision": return "Antes de Incisión";
+          case "surgery_end": return "Término de Cirugía";
+          case "patient_exit": return "Salida Paciente";
+          case "urpa_exit": return "Salida URPA";
+          case "completed": return "Finalizada";
+          case "cancelled": return "Suspendida";
+          default: return status || "Desconocido";
+        }
+      };
+
+      // Recorrer registros ordenados y filtrados
+      sortedSurgeries.forEach((row, index) => {
+        const pii = row.patientPii;
+        const pat = row.patient;
+        const surg = row.surgery;
+
+        const dob = pat?.fechaNacimiento || pii?.fechaNacimiento || pii?.fecha_nacimiento;
+        const edad = dob ? calculateDetailedAge(dob) : "";
+
+        let sexo = "?";
+        const rawSexo = pat?.sexo || pii?.sexo;
+        if (rawSexo) {
+          if (rawSexo.toUpperCase().startsWith("F")) sexo = "F";
+          else if (rawSexo.toUpperCase().startsWith("M")) sexo = "M";
+          else sexo = rawSexo.substring(0, 1).toUpperCase();
+        }
+
+        const docNum = pii?.dni || pii?.carnetExtranjeria || pii?.pasaporte || pii?.numeroDocumento || pat?.dni || "";
+
+        // Diagnósticos
+        let dxText = "";
+        if (row.diagnoses && row.diagnoses.length > 0) {
+          dxText = row.diagnoses
+            .map((dxId: string) => {
+              const dxObj = diagnoses.find((d) => d.id === dxId);
+              return dxObj ? `${dxObj.code} - ${dxObj.name}` : dxId;
+            })
+            .join("; ");
+        } else if (surg.diagnosis) {
+          dxText = surg.diagnosis;
+        }
+
+        // Procedimientos
+        const procText = (row.procedures || [])
+          .map((pId: string) => {
+            const pObj = procedures.find((p) => p.id === pId);
+            return pObj ? pObj.name : pId;
+          })
+          .join("; ");
+
+        // Intervenciones
+        const intText = (row.interventions || [])
+          .map((iId: string) => {
+            const iObj = interventions.find((i) => i.id === iId);
+            return iObj ? iObj.name : iId;
+          })
+          .join("; ");
+
+        // Roles del equipo médico
+        const teamArray = row.team || [];
+        const surgeons = teamArray.filter((t: any) => t.role === "CIRUJANO");
+        const anesthesiologists = teamArray.filter((t: any) => t.role === "ANESTESIOLOGO");
+
+        const getRoleCode = (t: any) => {
+          if (t.role === "INSTRUMENTISTA") return "In";
+          if (t.role === "CIRCULANTE") return "Ci";
+          let profName = t.staff?.professionName || t.professionName;
+          if (!profName && typeof staff !== "undefined" && staff?.nurses) {
+            const nurse = staff.nurses.find((n: any) => n.id === t.staff?.id);
+            if (nurse) profName = nurse.professionName;
+          }
+          if (profName?.includes("INSTRUMENTISTA")) return "In";
+          if (profName?.includes("CIRCULANTE")) return "Ci";
+          return "Other";
+        };
+
+        const instrumentistas = teamArray.filter(
+          (t: any) => t.role !== "CIRUJANO" && t.role !== "ANESTESIOLOGO" && getRoleCode(t) === "In"
+        );
+        const circulantes = teamArray.filter(
+          (t: any) => t.role !== "CIRUJANO" && t.role !== "ANESTESIOLOGO" && getRoleCode(t) === "Ci"
+        );
+        const others = teamArray.filter(
+          (t: any) => t.role !== "CIRUJANO" && t.role !== "ANESTESIOLOGO" && getRoleCode(t) === "Other"
+        );
+
+        const getStaffFullName = (t: any) => {
+          if (!t.staff) return "";
+          return `${t.staff.name || ""} ${t.staff.lastname || ""}`.trim();
+        };
+
+        const getTeamNames = (members: any[]) => {
+          return members.map((m) => getStaffFullName(m)).filter(Boolean).join(", ");
+        };
+
+        const rowData = [
+          index + 1,
+          row.specialty?.name || "",
+          row.operatingRoom?.name || "",
+          formatDateExcel(surg.requestDate),
+          formatDateExcel(surg.scheduledDate),
+          surg.isTimeDefined ? formatTimeExcel(surg.scheduledDate) : "00:00",
+          surg.estimatedDuration || "",
+          pii?.nombres || "",
+          pii?.apellidos || "",
+          docNum,
+          sexo,
+          edad,
+          pii?.historiaClinica || "",
+          pii?.bloodGroupRh || "",
+          surg.bedNumber || "",
+          surg.insuranceType || "",
+          surg.surgeryType || "",
+          surg.urgencyType || "",
+          dxText,
+          procText,
+          intText,
+          surg.notes || "",
+          getAnesthesiaLabel(surg.anesthesiaType),
+          getTeamNames(surgeons),
+          getTeamNames(anesthesiologists),
+          getTeamNames(instrumentistas),
+          getTeamNames(circulantes),
+          getTeamNames(others),
+          getStatusLabel(surg.status),
+          formatTimeExcel(surg.actualStartTime),
+          formatTimeExcel(surg.anesthesiaStartTime),
+          formatTimeExcel(surg.preIncisionTime),
+          formatTimeExcel(surg.surgeryEndTime),
+          formatTimeExcel(surg.patientExitTime),
+          formatTimeExcel(surg.urpaExitTime)
+        ];
+
+        const dataRow = sheet.addRow(rowData);
+        dataRow.font = { name: "Arial", size: 9 };
+        dataRow.alignment = { vertical: "middle" };
+
+        // Color de fondo pastel por estado
+        let bgColor = "FFFFFFFF"; // Blanco por defecto
+        const status = surg.status;
+        if (status === "cancelled") {
+          bgColor = "FFFFC7CE"; // Suspendido (Rosado claro)
+        } else if (status === "completed") {
+          bgColor = "FFE2EFDA"; // Finalizadas (Verde claro)
+        } else if (
+          [
+            "in_progress",
+            "anesthesia_start",
+            "pre_incision",
+            "surgery_end",
+            "patient_exit",
+            "urpa_exit",
+          ].includes(status)
+        ) {
+          bgColor = "FFFFF2CC"; // En proceso (Amarillo claro)
+        }
+
+        dataRow.eachCell({ includeEmpty: true }, (cell) => {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: bgColor } };
+          cell.border = {
+            top: { style: "thin", color: { argb: "FFCCCCCC" } },
+            left: { style: "thin", color: { argb: "FFCCCCCC" } },
+            bottom: { style: "thin", color: { argb: "FFCCCCCC" } },
+            right: { style: "thin", color: { argb: "FFCCCCCC" } },
+          };
+        });
+      });
+
+      // Definir anchos específicos de columnas
+      const colWidths = [
+        5,  // N°
+        20, // Especialidad
+        12, // Sala Programada
+        15, // Fecha Solicitud
+        15, // Fecha Programada
+        12, // Hora Programada
+        10, // Duración est
+        20, // Paciente Nombres
+        20, // Paciente Apellidos
+        15, // Documento
+        6,  // Sexo
+        10, // Edad
+        12, // Historia Clínica
+        12, // GFS
+        8,  // Cama
+        12, // Seguro
+        12, // Tipo Cirugía
+        12, // Urgencia
+        30, // Diagnósticos
+        30, // Procedimiento
+        30, // Tipo Intervención
+        25, // Notas Internas
+        20, // Tipo Anestesia
+        25, // Cirujano(s)
+        25, // Anestesiólogo(s)
+        25, // Instrumentista(s)
+        25, // Circulante(s)
+        25, // Otros del Equipo
+        12, // Estado
+        12, // Hora Ingreso Qx
+        12, // Hora Inicio Anestesia
+        12, // Hora Antes Incisión
+        12, // Hora Término Cirugía
+        12, // Hora Salida Paciente
+        12  // Hora Salida URPA
+      ];
+
+      colWidths.forEach((width, i) => {
+        sheet.getColumn(i + 1).width = width;
+      });
+
+      // Crear buffer y descargar archivo
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Agenda_Intervenciones_Qx_${filterDateNew || "Inicio"}_al_${filterDate || "Fin"}.xlsx`
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error al exportar agenda a Excel:", error);
     }
   };
 
@@ -475,19 +850,31 @@ export function SurgeryViewToggle({
   };
 
   const handleDatesChange = (newDateAnt: string, newDateNew: string) => {
+    let finalDateNew = newDateNew;
+    let isError = false;
+
     if (newDateAnt && newDateNew) {
       if (newDateNew > newDateAnt) {
-        setDateError(true);
-        setErrorModalMsg("La fecha de inicio (nuevo) no puede ser posterior a la fecha de fin (antiguo).");
-        setFilterDate(newDateAnt);
-        setFilterDateNew(newDateNew);
-        return;
+        // Si el cambio proviene del componente antiguo (es decir, newDateNew no ha cambiado con respecto a filterDateNew)
+        if (newDateNew === filterDateNew) {
+          finalDateNew = newDateAnt;
+        } else {
+          isError = true;
+        }
       }
+    }
+
+    if (isError) {
+      setDateError(true);
+      setErrorModalMsg("La fecha de inicio (nuevo) no puede ser posterior a la fecha de fin (antiguo).");
+      setFilterDate(newDateAnt);
+      setFilterDateNew(newDateNew);
+      return;
     }
 
     setDateError(false);
     setFilterDate(newDateAnt);
-    setFilterDateNew(newDateNew);
+    setFilterDateNew(finalDateNew);
 
     const params = new URLSearchParams();
     if (newDateAnt) {
@@ -495,8 +882,8 @@ export function SurgeryViewToggle({
     } else {
       params.set("date", "");
     }
-    if (newDateNew) {
-      params.set("dateNew", newDateNew);
+    if (finalDateNew) {
+      params.set("dateNew", finalDateNew);
     } else {
       params.set("dateNew", "");
     }
@@ -903,12 +1290,21 @@ export function SurgeryViewToggle({
                   Suspendida
                 </span>
               </div>
-              <div className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg border border-zinc-100 dark:border-zinc-800 shrink-0">
-                Mostrando{" "}
-                <span className="text-zinc-900 dark:text-zinc-100 font-bold">
-                  {filteredSurgeries.length}
-                </span>{" "}
-                registros
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={exportToExcel}
+                  className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600/90 dark:hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors border border-emerald-500/30 flex items-center gap-1.5 shadow-sm"
+                  title="Exportar registros filtrados a Excel"
+                >
+                  <Download size={14} /> Exportar Excel
+                </button>
+                <div className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                  Mostrando{" "}
+                  <span className="text-zinc-900 dark:text-zinc-100 font-bold">
+                    {filteredSurgeries.length}
+                  </span>{" "}
+                  registros
+                </div>
               </div>
             </div>
           </div>
