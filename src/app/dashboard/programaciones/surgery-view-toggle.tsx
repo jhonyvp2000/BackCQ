@@ -378,6 +378,7 @@ export function SurgeryViewToggle({
   const [searchStaffFilter, setSearchStaffFilter] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string[]>([]);
   const [filterCopri, setFilterCopri] = useState<string>("all");
+  const [filterAnesthesia, setFilterAnesthesia] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [isListFullscreen, setIsListFullscreen] = useState<boolean>(false);
 
@@ -565,6 +566,18 @@ export function SurgeryViewToggle({
       const isCopri = s.surgery.isFromCopri === true;
       if (filterCopri === "true" && !isCopri) return false;
       if (filterCopri === "false" && isCopri) return false;
+    }
+
+    if (filterAnesthesia.length > 0) {
+      const hasNoneOption = filterAnesthesia.includes("NONE");
+      const hasAnesthesia = s.surgery.anesthesiaType && s.surgery.anesthesiaType.trim() !== "";
+      if (!hasAnesthesia) {
+        if (!hasNoneOption) return false;
+      } else {
+        const surgeryTypes = s.surgery.anesthesiaType.split(',').map((t: string) => t.trim());
+        const hasMatchedAnesthesia = filterAnesthesia.some((type) => surgeryTypes.includes(type));
+        if (!hasMatchedAnesthesia) return false;
+      }
     }
 
     return true;
@@ -793,7 +806,8 @@ export function SurgeryViewToggle({
                 filterStatus.length > 0 ||
                 filterSpecialty.length > 0 ||
                 filterStaff.length > 0 ||
-                filterCopri !== "all") && (
+                filterCopri !== "all" ||
+                filterAnesthesia.length > 0) && (
                 <button
                   onClick={() => {
                     handleDateChange("");
@@ -803,6 +817,7 @@ export function SurgeryViewToggle({
                     setFilterSpecialty([]);
                     setFilterStaff([]);
                     setFilterCopri("all");
+                    setFilterAnesthesia([]);
                   }}
                   className="text-xs font-semibold text-zinc-500 hover:text-red-500 hover:underline px-2 transition-colors"
                 >
@@ -866,7 +881,7 @@ export function SurgeryViewToggle({
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-7 gap-4 pt-2 pb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-4 pt-2 pb-2">
                   {/* Buscador de Paciente */}
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -885,29 +900,19 @@ export function SurgeryViewToggle({
                   </div>
 
                   {/* Selector de Fecha */}
-                  <div className="flex items-center gap-2">
-                    <div className="relative group flex-1">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Calendar
-                          size={14}
-                          className="text-zinc-400 group-focus-within:text-[var(--color-hospital-blue)] transition-colors"
-                        />
-                      </div>
-                      <input
-                        type="date"
-                        value={filterDate}
-                        onChange={(e) => handleDateChange(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200 [color-scheme:light] dark:[color-scheme:dark]"
+                  <div className="relative group w-full">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Calendar
+                        size={14}
+                        className="text-zinc-400 group-focus-within:text-[var(--color-hospital-blue)] transition-colors"
                       />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setFilterDate("")}
-                      className="shrink-0 bg-zinc-100 dark:bg-zinc-800 hover:bg-red-100 hover:text-red-600 text-zinc-500 border border-zinc-200 dark:border-zinc-700 p-[9px] rounded-xl transition-colors shadow-sm"
-                      title="Limpiar fecha del filtro"
-                    >
-                      <X size={16} strokeWidth={2.5} />
-                    </button>
+                    <input
+                      type="date"
+                      value={filterDate}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200 [color-scheme:light] dark:[color-scheme:dark]"
+                    />
                   </div>
 
                   {/* Selector Múltiple de Quirófano */}
@@ -1382,6 +1387,113 @@ export function SurgeryViewToggle({
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
+                    </div>
+                  </div>
+
+                  {/* Selector Múltiple de Anestesia */}
+                  <div className="relative group/anesthesia-select z-[25]">
+                    <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium text-zinc-800 dark:text-zinc-200 cursor-pointer flex justify-between items-center transition-all bg-white dark:bg-zinc-900 group-hover/anesthesia-select:border-blue-500/50">
+                      <span className="truncate pr-2">
+                        {filterAnesthesia.length === 0
+                          ? "Cualquier Anestesia"
+                          : filterAnesthesia.length === 1
+                            ? [
+                                { id: "RAQ", name: "Raquídea" },
+                                { id: "EPI", name: "Epidural" },
+                                { id: "AGB", name: "Gen. Balanceada" },
+                                { id: "AGE", name: "Gen. Endovenosa" },
+                                { id: "AGI", name: "Gen. Inhalatoria" },
+                                { id: "BLOQ", name: "Bloqueo Reg." },
+                                { id: "LOCL", name: "Local" },
+                                { id: "SEDA", name: "Sedación" },
+                                { id: "NONE", name: "Sin Anestesia" },
+                              ].find((s) => s.id === filterAnesthesia[0])?.name ||
+                              filterAnesthesia[0]
+                            : `${filterAnesthesia.length} Anest. Selecc.`}
+                      </span>
+                      <svg
+                        className="w-4 h-4 text-zinc-400 group-hover/anesthesia-select:text-[var(--color-hospital-blue)] transition-colors flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+                    <div className="absolute top-[calc(100%-8px)] left-0 w-full pt-3 opacity-0 invisible group-hover/anesthesia-select:opacity-100 group-hover/anesthesia-select:visible transition-all duration-200 z-50">
+                      <div className="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl flex flex-col overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+                        <div className="p-2 border-b border-zinc-100 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80">
+                          <div className="flex items-center justify-between px-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFilterAnesthesia([
+                                  "RAQ",
+                                  "EPI",
+                                  "AGB",
+                                  "AGE",
+                                  "AGI",
+                                  "BLOQ",
+                                  "LOCL",
+                                  "SEDA",
+                                  "NONE",
+                                ])
+                              }
+                              className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline mb-0.5 mt-0.5"
+                            >
+                              SEL. TODAS
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFilterAnesthesia([])}
+                              className="text-[11px] font-bold text-zinc-500 hover:text-red-500 hover:underline mb-0.5 mt-0.5"
+                            >
+                              NINGUNA
+                            </button>
+                          </div>
+                        </div>
+                        <div className="overflow-y-auto p-1.5 flex flex-col custom-scrollbar max-h-[250px]">
+                          {[
+                            { id: "RAQ", name: "Raquídea" },
+                            { id: "EPI", name: "Epidural" },
+                            { id: "AGB", name: "Gen. Balanceada" },
+                            { id: "AGE", name: "Gen. Endovenosa" },
+                            { id: "AGI", name: "Gen. Inhalatoria" },
+                            { id: "BLOQ", name: "Bloqueo Reg." },
+                            { id: "LOCL", name: "Local" },
+                            { id: "SEDA", name: "Sedación" },
+                            { id: "NONE", name: "Sin Anestesia" },
+                          ].map((s) => (
+                            <label
+                              key={s.id}
+                              className="flex items-center gap-3 px-2 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-700/50 rounded-lg cursor-pointer transition-colors group/label border-b border-zinc-100/50 last:border-0 dark:border-zinc-700/30"
+                            >
+                              <input
+                                type="checkbox"
+                                className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 text-[var(--color-hospital-blue)] focus:ring-[var(--color-hospital-blue)] bg-white dark:bg-zinc-900 cursor-pointer"
+                                checked={filterAnesthesia.includes(s.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setFilterAnesthesia([...filterAnesthesia, s.id]);
+                                  } else {
+                                    setFilterAnesthesia(
+                                      filterAnesthesia.filter((id) => id !== s.id),
+                                    );
+                                  }
+                                }}
+                              />
+                              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 group-hover/label:text-zinc-900 dark:group-hover/label:text-white select-none whitespace-normal leading-tight">
+                                {s.name}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
