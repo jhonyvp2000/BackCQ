@@ -2842,22 +2842,21 @@ export function SurgeryViewToggle({
                                     </>
                                   )}
 
-                                  {logicalPhase === "cancelled" &&
-                                    canDuplicate && (
-                                      <button
-                                        onClick={() =>
-                                          window.dispatchEvent(
-                                            new CustomEvent("CLONE_SURGERY", {
-                                              detail: row,
-                                            }),
-                                          )
-                                        }
-                                        className="text-zinc-400 hover:text-[var(--color-hospital-blue)] hover:bg-blue-50 p-2.5 rounded-xl transition-all inline-block ml-1"
-                                        title="Duplicar / Re-Agendar Cirugía"
-                                      >
-                                        <CopyPlus size={18} />
-                                      </button>
-                                    )}
+                                  {canDuplicate && (
+                                    <button
+                                      onClick={() =>
+                                        window.dispatchEvent(
+                                          new CustomEvent("CLONE_SURGERY", {
+                                            detail: row,
+                                          }),
+                                        )
+                                      }
+                                      className="text-zinc-400 hover:text-[var(--color-hospital-blue)] hover:bg-blue-50 p-2.5 rounded-xl transition-all inline-block ml-1"
+                                      title="Duplicar / Re-Agendar Cirugía"
+                                    >
+                                      <CopyPlus size={18} />
+                                    </button>
+                                  )}
 
                                   {logicalPhase === "completed" &&
                                     canViewReport && (
