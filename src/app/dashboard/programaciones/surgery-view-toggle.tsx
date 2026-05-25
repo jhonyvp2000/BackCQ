@@ -2020,7 +2020,7 @@ export function SurgeryViewToggle({
                 <div className="overflow-auto flex-grow bg-white dark:bg-zinc-900 custom-scrollbar">
                   <table className="w-full text-left border-collapse">
                     <thead className="sticky top-0 z-20">
-                      <tr className="border-b border-zinc-300 dark:border-zinc-700">
+                      <tr className="border-b border-zinc-300 dark:border-zinc-700 divide-x divide-zinc-300 dark:divide-zinc-700">
                         <th
                           scope="col"
                           className="px-3 py-2 text-xs font-bold text-zinc-500 uppercase tracking-widest border-b border-zinc-300 dark:border-zinc-700 bg-zinc-50/95 dark:bg-zinc-800/95 backdrop-blur-md min-w-[30px]"
@@ -2202,7 +2202,7 @@ export function SurgeryViewToggle({
                         return (
                           <tr
                             key={row.surgery.id}
-                            className={`transition-all duration-300 group text-sm hover:brightness-95 dark:hover:brightness-125 ${getRowBgColor(effectiveStatus)}`}
+                            className={`transition-all duration-300 group text-sm hover:brightness-95 dark:hover:brightness-125 divide-x divide-zinc-200 dark:divide-zinc-800 ${getRowBgColor(effectiveStatus)}`}
                           >
                             <td className="px-3 py-1.5 whitespace-nowrap text-zinc-500 font-medium align-middle">
                               {index + 1}
