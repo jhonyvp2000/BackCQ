@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Stethoscope, Lock, User, AlertCircle, ArrowRight } from "lucide-react";
 
@@ -11,6 +11,17 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const errorParam = params.get("error");
+            if (errorParam === "SessionExpired" || errorParam === "forced_logout") {
+                setError("Tu sesión ha expirado o ha sido invalidada. Por favor, inicia sesión de nuevo.");
+                signOut({ redirect: false });
+            }
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

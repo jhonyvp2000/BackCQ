@@ -6,7 +6,7 @@ import { Files } from "lucide-react";
 
 export default async function DocumentosPage() {
     const session = await getServerSession(authOptions);
-    if (!session) redirect("/login");
+    if (!session || !session.user || (session as any).error === "SessionExpired") redirect("/login?error=SessionExpired");
 
     return (
         <div className="max-w-2xl mx-auto">

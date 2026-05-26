@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
+import { checkSession } from "@/lib/auth-helpers";
 import { getDashboardStats } from "@/app/actions/dashboard";
 import { db } from "@/db";
 import { staffProfiles, professions } from "@/db/schema";
@@ -15,8 +14,8 @@ import { format } from "date-fns";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-    const session = await getServerSession(authOptions);
-    const user = session?.user as any;
+    const session = await checkSession();
+    const user = session.user as any;
 
     let userPrefix = ""; // Por defecto sin prefijo si no está en la tabla
     let userProf = "";

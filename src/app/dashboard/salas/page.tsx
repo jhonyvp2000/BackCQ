@@ -3,7 +3,10 @@ import { Plus, Play, Wrench, ShieldAlert } from "lucide-react";
 import { DeleteRoomButton } from "./delete-button";
 import { EditRoomButton } from "./edit-room-button";
 
+import { checkSession } from "@/lib/auth-helpers";
+
 export default async function SalasPage() {
+    await checkSession();
     const salas = await getOperatingRooms();
 
     const getStatusBadge = (status: string) => {

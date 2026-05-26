@@ -9,12 +9,13 @@ import { MegaMenu } from "./mega-menu";
 import { MobileMenu } from "./mobile-menu";
 import { getOrphans } from "@/app/actions/pacientes";
 import { LogoutButton } from "@/components/layout/logout-button";
+import { SessionWatcher } from "@/components/layout/session-watcher";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
     const session = await getServerSession(authOptions);
 
-    if (!session) {
-        redirect("/login");
+    if (!session || !session.user || (session as any).error === "SessionExpired") {
+        redirect("/login?error=SessionExpired");
     }
 
     const user = session.user as any;
@@ -23,6 +24,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
 
     return (
         <div className="min-h-screen bg-[var(--color-hospital-bg)] flex flex-col">
+            <SessionWatcher />
             {/* Topbar / MegaMenu Header */}
             <header className="h-16 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-40 flex items-center justify-between px-6 shadow-sm">
                 

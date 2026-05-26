@@ -9,12 +9,11 @@ import { SurgeryViewToggle } from "./surgery-view-toggle";
 import { DeleteSurgeryButton } from "./delete-button";
 import { SurgerySchedulerForm } from "./surgery-form";
 import { StartSurgeryButton } from "./start-surgery-button";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/auth-options";
+import { checkSession } from "@/lib/auth-helpers";
 
 export default async function ProgramacionesPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string, dateNew?: string }> }) {
-    const session = await getServerSession(authOptions);
-    const permissions = (session?.user as any)?.permissions || [];
+    const session = await checkSession();
+    const permissions = (session.user as any).permissions || [];
     const canCreate = permissions.includes('crear:programacion');
 
     const sortParams = await searchParams;

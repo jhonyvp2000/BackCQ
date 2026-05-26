@@ -7,7 +7,10 @@ export const metadata: Metadata = {
     description: 'Generación de reportes quirúrgicos exportables y estadísticos.',
 };
 
-export default function ReportesPage() {
+import { checkSession } from "@/lib/auth-helpers";
+
+export default async function ReportesPage() {
+    await checkSession();
     return (
         <div className="flex-1 w-full flex flex-col items-center">
             <div className="w-full max-w-7xl mx-auto px-6 py-8">

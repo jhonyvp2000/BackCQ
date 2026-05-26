@@ -3,7 +3,10 @@ import { Plus, Users, LayoutList } from "lucide-react";
 import { CreateStaffForm } from "./create-staff-form";
 import { StaffTable } from "./staff-table";
 
+import { checkSession } from "@/lib/auth-helpers";
+
 export default async function PersonalAsistencialPage() {
+    await checkSession();
     // 1. Fetch current staff profiles & professions
     const staff = await getAllMedicalStaff();
     const professions = await getAsistencialProfessions();

@@ -16,9 +16,14 @@ export default withAuth(
             return NextResponse.redirect(new URL('/dashboard', req.url));
         }
 
-        // Redirect authenticated users away from /login
+        // Redirect authenticated users away from /login unless there is a session error
         if (isAuthPage && isAuth) {
-            return NextResponse.redirect(new URL('/dashboard', req.url));
+            const hasSessionError = req.nextUrl.searchParams.has('error') && 
+                (req.nextUrl.searchParams.get('error') === 'SessionExpired' || req.nextUrl.searchParams.get('error') === 'forced_logout');
+            
+            if (!hasSessionError) {
+                return NextResponse.redirect(new URL('/dashboard', req.url));
+            }
         }
     },
     {

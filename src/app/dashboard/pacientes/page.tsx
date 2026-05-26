@@ -3,7 +3,10 @@ import { PatientsTable } from "./patients-table";
 import { CreatePatientModal } from "./create-patient-modal";
 import { PatientImporterPanel } from "./patient-importer-panel";
 
+import { checkSession } from "@/lib/auth-helpers";
+
 export default async function PacientesPage() {
+    await checkSession();
     const pacientes = await getPacientes();
 
     const calculateAge = (dob: Date | null) => {

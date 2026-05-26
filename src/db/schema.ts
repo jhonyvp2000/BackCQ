@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, date, uuid, varchar, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, date, uuid, varchar, primaryKey, integer } from "drizzle-orm/pg-core";
 
 // Base shared tables (Hetzner Ecosystem, created by BackAdmin)
 export const usersTable = pgTable("users", {
@@ -9,6 +9,7 @@ export const usersTable = pgTable("users", {
   email: text("email").unique(),
   passwordHash: text("password_hash").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
+  tokenVersion: integer("token_version").default(1).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

@@ -5,7 +5,10 @@ import { getMedicalStaffByProfession } from "@/app/actions/personal";
 import { getPacientes } from "@/app/actions/pacientes";
 import { SurgeryTvTable } from "./surgery-tv-table";
 
+import { checkSession } from "@/lib/auth-helpers";
+
 export default async function ProgramacionesTVPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string }> }) {
+    await checkSession();
     const sortParams = await searchParams;
     const currentSort = sortParams?.sort === 'asc' ? 'asc' : 'desc';
     

@@ -10,6 +10,7 @@ interface ExtendedUser extends User {
     dni: string;
     name: string;
     lastname: string;
+    tokenVersion: number;
     permissions: string[];
 }
 
@@ -66,6 +67,7 @@ export const authOptions: AuthOptions = {
                         dni: user.dni,
                         name: user.name,
                         lastname: user.lastname,
+                        tokenVersion: user.tokenVersion,
                         permissions
                     } as ExtendedUser;
                 } catch (error) {
@@ -84,16 +86,40 @@ export const authOptions: AuthOptions = {
                 token.name = extUser.name;
                 token.lastname = extUser.lastname;
                 token.permissions = extUser.permissions;
+                token.tokenVersion = extUser.tokenVersion;
             }
             return token;
         },
         async session({ session, token }) {
-            if (session.user) {
-                (session.user as any).id = token.id;
-                (session.user as any).dni = token.dni;
-                (session.user as any).name = token.name;
-                (session.user as any).lastname = token.lastname;
-                (session.user as any).permissions = token.permissions || [];
+            try {
+                // 1. Verificar si el usuario sigue existiendo y está activo en la tabla global 'users'
+                const users = await db.select({ 
+                    isActive: usersTable.isActive,
+                    tokenVersion: usersTable.tokenVersion 
+                })
+                .from(usersTable)
+                .where(eq(usersTable.id, token.id as string));
+                
+                const user = users[0];
+
+                if (!user || !user.isActive || user.tokenVersion !== token.tokenVersion) {
+                    console.log(`Cierre de sesión forzado para el usuario ${token.id}: Versión de token desactualizada o cuenta inactiva.`);
+                    return {
+                        expires: session.expires,
+                        error: "SessionExpired"
+                    } as any;
+                }
+
+                if (session.user) {
+                    (session.user as any).id = token.id;
+                    (session.user as any).dni = token.dni;
+                    (session.user as any).name = token.name;
+                    (session.user as any).lastname = token.lastname;
+                    (session.user as any).permissions = token.permissions || [];
+                }
+            } catch (error) {
+                console.error("Error validando sesión:", error);
+                return null as any; // Ante fallos de base de datos, por seguridad invalidamos la sesión
             }
             return session;
         },
