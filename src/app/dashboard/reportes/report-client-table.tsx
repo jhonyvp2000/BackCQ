@@ -20,7 +20,8 @@ type ReportData = {
     tipoIntervencion: string;
     cirujano: string;
     anestesiologo: string;
-    enfermeria: string;
+    instrumentista: string;
+    circulante: string;
     tipoSeguro: string;
     procedencia: string;
     tipoAnestesia: string;
@@ -122,7 +123,7 @@ export function ReportClientTable() {
             "N° CORRELATIVO", "ESPECIALIDAD", "SALA PROGRAMADA", "FECHA DE SOLICITUD", "FECHA PROGRAMADA", "HORA PROGRAMADA", "FECHA DE INTERVENCION QUIRURGICA", "HORA DE INTERVENCION QUIRURGICA",
             "EDAD", "SEXO (M/F)", "HISTORIA CLINICA", "NOMBRES Y APELLIDOS DEL PACIENTE", "DIAGNOSTICO", 
             "TIPO DIAGNOSTICO", "TIPO DE INTERVENCIÓN", "CIRUJANO", 
-            "ANESTESIOLOGO", "CIRCULANTE/INSTRUMENTISTA", "TIPO SEGURO", "PROCEDENCIA", "TIPO ANESTECIA", 
+            "ANESTESIOLOGO", "INSTRUMENTISTA", "CIRCULANTE", "TIPO SEGURO", "PROCEDENCIA", "TIPO ANESTECIA", 
             "HORA INGRESO PACIENTE", "HORA INICIO ANESTECIA", "HORA ANTES DE LA INCISIÓN", 
             "HORA TERMINO CIRUGIA", "HORA SALIDA PACIENTE", "HORA SALIDA DE URPA", 
             "PRIORIDAD", "MES DE INTERVENCION", "TURNO", "INCOMPLETO"
@@ -140,7 +141,8 @@ export function ReportClientTable() {
             const rowData = [
                 item.correlativo, item.especialidad, item.sala, item.fechaSolicitud, item.fechaIntervencionQuirurgica, item.horaProgramada, item.fechaRealIntervencion, item.horaRealIntervencion,
                 item.edad, item.sexo, item.historiaClinica, item.nombresApellidos, item.diagnostico, 
-                item.tipoDiagnostico, item.tipoIntervencion, item.cirujano, item.anestesiologo, item.enfermeria, 
+                item.tipoDiagnostico, item.tipoIntervencion, item.cirujano, item.anestesiologo, 
+                item.instrumentista, item.circulante, 
                 item.tipoSeguro, item.procedencia, item.tipoAnestesia, item.horaIngresoPaciente, 
                 item.horaInicioAnestesia, item.horaAntesIncision, item.horaTerminoCirugia, 
                 item.horaSalidaPaciente, item.horaSalidaUrpa, 
@@ -181,7 +183,8 @@ export function ReportClientTable() {
         sheet.getColumn(15).width = 35; // Tipo Intervención
         sheet.getColumn(16).width = 25; // Cirujano
         sheet.getColumn(17).width = 25; // Anestesiólogo
-        sheet.getColumn(18).width = 25; // Circulante/Instrumentista
+        sheet.getColumn(18).width = 25; // Instrumentista
+        sheet.getColumn(19).width = 25; // Circulante
         sheet.getRow(5).height = 30; // Altura del header (ahora es fila 5)
         sheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 5 }]; // Congelar 5 primeras filas
 

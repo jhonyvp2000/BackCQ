@@ -168,7 +168,8 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
 
         const surgeons = surgeryTeam.filter(t => t.role === 'CIRUJANO').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
         const anesthesiologists = surgeryTeam.filter(t => t.role === 'ANESTESIOLOGO').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
-        const nurses = surgeryTeam.filter(t => t.role === 'ENFERMERO').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
+        const instrumentistas = surgeryTeam.filter(t => t.role === 'INSTRUMENTISTA').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
+        const circulantes = surgeryTeam.filter(t => t.role === 'CIRCULANTE').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
 
         const combinedDiagnoses = s.surgery.diagnosis ? (surgeryDiags.length > 0 ? `${s.surgery.diagnosis} | ${surgeryDiags.join(" | ")}` : s.surgery.diagnosis) : surgeryDiags.join(" | ");
 
@@ -203,7 +204,8 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
             tipoIntervencion: surgeryInts.join(" / "),
             cirujano: surgeons,
             anestesiologo: anesthesiologists,
-            enfermeria: nurses,
+            instrumentista: instrumentistas,
+            circulante: circulantes,
             tipoSeguro: s.surgery.insuranceType || "",
             procedencia: s.surgery.origin || "",
             tipoAnestesia: s.surgery.anesthesiaType || "",
