@@ -185,6 +185,12 @@ export function ReportClientTable() {
         sheet.getColumn(17).width = 25; // Anestesiólogo
         sheet.getColumn(18).width = 25; // Instrumentista
         sheet.getColumn(19).width = 25; // Circulante
+        sheet.getColumn(23).width = 18; // HORA INGRESO PACIENTE
+        sheet.getColumn(24).width = 18; // HORA INICIO ANESTECIA
+        sheet.getColumn(25).width = 18; // HORA ANTES DE LA INCISIÓN
+        sheet.getColumn(26).width = 18; // HORA TERMINO CIRUGIA
+        sheet.getColumn(27).width = 18; // HORA SALIDA PACIENTE
+        sheet.getColumn(28).width = 18; // HORA SALIDA DE URPA
         sheet.getRow(5).height = 30; // Altura del header (ahora es fila 5)
         sheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 5 }]; // Congelar 5 primeras filas
 

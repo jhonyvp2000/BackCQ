@@ -427,6 +427,13 @@ export function SurgeryViewToggle({
         }).format(date);
       };
 
+      const formatDateTimeExcel = (dateVal: any) => {
+        if (!dateVal) return "";
+        const dStr = formatDateExcel(dateVal);
+        const tStr = formatTimeExcel(dateVal);
+        return `${dStr} ${tStr}`;
+      };
+
       const getAnesthesiaLabel = (anesthesiaType: string) => {
         if (!anesthesiaType) return "";
         const anesthesiaMap: Record<string, string> = {
@@ -579,12 +586,12 @@ export function SurgeryViewToggle({
           getTeamNames(circulantes),
           getTeamNames(others),
           getStatusLabel(surg.status),
-          formatTimeExcel(surg.actualStartTime),
-          formatTimeExcel(surg.anesthesiaStartTime),
-          formatTimeExcel(surg.preIncisionTime),
-          formatTimeExcel(surg.surgeryEndTime),
-          formatTimeExcel(surg.patientExitTime),
-          formatTimeExcel(surg.urpaExitTime)
+          formatDateTimeExcel(surg.actualStartTime),
+          formatDateTimeExcel(surg.anesthesiaStartTime),
+          formatDateTimeExcel(surg.preIncisionTime),
+          formatDateTimeExcel(surg.surgeryEndTime),
+          formatDateTimeExcel(surg.patientExitTime),
+          formatDateTimeExcel(surg.urpaExitTime)
         ];
 
         const dataRow = sheet.addRow(rowData);
@@ -653,12 +660,12 @@ export function SurgeryViewToggle({
         25, // Circulante(s)
         25, // Otros del Equipo
         12, // Estado
-        12, // Hora Ingreso Qx
-        12, // Hora Inicio Anestesia
-        12, // Hora Antes Incisión
-        12, // Hora Término Cirugía
-        12, // Hora Salida Paciente
-        12  // Hora Salida URPA
+        18, // Hora Ingreso Qx
+        18, // Hora Inicio Anestesia
+        18, // Hora Antes Incisión
+        18, // Hora Término Cirugía
+        18, // Hora Salida Paciente
+        18  // Hora Salida URPA
       ];
 
       colWidths.forEach((width, i) => {

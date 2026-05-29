@@ -162,6 +162,14 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
     .where(inArray(cqSurgeryInterventions.surgeryId, surgeryIds));
 
     return surgeries.map((s, index) => {
+        const formatDateTime = (dateVal: Date | null) => {
+            if (!dateVal) return "";
+            const d = new Date(dateVal);
+            const dStr = d.toLocaleDateString("es-PE", {timeZone: 'America/Lima'});
+            const tStr = d.toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'});
+            return `${dStr} ${tStr}`;
+        };
+
         const surgeryTeam = teams.filter(t => t.surgeryId === s.surgery.id);
         const surgeryDiags = diagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosis.name);
         const surgeryInts = intRecords.filter(i => i.surgeryId === s.surgery.id).map(i => i.intervention.name);
@@ -209,12 +217,12 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
             tipoSeguro: s.surgery.insuranceType || "",
             procedencia: s.surgery.origin || "",
             tipoAnestesia: s.surgery.anesthesiaType || "",
-            horaIngresoPaciente: s.surgery.actualStartTime ? new Date(s.surgery.actualStartTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
-            horaInicioAnestesia: s.surgery.anesthesiaStartTime ? new Date(s.surgery.anesthesiaStartTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
-            horaAntesIncision: s.surgery.preIncisionTime ? new Date(s.surgery.preIncisionTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
-            horaTerminoCirugia: s.surgery.surgeryEndTime ? new Date(s.surgery.surgeryEndTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
-            horaSalidaPaciente: s.surgery.patientExitTime ? new Date(s.surgery.patientExitTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
-            horaSalidaUrpa: s.surgery.urpaExitTime ? new Date(s.surgery.urpaExitTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
+            horaIngresoPaciente: formatDateTime(s.surgery.actualStartTime),
+            horaInicioAnestesia: formatDateTime(s.surgery.anesthesiaStartTime),
+            horaAntesIncision: formatDateTime(s.surgery.preIncisionTime),
+            horaTerminoCirugia: formatDateTime(s.surgery.surgeryEndTime),
+            horaSalidaPaciente: formatDateTime(s.surgery.patientExitTime),
+            horaSalidaUrpa: formatDateTime(s.surgery.urpaExitTime),
             fechaIntervencionQuirurgica: s.surgery.scheduledDate ? new Date(s.surgery.scheduledDate).toLocaleDateString("es-PE", {timeZone: 'America/Lima'}) : "",
             fechaRealIntervencion: s.surgery.actualStartTime ? new Date(s.surgery.actualStartTime).toLocaleDateString("es-PE", {timeZone: 'America/Lima'}) : "",
             horaRealIntervencion: s.surgery.actualStartTime ? new Date(s.surgery.actualStartTime).toLocaleTimeString("es-PE", {hour: '2-digit', minute:'2-digit', hour12:false, timeZone: 'America/Lima'}) : "",
