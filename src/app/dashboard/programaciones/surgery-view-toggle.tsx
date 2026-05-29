@@ -853,12 +853,14 @@ export function SurgeryViewToggle({
     let finalDateNew = newDateNew;
     let isError = false;
 
-    if (newDateAnt && newDateNew) {
-      if (newDateNew > newDateAnt) {
-        // Si el cambio proviene del componente antiguo (es decir, newDateNew no ha cambiado con respecto a filterDateNew)
-        if (newDateNew === filterDateNew) {
-          finalDateNew = newDateAnt;
-        } else {
+    // Si el cambio proviene de "Fecha Fin" (newDateNew es igual al filterDateNew actual),
+    // igualamos inmediatamente la fecha de inicio a la nueva fecha de fin.
+    if (newDateNew === filterDateNew) {
+      finalDateNew = newDateAnt;
+    } else {
+      // Si el cambio proviene de "Fecha Inicio" (newDateNew cambió), aplicamos la validación normal
+      if (newDateAnt && newDateNew) {
+        if (newDateNew > newDateAnt) {
           isError = true;
         }
       }
