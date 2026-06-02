@@ -2386,31 +2386,29 @@ export function SurgeryViewToggle({
                                     </div>
                                   )}
 
-                                {/* 3. Tipo de intervención */}
+                                {/* 3. Tipo de intervención (Concatenados) */}
                                 {row.interventions &&
                                   row.interventions.length > 0 &&
-                                  typeof interventions !== "undefined" && (
-                                    <div
-                                      className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium line-clamp-3 leading-tight break-words whitespace-normal"
-                                      title={
-                                        interventions.find(
-                                          (int) =>
-                                            int.id === row.interventions[0],
-                                        )?.name
-                                      }
-                                    >
-                                      <span className="opacity-80 font-bold">
-                                        In:
-                                      </span>{" "}
-                                      {interventions.find(
-                                        (int) =>
-                                          int.id === row.interventions[0],
-                                      )?.name || row.interventions[0]}{" "}
-                                      {row.interventions.length > 1
-                                        ? `(+${row.interventions.length - 1})`
-                                        : ""}
-                                    </div>
-                                  )}
+                                  typeof interventions !== "undefined" && (() => {
+                                    const matchedNames = row.interventions
+                                      .map(
+                                        (iId: string) =>
+                                          interventions.find((int) => int.id === iId)?.name || iId,
+                                      )
+                                      .filter(Boolean);
+                                    const concatenatedInterventions = matchedNames.join(" / ");
+                                    return (
+                                      <div
+                                        className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium line-clamp-3 leading-tight break-words whitespace-normal"
+                                        title={concatenatedInterventions}
+                                      >
+                                        <span className="opacity-80 font-bold">
+                                          In:
+                                        </span>{" "}
+                                        {concatenatedInterventions}
+                                      </div>
+                                    );
+                                  })()}
 
                                 {/* 4. Notas internas */}
                                 {row.surgery.notes && (
