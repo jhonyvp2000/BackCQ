@@ -124,6 +124,7 @@ export const cqSurgeries = pgTable("cq_surgeries", {
   isDeathByEmergency: boolean("is_death_by_emergency").default(false).notNull(),
   isFromCopri: boolean("is_from_copri").default(false).notNull(),
   isRescheduled: boolean("is_rescheduled").default(false).notNull(),
+  cancellationReason: text("cancellation_reason"),
   notes: text("notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

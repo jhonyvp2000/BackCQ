@@ -648,6 +648,11 @@ export async function updateSurgeryStatus(formData: FormData) {
         updatedAt: new Date(),
     };
 
+    if (status === 'cancelled') {
+        const cancellationReason = formData.get("cancellation_reason") as string | null;
+        updatePayload.cancellationReason = cancellationReason ? cancellationReason.trim() : null;
+    }
+
     if (transitionTimeStr) {
         const transitionDate = new Date(transitionTimeStr);
         const tdMs = transitionDate.getTime();

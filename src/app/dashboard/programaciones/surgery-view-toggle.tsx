@@ -2466,6 +2466,15 @@ export function SurgeryViewToggle({
                                   </div>
                                 )}
 
+                                {/* Motivo de suspensión */}
+                                {row.surgery.status === 'cancelled' && row.surgery.cancellationReason && (
+                                  <div className="mt-1.5 block">
+                                    <span className="text-[10px] inline-block px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800/50 font-bold bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 max-w-full break-words leading-normal" title={row.surgery.cancellationReason}>
+                                      Motivo Suspensión: {row.surgery.cancellationReason}
+                                    </span>
+                                  </div>
+                                )}
+
                                 {/* 5. Tipo de anestesia */}
                                 {row.surgery.anesthesiaType && (
                                   <div className="flex flex-wrap gap-1 mt-1">
@@ -3051,55 +3060,70 @@ export function SurgeryViewToggle({
                   className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl border border-zinc-200/50 dark:border-zinc-800 z-10 w-full max-w-md overflow-hidden relative"
                 >
                   <div className="absolute top-0 left-0 w-full h-1.5 bg-amber-500"></div>
-                  <div className="p-6 pt-8 text-center sm:text-left">
-                    <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mx-auto sm:mx-0 shrink-0 mb-4">
-                      <XCircle size={24} className="text-amber-500" />
+                  <form
+                    action={handleStatusUpdate}
+                    onSubmit={() => setCancellingSurgery(null)}
+                  >
+                    <input
+                      type="hidden"
+                      name="id"
+                      value={cancellingSurgery.surgery.id}
+                    />
+                    <input type="hidden" name="status" value="cancelled" />
+
+                    <div className="p-6 pt-8 text-center sm:text-left">
+                      <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mx-auto sm:mx-0 shrink-0 mb-4">
+                        <XCircle size={24} className="text-amber-500" />
+                      </div>
+                      <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
+                        ¿Suspender Cirugía?
+                      </h3>
+                      <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium whitespace-pre-wrap mb-4">
+                        Esta acción cambiará la programación de{" "}
+                        <strong className="text-zinc-700 dark:text-zinc-300">
+                          {cancellingSurgery.patient?.name || "este paciente"}
+                        </strong>{" "}
+                        a un estado suspendida. No podrá volver a editarla, solo
+                        eliminarla o clonarla para crear un nuevo registro.
+                      </p>
+
+                      {/* Motivo de la suspensión (Opcional) */}
+                      <div className="mb-4 text-left">
+                        <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest block mb-2">
+                          Motivo de la suspensión (Opcional)
+                        </label>
+                        <input
+                          type="text"
+                          name="cancellation_reason"
+                          placeholder="Ej: Paciente no apto, falta de insumos..."
+                          className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all text-sm font-medium"
+                        />
+                      </div>
+
+                      <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700/50 mb-5 text-left">
+                        <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest block mb-2">
+                          Para confirmar, escriba{" "}
+                          <strong className="text-amber-600 dark:text-amber-400 select-all">
+                            {cancellingSurgery.patientPii?.dni || "SUSPENDER"}
+                          </strong>
+                        </label>
+                        <input
+                          type="text"
+                          value={cancelConfirmText}
+                          onChange={(e) => setCancelConfirmText(e.target.value)}
+                          placeholder="Escribir confirmación aquí..."
+                          className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all text-sm font-medium"
+                        />
+                      </div>
                     </div>
-                    <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">
-                      ¿Suspender Cirugía?
-                    </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium whitespace-pre-wrap mb-4">
-                      Esta acción cambiará la programación de{" "}
-                      <strong className="text-zinc-700 dark:text-zinc-300">
-                        {cancellingSurgery.patient?.name || "este paciente"}
-                      </strong>{" "}
-                      a un estado suspendida. No podrá volver a editarla, solo
-                      eliminarla o clonarla para crear un nuevo registro.
-                    </p>
-                    <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700/50 mb-5">
-                      <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest block mb-2">
-                        Para confirmar, escriba{" "}
-                        <strong className="text-amber-600 dark:text-amber-400 select-all">
-                          {cancellingSurgery.patientPii?.dni || "SUSPENDER"}
-                        </strong>
-                      </label>
-                      <input
-                        type="text"
-                        value={cancelConfirmText}
-                        onChange={(e) => setCancelConfirmText(e.target.value)}
-                        placeholder="Escribir confirmación aquí..."
-                        className="w-full px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none transition-all text-sm font-medium"
-                      />
-                    </div>
-                  </div>
-                  <div className="px-6 py-4 bg-zinc-50/50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-800 flex justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setCancellingSurgery(null)}
-                      className="px-5 py-2.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-semibold transition-colors text-sm"
-                    >
-                      Cancelar
-                    </button>
-                    <form
-                      action={handleStatusUpdate}
-                      onSubmit={() => setCancellingSurgery(null)}
-                    >
-                      <input
-                        type="hidden"
-                        name="id"
-                        value={cancellingSurgery.surgery.id}
-                      />
-                      <input type="hidden" name="status" value="cancelled" />
+                    <div className="px-6 py-4 bg-zinc-50/50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-800 flex justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setCancellingSurgery(null)}
+                        className="px-5 py-2.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white font-semibold transition-colors text-sm"
+                      >
+                        Cancelar
+                      </button>
                       <button
                         type="submit"
                         disabled={
@@ -3110,8 +3134,8 @@ export function SurgeryViewToggle({
                       >
                         Confirmar Suspensión
                       </button>
-                    </form>
-                  </div>
+                    </div>
+                  </form>
                 </motion.div>
               </div>
             )}
