@@ -929,6 +929,18 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                             <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Viene de COPRI</span>
                                         </label>
                                     </div>
+                                    <div className="pt-2">
+                                        <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30">
+                                            <input 
+                                                type="checkbox" 
+                                                name="is_rescheduled" 
+                                                disabled={!canSchedule}
+                                                defaultChecked={clonedData?.surgery?.isRescheduled || false}
+                                                className="w-4 h-4 text-[var(--color-hospital-blue)] bg-white border-zinc-300 rounded focus:ring-[var(--color-hospital-blue)] dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                            />
+                                            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Reprogramado</span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 

@@ -772,6 +772,7 @@ export function SurgeryViewToggle({
   const [searchStaffFilter, setSearchStaffFilter] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string[]>([]);
   const [filterCopri, setFilterCopri] = useState<string>("all");
+  const [filterRescheduled, setFilterRescheduled] = useState<string>("all");
   const [filterAnesthesia, setFilterAnesthesia] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
   const [isListFullscreen, setIsListFullscreen] = useState<boolean>(false);
@@ -784,6 +785,7 @@ export function SurgeryViewToggle({
     filterSpecialty.length > 0 ||
     filterStaff.length > 0 ||
     filterCopri !== "all" ||
+    filterRescheduled !== "all" ||
     filterAnesthesia.length > 0 ||
     filterDate !== todayStr ||
     filterDateNew !== todayStr;
@@ -1008,6 +1010,12 @@ export function SurgeryViewToggle({
       const isCopri = s.surgery.isFromCopri === true;
       if (filterCopri === "true" && !isCopri) return false;
       if (filterCopri === "false" && isCopri) return false;
+    }
+
+    if (filterRescheduled !== "all") {
+      const isRescheduled = s.surgery.isRescheduled === true;
+      if (filterRescheduled === "true" && !isRescheduled) return false;
+      if (filterRescheduled === "false" && isRescheduled) return false;
     }
 
     if (filterAnesthesia.length > 0) {
@@ -1251,6 +1259,7 @@ export function SurgeryViewToggle({
                     setFilterSpecialty([]);
                     setFilterStaff([]);
                     setFilterCopri("all");
+                    setFilterRescheduled("all");
                     setFilterAnesthesia([]);
                     handleDatesChange(todayStr, todayStr);
                   }}
@@ -1325,7 +1334,7 @@ export function SurgeryViewToggle({
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-9 gap-4 pt-2 pb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-10 gap-4 pt-2 pb-2">
                   {/* Buscador de Paciente */}
                   <div className="flex flex-col gap-1 w-full">
                     <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider pl-1">Paciente</span>
@@ -1961,6 +1970,43 @@ export function SurgeryViewToggle({
                             ))}
                           </div>
                         </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filtro Reprogramado */}
+                  <div className="flex flex-col gap-1 w-full">
+                    <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider pl-1">Reprogramado</span>
+                    <div className="relative group z-10">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Filter
+                          size={14}
+                          className="text-zinc-400 group-focus-within:text-[var(--color-hospital-blue)] transition-colors"
+                        />
+                      </div>
+                      <select
+                        value={filterRescheduled}
+                        onChange={(e) => setFilterRescheduled(e.target.value)}
+                        className="w-full pl-9 pr-8 py-2 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all text-zinc-800 dark:text-zinc-200 appearance-none"
+                      >
+                        <option value="all">Filtro Reprogramado: Todos</option>
+                        <option value="true">Solo Reprogramados</option>
+                        <option value="false">Sin Reprogramar</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg
+                          className="w-4 h-4 text-zinc-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
                       </div>
                     </div>
                   </div>

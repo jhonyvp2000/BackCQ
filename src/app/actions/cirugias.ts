@@ -342,6 +342,7 @@ export async function createSurgery(formData: FormData) {
     const internalCode = formData.get("internal_code") as string;
     const specialtyId = formData.get("specialty_id") as string;
     const isFromCopri = formData.get("is_from_copri") === "on";
+    const isRescheduled = formData.get("is_rescheduled") === "on";
 
     const surgeonIds = formData.getAll("surgeons") as string[];
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
@@ -556,6 +557,7 @@ export async function createSurgery(formData: FormData) {
         specialtyId: specialtyId || null,
         notes,
         isFromCopri,
+        isRescheduled,
     }).returning({ id: cqSurgeries.id });
 
     const surgeryRecordId = newSurgery[0].id;
@@ -757,6 +759,7 @@ export async function editSurgery(formData: FormData) {
     const internalCode = formData.get("internal_code") as string;
     const specialtyId = formData.get("specialty_id") as string;
     const isFromCopri = formData.get("is_from_copri") === "on";
+    const isRescheduled = formData.get("is_rescheduled") === "on";
     const anesthesiaType = formData.get("anesthesia_type") as string;
 
     const surgeonIds = formData.getAll("surgeons") as string[];
@@ -968,6 +971,7 @@ export async function editSurgery(formData: FormData) {
         specialtyId: specialtyId || null,
         notes,
         isFromCopri,
+        isRescheduled,
         updatedAt: new Date(),
     }).where(eq(cqSurgeries.id, id));
 
