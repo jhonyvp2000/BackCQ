@@ -1309,13 +1309,13 @@ export function SurgeryViewToggle({
                 </span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <button
+                {/* <button
                   onClick={exportToExcel}
                   className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600/90 dark:hover:bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors border border-emerald-500/30 flex items-center gap-1.5 shadow-sm"
                   title="Exportar registros filtrados a Excel"
                 >
                   <Download size={14} /> Exportar Excel
-                </button>
+                </button> */}
                 <div className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 px-3 py-1.5 rounded-xl border border-zinc-100 dark:border-zinc-800">
                   Mostrando{" "}
                   <span className="text-zinc-900 dark:text-zinc-100 font-bold">
