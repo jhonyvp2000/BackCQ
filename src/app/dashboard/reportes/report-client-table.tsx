@@ -118,6 +118,14 @@ export function ReportClientTable() {
         // --- ROW 4: Línea en blanco ---
         sheet.addRow([]);
 
+        const getStatusText = (status: string) => {
+            if (status === 'scheduled') return 'Programado';
+            if (status === 'completed') return 'Finalizada';
+            if (status === 'cancelled') return 'Suspendida';
+            if (['in_progress', 'anesthesia_start', 'pre_incision', 'surgery_end', 'patient_exit', 'urpa_exit'].includes(status)) return 'En proceso (Qx)';
+            return status.replace('_', ' ');
+        };
+
         // --- ROW 5: Headers ---
         const headers = [
             "N° CORRELATIVO", "ESPECIALIDAD", "SALA PROGRAMADA", "FECHA DE SOLICITUD", "FECHA PROGRAMADA", "HORA PROGRAMADA", "FECHA DE INTERVENCION QUIRURGICA", "HORA DE INTERVENCION QUIRURGICA",
@@ -126,7 +134,7 @@ export function ReportClientTable() {
             "ANESTESIOLOGO", "INSTRUMENTISTA", "CIRCULANTE", "TIPO SEGURO", "PROCEDENCIA", "TIPO ANESTECIA", 
             "HORA INGRESO PACIENTE", "HORA INICIO ANESTECIA", "HORA ANTES DE LA INCISIÓN", 
             "HORA TERMINO CIRUGIA", "HORA SALIDA PACIENTE", "HORA SALIDA DE URPA", 
-            "PRIORIDAD", "MES DE INTERVENCION", "TURNO", "INCOMPLETO"
+            "PRIORIDAD", "MES DE INTERVENCION", "TURNO", "ESTADO", "INCOMPLETO"
         ];
         const headerRow = sheet.addRow(headers);
         headerRow.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FFFFFFFF' } }; // White text
@@ -146,7 +154,7 @@ export function ReportClientTable() {
                 item.tipoSeguro, item.procedencia, item.tipoAnestesia, item.horaIngresoPaciente, 
                 item.horaInicioAnestesia, item.horaAntesIncision, item.horaTerminoCirugia, 
                 item.horaSalidaPaciente, item.horaSalidaUrpa, 
-                item.tipoPrioridad, item.mesIntervencion, item.turno,
+                item.tipoPrioridad, item.mesIntervencion, item.turno, getStatusText(item.estadoAlerta),
                 (item.estadoAlerta === 'completed' && (!item.tipoAnestesia || item.tipoAnestesia.trim() === '' || item.tipoAnestesia === '-')) ? 'X' : ''
             ];
             const dataRow = sheet.addRow(rowData);

@@ -1105,7 +1105,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <option value="Urgencia">Urgencia</option>
                                     </select>
                                     <FieldError msg={errors.origin} />
-                                              <div className="col-span-full grid grid-cols-1 md:grid-cols-4 gap-6">
+                                </div>
+                                <div className="col-span-full grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="space-y-2 pt-2">
                                 <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos Pre (Dx)</label>
                                 <div className="relative mb-2">

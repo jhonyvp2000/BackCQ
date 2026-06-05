@@ -2386,7 +2386,7 @@ export function SurgeryViewToggle({
                                       )?.name
                                     }
                                   >
-                                    <span className="opacity-80">Dx:</span>{" "}
+                                    <span className="opacity-80">Dx Pre:</span>{" "}
                                     {diagnoses.find(
                                       (dx) => dx.id === row.diagnoses[0],
                                     )?.code || row.diagnoses[0]}{" "}
@@ -2403,8 +2403,42 @@ export function SurgeryViewToggle({
                                     className="text-[11px] text-blue-700 dark:text-blue-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal"
                                     title={row.surgery.diagnosis}
                                   >
-                                    <span className="opacity-80">Dx:</span>{" "}
+                                    <span className="opacity-80">Dx Pre:</span>{" "}
                                     {row.surgery.diagnosis}
+                                  </div>
+                                ) : null}
+
+                                {/* 1.1 Diagnósticos Post */}
+                                {row.postDiagnoses &&
+                                row.postDiagnoses.length > 0 &&
+                                typeof diagnoses !== "undefined" ? (
+                                  <div
+                                    className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal"
+                                    title={
+                                      diagnoses.find(
+                                        (dx) => dx.id === row.postDiagnoses[0],
+                                      )?.name
+                                    }
+                                  >
+                                    <span className="opacity-80">Dx Post:</span>{" "}
+                                    {diagnoses.find(
+                                      (dx) => dx.id === row.postDiagnoses[0],
+                                    )?.code || row.postDiagnoses[0]}{" "}
+                                    -{" "}
+                                    {diagnoses.find(
+                                      (dx) => dx.id === row.postDiagnoses[0],
+                                    )?.name || ""}{" "}
+                                    {row.postDiagnoses.length > 1
+                                      ? `(+${row.postDiagnoses.length - 1})`
+                                      : ""}
+                                  </div>
+                                ) : row.surgery.postDiagnosis ? (
+                                  <div
+                                    className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold line-clamp-3 leading-tight break-words whitespace-normal"
+                                    title={row.surgery.postDiagnosis}
+                                  >
+                                    <span className="opacity-80">Dx Post:</span>{" "}
+                                    {row.surgery.postDiagnosis}
                                   </div>
                                 ) : null}
 
