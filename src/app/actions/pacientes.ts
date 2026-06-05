@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { cqPatientPii, cqPatients, cqSurgeries } from "@/db/schema";
+import { cqPatientPii, cqPatients, cqSurgeries, cqUbigeo } from "@/db/schema";
 import { eq, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -19,23 +19,37 @@ export async function lookupPatientByDni(rawId: string) {
     if (dni.length < 8) return null;
 
     try {
-        const result = await db.select().from(cqPatientPii).where(
-            or(
-                eq(cqPatientPii.dni, dni),
-                eq(cqPatientPii.historiaClinica, dni),
-                eq(cqPatientPii.carnetExtranjeria, dni),
-                eq(cqPatientPii.pasaporte, dni)
-            )
-        );
+        const result = await db
+            .select({
+                pii: cqPatientPii,
+                patient: cqPatients,
+                ubigeo: cqUbigeo
+            })
+            .from(cqPatientPii)
+            .innerJoin(cqPatients, eq(cqPatientPii.patientId, cqPatients.id))
+            .leftJoin(cqUbigeo, eq(cqPatients.ubigeo, cqUbigeo.code))
+            .where(
+                or(
+                    eq(cqPatientPii.dni, dni),
+                    eq(cqPatientPii.historiaClinica, dni),
+                    eq(cqPatientPii.carnetExtranjeria, dni),
+                    eq(cqPatientPii.pasaporte, dni)
+                )
+            );
 
         let localPatient = result.length > 0 ? result[0] : null;
 
         // Si ya está en la bóveda y NO se llama "No Identificado", lo devolvemos rápido.
-        if (localPatient && localPatient.nombres.toUpperCase() !== 'NO IDENTIFICADO') {
+        if (localPatient && localPatient.pii.nombres.toUpperCase() !== 'NO IDENTIFICADO') {
             return {
                 found: true,
-                fullName: `${localPatient.nombres} ${localPatient.apellidos}`,
-                source: 'Registro Local CQ (Bóveda)'
+                fullName: `${localPatient.pii.nombres} ${localPatient.pii.apellidos}`,
+                source: 'Registro Local CQ (Bóveda)',
+                direccion: localPatient.pii.direccion,
+                distrito: localPatient.ubigeo?.distrito || null,
+                provincia: localPatient.ubigeo?.provincia || null,
+                departamento: localPatient.ubigeo?.departamento || null,
+                apiData: null
             };
         }
 
@@ -114,20 +128,54 @@ export async function lookupPatientByDni(rawId: string) {
 
         const fullName = `${pName} ${pLastName}`;
 
+        let extDistrito = null;
+        let extProvincia = null;
+        let extDepartamento = null;
+        if (ubi) {
+            const ubiInfo = await db.select().from(cqUbigeo).where(eq(cqUbigeo.code, ubi)).limit(1);
+            if (ubiInfo.length > 0) {
+                extDistrito = ubiInfo[0].distrito;
+                extProvincia = ubiInfo[0].provincia;
+                extDepartamento = ubiInfo[0].departamento;
+            }
+        }
+
         if (localPatient) {
             // Ya existía en Bóveda (posiblemente como "No Identificado")
             if (pFoundInApi) {
-                // Return flag to update lightly if needed, but no auto updates here either
-                // The prompt says "que solo inyecte si encontro un PACIENTE". Wait, if it exists locally, it's already there! We should update it if it was temporary, but let's just return it.
-                // Wait! To keep it 100% deferred: 
-                return { found: true, fullName, source: 'Registro Local CQ (Bóveda / API Sync)', apiData: null };
+                return {
+                    found: true,
+                    fullName,
+                    source: 'Registro Local CQ (Bóveda / API Sync)',
+                    direccion: pDireccion,
+                    distrito: extDistrito,
+                    provincia: extProvincia,
+                    departamento: extDepartamento,
+                    apiData: JSON.stringify({
+                        sexo,
+                        fechaNacimiento: fechaNac ? fechaNac.toISOString() : null,
+                        ubigeo: ubi,
+                        nombres: pName,
+                        apellidos: pLastName,
+                        historiaClinica: pHistoriaClinica,
+                        direccion: pDireccion,
+                        dni: dni,
+                        distrito: extDistrito,
+                        provincia: extProvincia,
+                        departamento: extDepartamento
+                    })
+                };
             }
 
             // Si la API falló y ya lo teníamos como "NO IDENTIFICADO" o similar
             return {
                 found: true,
-                fullName: `${localPatient.nombres} ${localPatient.apellidos}`,
+                fullName: `${localPatient.pii.nombres} ${localPatient.pii.apellidos}`,
                 source: 'Registro Local CQ (Bóveda)',
+                direccion: localPatient.pii.direccion,
+                distrito: localPatient.ubigeo?.distrito || null,
+                provincia: localPatient.ubigeo?.provincia || null,
+                departamento: localPatient.ubigeo?.departamento || null,
                 apiData: null
             };
         } else {
@@ -138,6 +186,10 @@ export async function lookupPatientByDni(rawId: string) {
                     found: true, 
                     fullName, 
                     source: 'ApiNetHos (Virtual)',
+                    direccion: pDireccion,
+                    distrito: extDistrito,
+                    provincia: extProvincia,
+                    departamento: extDepartamento,
                     apiData: JSON.stringify({
                         sexo,
                         fechaNacimiento: fechaNac ? fechaNac.toISOString() : null,
@@ -146,7 +198,10 @@ export async function lookupPatientByDni(rawId: string) {
                         apellidos: pLastName,
                         historiaClinica: pHistoriaClinica,
                         direccion: pDireccion,
-                        dni: dni
+                        dni: dni,
+                        distrito: extDistrito,
+                        provincia: extProvincia,
+                        departamento: extDepartamento
                     })
                 };
             } else {
@@ -175,7 +230,7 @@ export async function lookupPatientsInApi(query: string) {
         const data = await response.json();
         
         if (data.data && Array.isArray(data.data)) {
-            return data.data.map((externalPatientData: any) => {
+            const mappedPats = await Promise.all(data.data.map(async (externalPatientData: any) => {
                 const dni = externalPatientData.documentoNumero || "";
                 const pName = (externalPatientData.nombres || "").trim() || "NO IDENTIFICADO";
                 const pLastName = [
@@ -191,6 +246,18 @@ export async function lookupPatientsInApi(query: string) {
                 const ubi = externalPatientData.ubigeoinei ? externalPatientData.ubigeoinei.toString().trim() : null;
                 const pDireccion = (externalPatientData.direccion || "").trim();
 
+                let extDistrito = "";
+                let extProvincia = "";
+                let extDepartamento = "";
+                if (ubi) {
+                    const ubiInfo = await db.select().from(cqUbigeo).where(eq(cqUbigeo.code, ubi)).limit(1);
+                    if (ubiInfo.length > 0) {
+                        extDistrito = ubiInfo[0].distrito;
+                        extProvincia = ubiInfo[0].provincia;
+                        extDepartamento = ubiInfo[0].departamento;
+                    }
+                }
+
                 const apiDataStr = JSON.stringify({
                     sexo,
                     fechaNacimiento: fechaNac ? fechaNac.toISOString() : null,
@@ -199,7 +266,10 @@ export async function lookupPatientsInApi(query: string) {
                     apellidos: pLastName,
                     historiaClinica: pHistoriaClinica,
                     direccion: pDireccion,
-                    dni: dni
+                    dni: dni,
+                    distrito: extDistrito,
+                    provincia: extProvincia,
+                    departamento: extDepartamento
                 });
 
                 return {
@@ -211,7 +281,8 @@ export async function lookupPatientsInApi(query: string) {
                     },
                     apiData: apiDataStr
                 };
-            }).filter((p: any) => p.pii.dni); // Ensure they have a DNI
+            }));
+            return mappedPats.filter((p: any) => p.pii.dni); // Ensure they have a DNI
         }
         return [];
     } catch (e) {
@@ -327,15 +398,23 @@ export async function getPacientes() {
         const result = await db
             .select({
                 patient: cqPatients,
-                pii: cqPatientPii
+                pii: cqPatientPii,
+                ubigeo: cqUbigeo
             })
             .from(cqPatients)
             .leftJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+            .leftJoin(cqUbigeo, eq(cqPatients.ubigeo, cqUbigeo.code))
             .orderBy(cqPatients.createdAt);
 
         return result.map(r => ({
             ...r.patient,
-            pii: r.pii
+            pii: r.pii,
+            ubigeoData: r.ubigeo ? {
+                code: r.ubigeo.code,
+                distrito: r.ubigeo.distrito,
+                provincia: r.ubigeo.provincia,
+                departamento: r.ubigeo.departamento
+            } : null
         })).reverse();
     } catch (error) {
         console.error("Error fetching patients:", error);

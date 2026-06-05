@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqSurgeryPostDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions } from "@/db/schema";
+import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqSurgeryPostDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions, cqUbigeo } from "@/db/schema";
 import { eq, desc, asc, and, gte, lte, ne, inArray, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -227,12 +227,14 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', s
         operatingRoom: cqOperatingRooms,
         patientPii: cqPatientPii,
         patient: cqPatients,
+        ubigeo: cqUbigeo,
         specialty: cqSpecialties,
     })
         .from(cqSurgeries)
         .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
         .leftJoin(cqPatientPii, eq(cqSurgeries.patientId, cqPatientPii.patientId))
         .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
+        .leftJoin(cqUbigeo, eq(cqPatients.ubigeo, cqUbigeo.code))
         .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id));
 
     let whereClause = undefined;
@@ -308,6 +310,12 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', s
 
     return surgeries.map(s => ({
         ...s,
+        patientUbigeo: s.ubigeo ? {
+            code: s.ubigeo.code,
+            distrito: s.ubigeo.distrito,
+            provincia: s.ubigeo.provincia,
+            departamento: s.ubigeo.departamento
+        } : null,
         team: teams.filter(t => t.surgeryId === s.surgery.id),
         diagnoses: diagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosisId),
         postDiagnoses: postDiagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosisId),
@@ -505,6 +513,26 @@ export async function createSurgery(formData: FormData) {
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
+
+        // Update patient's address/ubigeo if apiData was sent
+        const apiPatientDataRaw = formData.get("api_patient_data") as string | null;
+        if (apiPatientDataRaw) {
+            try {
+                const parsed = JSON.parse(apiPatientDataRaw);
+                const pUbigeo = parsed.ubigeo || null;
+                const pDireccion = parsed.direccion || null;
+                
+                if (pUbigeo) {
+                    await db.update(cqPatients).set({ ubigeo: pUbigeo }).where(eq(cqPatients.id, finalPatientId));
+                }
+                if (pDireccion) {
+                    await db.update(cqPatientPii).set({ direccion: pDireccion }).where(eq(cqPatientPii.patientId, finalPatientId));
+                }
+            } catch (e) {
+                console.error("Failed to update patient address/ubigeo from apiData in createSurgery", e);
+            }
+        }
+
         const bloodGroupRh = formData.get("blood_group_rh") as string | null;
         if (bloodGroupRh) {
             await db.update(cqPatientPii).set({ bloodGroupRh }).where(eq(cqPatientPii.patientId, finalPatientId));
@@ -965,6 +993,26 @@ export async function editSurgery(formData: FormData) {
 
     if (existingPii.length > 0) {
         finalPatientId = existingPii[0].patientId;
+
+        // Update patient's address/ubigeo if apiData was sent
+        const apiPatientDataRaw = formData.get("api_patient_data") as string | null;
+        if (apiPatientDataRaw) {
+            try {
+                const parsed = JSON.parse(apiPatientDataRaw);
+                const pUbigeo = parsed.ubigeo || null;
+                const pDireccion = parsed.direccion || null;
+                
+                if (pUbigeo) {
+                    await db.update(cqPatients).set({ ubigeo: pUbigeo }).where(eq(cqPatients.id, finalPatientId));
+                }
+                if (pDireccion) {
+                    await db.update(cqPatientPii).set({ direccion: pDireccion }).where(eq(cqPatientPii.patientId, finalPatientId));
+                }
+            } catch (e) {
+                console.error("Failed to update patient address/ubigeo from apiData in editSurgery", e);
+            }
+        }
+
         const bloodGroupRh = formData.get("blood_group_rh") as string | null;
         if (bloodGroupRh) {
             await db.update(cqPatientPii).set({ bloodGroupRh }).where(eq(cqPatientPii.patientId, finalPatientId));

@@ -96,6 +96,12 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [openSection, setOpenSection] = useState<'patient' | 'classification' | 'team' | 'schedule'>('patient');
 
     const [localPatients, setLocalPatients] = useState<any[]>(patients || []);
+    const [addressFields, setAddressFields] = useState({
+        direccion: "",
+        distrito: "",
+        provincia: "",
+        departamento: ""
+    });
     const [localDiagnoses, setLocalDiagnoses] = useState<any[]>(diagnoses);
     const [localProcedures, setLocalProcedures] = useState<any[]>(procedures);
     const [localInterventions, setLocalInterventions] = useState<any[]>(interventions || []);
@@ -112,6 +118,43 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             return [...apiItems, ...(patients || [])];
         });
     }, [patients]);
+
+    useEffect(() => {
+        if (!selectedPatId) {
+            setAddressFields({ direccion: "", distrito: "", provincia: "", departamento: "" });
+            return;
+        }
+
+        const pat = localPatients.find(p => p.id === selectedPatId);
+        if (!pat) {
+            setAddressFields({ direccion: "", distrito: "", provincia: "", departamento: "" });
+            return;
+        }
+
+        if (pat.ubigeoData || pat.pii?.direccion) {
+            setAddressFields({
+                direccion: pat.pii?.direccion || "",
+                distrito: pat.ubigeoData?.distrito || "",
+                provincia: pat.ubigeoData?.provincia || "",
+                departamento: pat.ubigeoData?.departamento || ""
+            });
+        } else if (pat.apiData) {
+            try {
+                const parsed = JSON.parse(pat.apiData);
+                setAddressFields({
+                    direccion: parsed.direccion || "",
+                    distrito: parsed.distrito || "",
+                    provincia: parsed.provincia || "",
+                    departamento: parsed.departamento || ""
+                });
+            } catch (e) {
+                console.error("Failed to parse patient apiData in frontend", e);
+                setAddressFields({ direccion: "", distrito: "", provincia: "", departamento: "" });
+            }
+        } else {
+            setAddressFields({ direccion: "", distrito: "", provincia: "", departamento: "" });
+        }
+    }, [selectedPatId, localPatients]);
 
     useEffect(() => {
         setLocalDiagnoses(prev => {
@@ -140,6 +183,19 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             if (editData?.patientPii?.patientId) {
                 setSelectedPatId(editData.patientPii.patientId);
                 setPatSearchTerm(editData.patientPii.dni || editData.patientPii.historiaClinica || "");
+                setLocalPatients(prev => {
+                    const exists = prev.find(p => p.id === editData.patientPii.patientId);
+                    if (!exists) {
+                        return [{
+                            id: editData.patientPii.patientId,
+                            pii: {
+                                ...editData.patientPii,
+                            },
+                            ubigeoData: editData.patientUbigeo || null
+                        }, ...prev];
+                    }
+                    return prev;
+                });
             }
             if (editData?.team) {
                 const surg = editData.team.filter((t: any) => t.role === 'CIRUJANO').map((t: any) => t.staff.id);
@@ -254,6 +310,19 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             if (row?.patientPii?.patientId) {
                 setSelectedPatId(row.patientPii.patientId);
                 setPatSearchTerm(row.patientPii.dni || "");
+                setLocalPatients(prev => {
+                    const exists = prev.find(p => p.id === row.patientPii.patientId);
+                    if (!exists) {
+                        return [{
+                            id: row.patientPii.patientId,
+                            pii: {
+                                ...row.patientPii,
+                            },
+                            ubigeoData: row.patientUbigeo || null
+                        }, ...prev];
+                    }
+                    return prev;
+                });
             }
 
             const surg = row?.team?.filter((t: any) => t.role === 'CIRUJANO').map((t: any) => t.staff.id) || [];
@@ -966,6 +1035,44 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                             <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
                                         </motion.div>
                                     )}
+                                </div>
+                                <div className="space-y-3 w-72 shrink-0 border-l border-zinc-100 dark:border-zinc-800/80 pl-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Dirección</label>
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={addressFields.direccion || "-"}
+                                            className="w-full px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-xs text-zinc-600 dark:text-zinc-300 font-semibold focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Distrito</label>
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={addressFields.distrito || "-"}
+                                            className="w-full px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-xs text-zinc-600 dark:text-zinc-300 font-semibold focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Provincia</label>
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={addressFields.provincia || "-"}
+                                            className="w-full px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-xs text-zinc-600 dark:text-zinc-300 font-semibold focus:outline-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">Departamento</label>
+                                        <input
+                                            type="text"
+                                            readOnly
+                                            value={addressFields.departamento || "-"}
+                                            className="w-full px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg text-xs text-zinc-600 dark:text-zinc-300 font-semibold focus:outline-none"
+                                        />
+                                    </div>
                                 </div>
                                 <div className="space-y-4 w-48 shrink-0">
                                     <div className="space-y-2">
