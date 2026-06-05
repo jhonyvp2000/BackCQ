@@ -131,29 +131,34 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             return;
         }
 
-        if (pat.ubigeoData || pat.pii?.direccion) {
-            setAddressFields({
-                direccion: pat.pii?.direccion || "",
-                distrito: pat.ubigeoData?.distrito || "",
-                provincia: pat.ubigeoData?.provincia || "",
-                departamento: pat.ubigeoData?.departamento || ""
-            });
-        } else if (pat.apiData) {
+        let dir = "";
+        let dist = "";
+        let prov = "";
+        let dep = "";
+
+        if (pat.apiData) {
             try {
                 const parsed = JSON.parse(pat.apiData);
-                setAddressFields({
-                    direccion: parsed.direccion || "",
-                    distrito: parsed.distrito || "",
-                    provincia: parsed.provincia || "",
-                    departamento: parsed.departamento || ""
-                });
+                dir = parsed.direccion || "";
+                dist = parsed.distrito || "";
+                prov = parsed.provincia || "";
+                dep = parsed.departamento || "";
             } catch (e) {
                 console.error("Failed to parse patient apiData in frontend", e);
-                setAddressFields({ direccion: "", distrito: "", provincia: "", departamento: "" });
             }
-        } else {
-            setAddressFields({ direccion: "", distrito: "", provincia: "", departamento: "" });
         }
+
+        if (!dir && pat.pii?.direccion) dir = pat.pii.direccion;
+        if (!dist && pat.ubigeoData?.distrito) dist = pat.ubigeoData.distrito;
+        if (!prov && pat.ubigeoData?.provincia) prov = pat.ubigeoData.provincia;
+        if (!dep && pat.ubigeoData?.departamento) dep = pat.ubigeoData.departamento;
+
+        setAddressFields({
+            direccion: dir,
+            distrito: dist,
+            provincia: prov,
+            departamento: dep
+        });
     }, [selectedPatId, localPatients]);
 
     useEffect(() => {
@@ -720,6 +725,15 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             }
                             return updatedPats;
                         });
+
+                        // Auto-select patient if DNI matches exactly
+                        const searchTermClean = patSearchTerm.trim();
+                        const matchingPat = resArray.find(p => p.pii?.dni === searchTermClean);
+                        if (matchingPat) {
+                            const existsLocally = patients.find((p: any) => p.pii?.dni === searchTermClean);
+                            const finalId = existsLocally ? existsLocally.id : matchingPat.id;
+                            setSelectedPatId(finalId);
+                        }
                     }
                 } else {
                     setApiDownPats(false);
