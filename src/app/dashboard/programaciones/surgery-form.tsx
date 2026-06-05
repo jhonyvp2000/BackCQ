@@ -65,6 +65,10 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [selectedDxIds, setSelectedDxIds] = useState<Set<string>>(new Set());
     const [isSearchingDx, setIsSearchingDx] = useState(false);
     const [apiDownDx, setApiDownDx] = useState(false);
+    const [postDxSearchTerm, setPostDxSearchTerm] = useState("");
+    const [selectedPostDxIds, setSelectedPostDxIds] = useState<Set<string>>(new Set());
+    const [isSearchingPostDx, setIsSearchingPostDx] = useState(false);
+    const [apiDownPostDx, setApiDownPostDx] = useState(false);
     const [procSearchTerm, setProcSearchTerm] = useState("");
     const [selectedProcIds, setSelectedProcIds] = useState<Set<string>>(new Set());
     const [isSearchingProc, setIsSearchingProc] = useState(false);
@@ -96,6 +100,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [localProcedures, setLocalProcedures] = useState<any[]>(procedures);
     const [localInterventions, setLocalInterventions] = useState<any[]>(interventions || []);
     const [isCreatingDx, setIsCreatingDx] = useState(false);
+    const [isCreatingPostDx, setIsCreatingPostDx] = useState(false);
     const [isCreatingProc, setIsCreatingProc] = useState(false);
     const [isCreatingInt, setIsCreatingInt] = useState(false);
     const [isCreatingPat, setIsCreatingPat] = useState(false);
@@ -147,6 +152,9 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                 setSelectedCircIds(new Set(circ));
             }
             if (editData?.diagnoses && Object.keys(editData.diagnoses).length) setSelectedDxIds(new Set(editData.diagnoses));
+            else setSelectedDxIds(new Set());
+            if (editData?.postDiagnoses && Object.keys(editData.postDiagnoses).length) setSelectedPostDxIds(new Set(editData.postDiagnoses));
+            else setSelectedPostDxIds(new Set());
             if (editData?.procedures && Object.keys(editData.procedures).length) setSelectedProcIds(new Set(editData.procedures));
             if (editData?.interventions && Object.keys(editData.interventions).length) setSelectedIntIds(new Set(editData.interventions));
             
@@ -173,6 +181,21 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             console.error(e);
         } finally {
             setIsCreatingDx(false);
+        }
+    };
+
+    const handleCreatePostDx = async () => {
+        if (!postDxSearchTerm) return;
+        setIsCreatingPostDx(true);
+        try {
+            const newDx = await createCustomDiagnosis(postDxSearchTerm);
+            setLocalDiagnoses(prev => [newDx, ...prev]);
+            setSelectedPostDxIds(prev => new Set([...Array.from(prev), newDx.id]));
+            setPostDxSearchTerm("");
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsCreatingPostDx(false);
         }
     };
 
@@ -245,6 +268,9 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             if (row?.diagnoses) Object.keys(row.diagnoses).length ? setSelectedDxIds(new Set(row.diagnoses)) : setSelectedDxIds(new Set());
             else setSelectedDxIds(new Set());
             
+            if (row?.postDiagnoses) Object.keys(row.postDiagnoses).length ? setSelectedPostDxIds(new Set(row.postDiagnoses)) : setSelectedPostDxIds(new Set());
+            else setSelectedPostDxIds(new Set());
+            
             if (row?.procedures) Object.keys(row.procedures).length ? setSelectedProcIds(new Set(row.procedures)) : setSelectedProcIds(new Set());
             else setSelectedProcIds(new Set());
 
@@ -315,6 +341,28 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         else next.delete(id);
         setSelectedDxIds(next);
         document.getElementById('diagnoses-list')?.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const postDxSearchTerms = removeDiacritics(postDxSearchTerm.toLowerCase())
+        .split(/\s+/)
+        .filter(Boolean);
+
+    const selectedPostDxList = localDiagnoses.filter(dx => selectedPostDxIds.has(dx.id));
+    const filteredUnselectedPostDx = localDiagnoses
+        .filter(dx => !selectedPostDxIds.has(dx.id))
+        .filter(dx => {
+            if (postDxSearchTerms.length === 0) return true;
+            const fullText = removeDiacritics(`${dx.code || ""} ${dx.name}`.toLowerCase());
+            return postDxSearchTerms.every(term => fullText.includes(term));
+        })
+        .slice(0, 50);
+
+    const togglePostDx = (id: string, checked: boolean) => {
+        const next = new Set(selectedPostDxIds);
+        if (checked) next.add(id);
+        else next.delete(id);
+        setSelectedPostDxIds(next);
+        document.getElementById('post-diagnoses-list')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const procSearchTerms = removeDiacritics(procSearchTerm.toLowerCase())
@@ -520,6 +568,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             setSelectedPatId(null);
             setSelectedDxIds(new Set());
             setDxSearchTerm("");
+            setSelectedPostDxIds(new Set());
+            setPostDxSearchTerm("");
             setSelectedProcIds(new Set());
             setProcSearchTerm("");
             setSelectedIntIds(new Set());
@@ -643,6 +693,37 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
             setIsSearchingDx(false);
         }
     }, [dxSearchTerm]);
+
+    useEffect(() => {
+        if (postDxSearchTerm.trim().length >= 3) {
+            setIsSearchingPostDx(true);
+            const timeoutId = setTimeout(async () => {
+                const resArray = await lookupDiagnosisInApi(postDxSearchTerm.trim());
+                if (resArray && Array.isArray(resArray) && resArray.length > 0) {
+                    if (resArray[0]?.__apiError) {
+                        setApiDownPostDx(true);
+                        resArray.shift();
+                    } else {
+                        setApiDownPostDx(false);
+                    }
+                    if (resArray.length > 0) {
+                        setLocalDiagnoses(prev => {
+                            const newDiagnoses = resArray.filter(
+                                (apiDx: any) => !prev.find(d => d.code === apiDx.code)
+                            );
+                            return [...newDiagnoses, ...prev];
+                        });
+                    }
+                } else {
+                    setApiDownPostDx(false);
+                }
+                setIsSearchingPostDx(false);
+            }, 1000);
+            return () => clearTimeout(timeoutId);
+        } else {
+            setIsSearchingPostDx(false);
+        }
+    }, [postDxSearchTerm]);
 
     useEffect(() => {
         if (procSearchTerm.trim().length >= 3) {
@@ -1024,11 +1105,9 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <option value="Urgencia">Urgencia</option>
                                     </select>
                                     <FieldError msg={errors.origin} />
-                                </div>
-
-                            <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                                              <div className="col-span-full grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos (Dx)</label>
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos Pre (Dx)</label>
                                 <div className="relative mb-2">
                                     <input
                                         id="diagnoses"
@@ -1104,7 +1183,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                                     className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-[11px] font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
                                                 >
                                                     {isCreatingDx ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                                                    âœ¨ Añadir rápidamente "{dxSearchTerm}" al sistema
+                                                    ✨ Añadir rápidamente "{dxSearchTerm}" al sistema
                                                 </button>
                                             )}
                                         </div>
@@ -1116,6 +1195,102 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <FieldError msg={errors.diagnoses} />
                                 
                                 {apiDownDx && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
+                                        <AlertTriangle size={14} className="shrink-0" />
+                                        <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>
+                                    </motion.div>
+                                )}
+                            </div>
+
+                            <div className="space-y-2 pt-2">
+                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos Post (Dx)</label>
+                                <div className="relative mb-2">
+                                    <input
+                                        id="post_diagnoses"
+                                        type="text"
+                                        placeholder="Buscar patología por código CIE o nombre..."
+                                        value={postDxSearchTerm}
+                                        onChange={e => setPostDxSearchTerm(e.target.value)}
+                                        className={getInputCls("", "pl-9 py-2")}
+                                        disabled={!canSchedule}
+                                    />
+                                    {isSearchingPostDx ? (
+                                        <Loader2 className="w-4 h-4 text-emerald-500 absolute left-3 top-2.5 animate-spin" />
+                                    ) : (
+                                        <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-2.5" />
+                                    )}
+                                </div>
+                                <div id="post-diagnoses-list" className={`max-h-52 overflow-y-auto rounded-xl bg-zinc-50 dark:bg-zinc-800 p-2 space-y-1 ${getContainerErrCls("post_diagnoses")}`}>
+                                    {selectedPostDxList.map((dx) => (
+                                        <label key={dx.id} className="flex items-start gap-3 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer cursor-allowed text-sm border border-blue-100 dark:border-blue-800/50">
+                                            <input
+                                                type="checkbox"
+                                                name="post_diagnoses"
+                                                value={dx.id}
+                                                checked={true}
+                                                onChange={(e) => togglePostDx(dx.id, e.target.checked)}
+                                                className="mt-0.5 w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">{dx.name}</div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{dx.code || 'S/C'}</span>
+                                                    {dx.id.startsWith('__api') ? (
+                                                        <span className="flex items-center text-[10px] uppercase font-bold text-emerald-600 gap-0.5"><Verified size={10} /> MINSA PIDE</span>
+                                                    ) : (
+                                                        <span className="flex items-center text-[10px] uppercase font-bold text-[var(--color-hospital-blue)] gap-0.5"><CheckCircle size={10} /> REGISTRADO</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                    {filteredUnselectedPostDx.map((dx) => (
+                                        <label key={dx.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors cursor-pointer cursor-allowed disabled:opacity-50 text-sm">
+                                            <input
+                                                type="checkbox"
+                                                name="post_diagnoses"
+                                                value={dx.id}
+                                                checked={false}
+                                                disabled={!canSchedule}
+                                                onChange={(e) => togglePostDx(dx.id, e.target.checked)}
+                                                className="mt-0.5 w-4 h-4 text-[var(--color-hospital-blue)] rounded border-zinc-300 focus:ring-[var(--color-hospital-blue)] dark:border-zinc-600 dark:bg-zinc-700"
+                                            />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed">{dx.name}</div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">{dx.code || 'S/C'}</span>
+                                                    {dx.id && dx.id.startsWith('__api') ? (
+                                                        <span className="flex items-center text-[10px] uppercase font-bold text-emerald-600 gap-0.5"><Verified size={10} /> MINSA PIDE</span>
+                                                    ) : (
+                                                        <span className="flex items-center text-[10px] uppercase font-bold text-blue-500 gap-0.5"><CheckCircle size={10} /> REGISTRADO</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                    {filteredUnselectedPostDx.length === 0 && selectedPostDxList.length === 0 && (
+                                        <div className="p-4 text-center">
+                                            <p className="text-sm text-zinc-500 mb-2">No se encontraron diagnósticos que coincidan con la búsqueda.</p>
+                                            {postDxSearchTerm && (
+                                                <button 
+                                                    type="button" 
+                                                    onClick={handleCreatePostDx} 
+                                                    disabled={isCreatingPostDx || !canSchedule}
+                                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg text-[11px] font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors disabled:opacity-50 mt-1 shadow-sm uppercase tracking-wider"
+                                                >
+                                                    {isCreatingPostDx ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                                                    ✨ Añadir rápidamente "{postDxSearchTerm}" al sistema
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                    {diagnoses.length > 0 && filteredUnselectedPostDx.length === 50 && (
+                                        <p className="text-[10px] text-zinc-400 p-2 text-center uppercase tracking-widest font-bold">Mostrando los primeros 50 resultados. Continúa escribiendo para afinar.</p>
+                                    )}
+                                </div>
+                                <FieldError msg={errors.post_diagnoses} />
+                                
+                                {apiDownPostDx && (
                                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-2 px-3 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] rounded-lg border border-red-200 dark:border-red-800/30 flex items-center gap-2 font-bold uppercase tracking-wider overflow-hidden">
                                         <AlertTriangle size={14} className="shrink-0" />
                                         <span>Servidor API no accesible. Solo se realizó búsqueda en base de datos local.</span>

@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { 
   cqSurgicalReports, cqSurgeries, usersTable, 
   cqOperatingRooms, cqSpecialties, cqPatients, cqPatientPii, cqSurgeryTeam, cqSurgeryProcedures, cqProcedures, cqSurgeryDiagnoses, cqDiagnoses,
-  cqInterventionTypes, cqSurgeryInterventions
+  cqInterventionTypes, cqSurgeryInterventions, cqSurgeryPostDiagnoses
 } from "@/db/schema";
 import { eq, and, gte, lte, inArray, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -153,6 +153,14 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
     .innerJoin(cqDiagnoses, eq(cqSurgeryDiagnoses.diagnosisId, cqDiagnoses.id))
     .where(inArray(cqSurgeryDiagnoses.surgeryId, surgeryIds));
 
+    const postDiagRecords = await db.select({
+        surgeryId: cqSurgeryPostDiagnoses.surgeryId,
+        diagnosis: cqDiagnoses
+    })
+    .from(cqSurgeryPostDiagnoses)
+    .innerJoin(cqDiagnoses, eq(cqSurgeryPostDiagnoses.diagnosisId, cqDiagnoses.id))
+    .where(inArray(cqSurgeryPostDiagnoses.surgeryId, surgeryIds));
+
     const intRecords = await db.select({
         surgeryId: cqSurgeryInterventions.surgeryId,
         intervention: cqInterventionTypes
@@ -172,6 +180,7 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
 
         const surgeryTeam = teams.filter(t => t.surgeryId === s.surgery.id);
         const surgeryDiags = diagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosis.name);
+        const surgeryPostDiags = postDiagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosis.name);
         const surgeryInts = intRecords.filter(i => i.surgeryId === s.surgery.id).map(i => i.intervention.name);
 
         const surgeons = surgeryTeam.filter(t => t.role === 'CIRUJANO').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
@@ -180,6 +189,7 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
         const circulantes = surgeryTeam.filter(t => t.role === 'CIRCULANTE').map(t => `${t.staff.name} ${t.staff.lastname}`).join(" / ");
 
         const combinedDiagnoses = s.surgery.diagnosis ? (surgeryDiags.length > 0 ? `${s.surgery.diagnosis} | ${surgeryDiags.join(" | ")}` : s.surgery.diagnosis) : surgeryDiags.join(" | ");
+        const combinedPostDiagnoses = s.surgery.postDiagnosis ? (surgeryPostDiags.length > 0 ? `${s.surgery.postDiagnosis} | ${surgeryPostDiags.join(" | ")}` : s.surgery.postDiagnosis) : surgeryPostDiags.join(" | ");
 
         let rawSex = s.patient.sexo || "";
         let formattedSex = "";
@@ -208,6 +218,7 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
             historiaClinica: s.pii?.historiaClinica || s.pii?.dni || s.pii?.carnetExtranjeria || "",
             nombresApellidos: `${s.pii?.nombres || ''} ${s.pii?.apellidos || ''}`.trim(),
             diagnostico: combinedDiagnoses,
+            diagnosticoPost: combinedPostDiagnoses,
             tipoDiagnostico: s.surgery.surgeryType || "",
             tipoIntervencion: surgeryInts.join(" / "),
             cirujano: surgeons,

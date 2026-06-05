@@ -108,6 +108,7 @@ export const cqSurgeries = pgTable("cq_surgeries", {
   urgencyType: varchar("urgency_type", { length: 50 }).notNull().default('ELECTIVO'), // 'EMERGENCIA', 'ELECTIVO'
   estimatedDuration: varchar("estimated_duration", { length: 50 }), // e.g. "1 hora", "2 horas"
   diagnosis: text("diagnosis"), // custom text
+  postDiagnosis: text("post_diagnosis"), // custom text
   surgeryType: varchar("surgery_type", { length: 50 }), // 'Cirugía Menor', 'Cirugía Mayor'
   insuranceType: varchar("insurance_type", { length: 50 }), // 'SIS', 'SOAT', 'PARTICULAR', 'SISPOL'
   anesthesiaType: varchar("anesthesia_type", { length: 50 }), // 'RAQ', 'EPI', 'AGB', 'AGE', 'AGI', 'BLOQ', 'LOCL'
@@ -164,6 +165,13 @@ export const cqDiagnoses = pgTable("cq_diagnoses", {
 
 // Junction table: multiple diagnoses per surgery
 export const cqSurgeryDiagnoses = pgTable("cq_surgery_diagnoses", {
+  surgeryId: uuid("surgery_id").notNull().references(() => cqSurgeries.id, { onDelete: 'cascade' }),
+  diagnosisId: uuid("diagnosis_id").notNull().references(() => cqDiagnoses.id, { onDelete: 'restrict' }),
+}, (t) => [
+  primaryKey({ columns: [t.surgeryId, t.diagnosisId] })
+]);
+
+export const cqSurgeryPostDiagnoses = pgTable("cq_surgery_post_diagnoses", {
   surgeryId: uuid("surgery_id").notNull().references(() => cqSurgeries.id, { onDelete: 'cascade' }),
   diagnosisId: uuid("diagnosis_id").notNull().references(() => cqDiagnoses.id, { onDelete: 'restrict' }),
 }, (t) => [

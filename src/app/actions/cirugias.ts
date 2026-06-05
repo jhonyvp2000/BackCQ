@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions } from "@/db/schema";
+import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqSurgeryPostDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions } from "@/db/schema";
 import { eq, desc, asc, and, gte, lte, ne, inArray, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -291,6 +291,11 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', s
         diagnosisId: cqSurgeryDiagnoses.diagnosisId
     }).from(cqSurgeryDiagnoses).where(inArray(cqSurgeryDiagnoses.surgeryId, surgeryIds));
 
+    const postDiagRecords = await db.select({
+        surgeryId: cqSurgeryPostDiagnoses.surgeryId,
+        diagnosisId: cqSurgeryPostDiagnoses.diagnosisId
+    }).from(cqSurgeryPostDiagnoses).where(inArray(cqSurgeryPostDiagnoses.surgeryId, surgeryIds));
+
     const procRecords = await db.select({
         surgeryId: cqSurgeryProcedures.surgeryId,
         procedureId: cqSurgeryProcedures.procedureId
@@ -305,6 +310,7 @@ export async function getSurgeriesByDateDesc(sortDir: 'asc' | 'desc' = 'desc', s
         ...s,
         team: teams.filter(t => t.surgeryId === s.surgery.id),
         diagnoses: diagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosisId),
+        postDiagnoses: postDiagRecords.filter(d => d.surgeryId === s.surgery.id).map(d => d.diagnosisId),
         procedures: procRecords.filter(p => p.surgeryId === s.surgery.id).map(p => p.procedureId),
         interventions: intRecords.filter(i => i.surgeryId === s.surgery.id).map(i => i.interventionId)
     }));
@@ -331,6 +337,7 @@ export async function createSurgery(formData: FormData) {
     const estimatedDuration = formData.get("estimated_duration") as string;
     const notes = formData.get("notes") as string;
     const diagnosesIds = formData.getAll("diagnoses") as string[];
+    const postDiagnosesIds = formData.getAll("post_diagnoses") as string[];
     const proceduresIds = formData.getAll("procedures") as string[];
     const interventionsIds = formData.getAll("interventions") as string[];
     const surgeryType = formData.get("surgery_type") as string;
@@ -414,9 +421,39 @@ export async function createSurgery(formData: FormData) {
     const trueDiagnosesIds = [...new Set(finalDiagnosisIds)];
     const trueProceduresIds = [...new Set(finalProcedureIds)];
 
+    // Resolve deferred Synthetic IDs for Post Diagnoses (Late-bound DB Injection)
+    const finalPostDiagnosisIds: string[] = [];
+    for (const did of postDiagnosesIds) {
+        if (did.startsWith('__api_dx__')) {
+            const parts = did.replace('__api_dx__', '').split('|||');
+            const code = parts[0];
+            const name = parts.slice(1).join('|||');
+            
+            const existing = await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.code, code)).limit(1);
+            if (existing.length > 0) {
+                finalPostDiagnosisIds.push(existing[0].id);
+            } else {
+                const [inserted] = await db.insert(cqDiagnoses).values({
+                    code: code.substring(0, 20),
+                    name: name,
+                    isActive: true,
+                    isVerifiedMinsa: true
+                }).returning({ id: cqDiagnoses.id });
+                if (inserted) finalPostDiagnosisIds.push(inserted.id);
+            }
+        } else {
+            finalPostDiagnosisIds.push(did);
+        }
+    }
+    const truePostDiagnosesIds = [...new Set(finalPostDiagnosisIds)];
+
     // Resolve diagnosis details from True IDs to text for legacy/easy reading
     const selectedDiags = await db.select().from(cqDiagnoses).where(inArray(cqDiagnoses.id, trueDiagnosesIds));
     const diagnosis = selectedDiags.map(d => `${d.code} - ${d.name}`).join(", ");
+
+    const selectedPostDiags = truePostDiagnosesIds.length > 0 ? await db.select().from(cqDiagnoses).where(inArray(cqDiagnoses.id, truePostDiagnosesIds)) : [];
+    const postDiagnosis = selectedPostDiags.map(d => `${d.code} - ${d.name}`).join(", ");
+
     const finalUrgencyType = urgencyType || 'ELECTIVO';
 
     const roomId = operatingRoomId ? operatingRoomId : null;
@@ -547,6 +584,7 @@ export async function createSurgery(formData: FormData) {
         status: 'scheduled',
         estimatedDuration,
         diagnosis,
+        postDiagnosis,
         surgeryType,
         urgencyType: finalUrgencyType,
         insuranceType,
@@ -584,6 +622,11 @@ export async function createSurgery(formData: FormData) {
     const diagInserts = trueDiagnosesIds.map(did => ({ surgeryId: surgeryRecordId, diagnosisId: did }));
     if (diagInserts.length > 0) {
         await db.insert(cqSurgeryDiagnoses).values(diagInserts).onConflictDoNothing();
+    }
+
+    const postDiagInserts = truePostDiagnosesIds.map(did => ({ surgeryId: surgeryRecordId, diagnosisId: did }));
+    if (postDiagInserts.length > 0) {
+        await db.insert(cqSurgeryPostDiagnoses).values(postDiagInserts).onConflictDoNothing();
     }
 
     const procInserts = trueProceduresIds.map(pid => ({ surgeryId: surgeryRecordId, procedureId: pid }));
@@ -772,6 +815,7 @@ export async function editSurgery(formData: FormData) {
     const instrumentistaIds = formData.getAll("instrumentistas") as string[];
     const circulanteIds = formData.getAll("circulantes") as string[];
     const diagnosesIds = formData.getAll("diagnoses") as string[];
+    const postDiagnosesIds = formData.getAll("post_diagnoses") as string[];
     const proceduresIds = formData.getAll("procedures") as string[];
     const interventionsIds = formData.getAll("interventions") as string[];
 
@@ -841,9 +885,38 @@ export async function editSurgery(formData: FormData) {
     const trueDiagnosesIds = [...new Set(finalDiagnosisIds)];
     const trueProceduresIds = [...new Set(finalProcedureIds)];
 
+    // Resolve deferred Synthetic IDs for Post Diagnoses (Late-bound DB Injection)
+    const finalPostDiagnosisIds: string[] = [];
+    for (const did of postDiagnosesIds) {
+        if (did.startsWith('__api_dx__')) {
+            const parts = did.replace('__api_dx__', '').split('|||');
+            const code = parts[0];
+            const name = parts.slice(1).join('|||');
+            
+            const existing = await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.code, code)).limit(1);
+            if (existing.length > 0) {
+                finalPostDiagnosisIds.push(existing[0].id);
+            } else {
+                const [inserted] = await db.insert(cqDiagnoses).values({
+                    code: code.substring(0, 20),
+                    name: name,
+                    isActive: true,
+                    isVerifiedMinsa: true
+                }).returning({ id: cqDiagnoses.id });
+                if (inserted) finalPostDiagnosisIds.push(inserted.id);
+            }
+        } else {
+            finalPostDiagnosisIds.push(did);
+        }
+    }
+    const truePostDiagnosesIds = [...new Set(finalPostDiagnosisIds)];
+
     // Resolve diagnosis details from True IDs to text for legacy/easy reading
     const selectedDiags = await db.select().from(cqDiagnoses).where(inArray(cqDiagnoses.id, trueDiagnosesIds));
     const diagnosisText = selectedDiags.map(d => `${d.code} - ${d.name}`).join(", ");
+
+    const selectedPostDiags = truePostDiagnosesIds.length > 0 ? await db.select().from(cqDiagnoses).where(inArray(cqDiagnoses.id, truePostDiagnosesIds)) : [];
+    const postDiagnosisText = selectedPostDiags.map(d => `${d.code} - ${d.name}`).join(", ");
 
     const roomId = operatingRoomId ? operatingRoomId : null;
 
@@ -966,6 +1039,7 @@ export async function editSurgery(formData: FormData) {
         isTimeDefined,
         estimatedDuration,
         diagnosis: diagnosisText,
+        postDiagnosis: postDiagnosisText,
         surgeryType,
         urgencyType: urgencyType || 'ELECTIVO',
         insuranceType,
@@ -1006,6 +1080,13 @@ export async function editSurgery(formData: FormData) {
     const diagInserts = trueDiagnosesIds.map(did => ({ surgeryId: id, diagnosisId: did }));
     if (diagInserts.length > 0) {
         await db.insert(cqSurgeryDiagnoses).values(diagInserts).onConflictDoNothing();
+    }
+
+    // Clear and Re-insert Post Diagnoses
+    await db.delete(cqSurgeryPostDiagnoses).where(eq(cqSurgeryPostDiagnoses.surgeryId, id));
+    const postDiagInserts = truePostDiagnosesIds.map(did => ({ surgeryId: id, diagnosisId: did }));
+    if (postDiagInserts.length > 0) {
+        await db.insert(cqSurgeryPostDiagnoses).values(postDiagInserts).onConflictDoNothing();
     }
 
     // Clear and Re-insert Procedures

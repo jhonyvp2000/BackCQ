@@ -108,11 +108,11 @@ export default async function ReporteQuirurgicoPage(props: { params: Promise<{ i
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Diagnóstico Pre-Operatorio</label>
-                                <input type="text" name="pre_op_diagnosis" className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[var(--color-hospital-light)] transition-all" placeholder="Ej. Apendicitis Aguda" />
+                                <input type="text" name="pre_op_diagnosis" defaultValue={surgeryData.surgery.diagnosis || ""} className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[var(--color-hospital-light)] transition-all" placeholder="Ej. Apendicitis Aguda" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Diagnóstico Post-Operatorio</label>
-                                <input type="text" name="post_op_diagnosis" className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[var(--color-hospital-light)] transition-all" placeholder="Ej. Apendicitis Supurada" />
+                                <input type="text" name="post_op_diagnosis" defaultValue={surgeryData.surgery.postDiagnosis || ""} className="w-full px-4 py-2.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:ring-2 focus:ring-[var(--color-hospital-light)] transition-all" placeholder="Ej. Apendicitis Supurada" />
                             </div>
                         </div>
 
