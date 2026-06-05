@@ -114,8 +114,9 @@ export async function lookupPatientByDni(rawId: string) {
             }
 
             // Evaluamos ubigeo
-            if (externalPatientData.ubigeoinei) {
-                ubi = (externalPatientData.ubigeoinei || "").toString().trim();
+            const rawUbi = externalPatientData.codigoInei || externalPatientData.ubigeoinei;
+            if (rawUbi) {
+                ubi = rawUbi.toString().trim();
             }
 
             // Evaluamos direccion
@@ -128,15 +129,16 @@ export async function lookupPatientByDni(rawId: string) {
 
         const fullName = `${pName} ${pLastName}`;
 
-        let extDistrito = null;
-        let extProvincia = null;
-        let extDepartamento = null;
-        if (ubi) {
+        let extDistrito = externalPatientData?.distrito ? externalPatientData.distrito.toString().trim() : null;
+        let extProvincia = externalPatientData?.provincia ? externalPatientData.provincia.toString().trim() : null;
+        let extDepartamento = externalPatientData?.departamento ? externalPatientData.departamento.toString().trim() : null;
+
+        if (ubi && (!extDistrito || !extProvincia || !extDepartamento)) {
             const ubiInfo = await db.select().from(cqUbigeo).where(eq(cqUbigeo.code, ubi)).limit(1);
             if (ubiInfo.length > 0) {
-                extDistrito = ubiInfo[0].distrito;
-                extProvincia = ubiInfo[0].provincia;
-                extDepartamento = ubiInfo[0].departamento;
+                if (!extDistrito) extDistrito = ubiInfo[0].distrito;
+                if (!extProvincia) extProvincia = ubiInfo[0].provincia;
+                if (!extDepartamento) extDepartamento = ubiInfo[0].departamento;
             }
         }
 
@@ -243,18 +245,20 @@ export async function lookupPatientsInApi(query: string) {
                 
                 const fechaNac = parseLocalDate(externalPatientData.fechaNacimiento);
                 const pHistoriaClinica = (externalPatientData.observacion || "").trim() || dni;
-                const ubi = externalPatientData.ubigeoinei ? externalPatientData.ubigeoinei.toString().trim() : null;
+                const rawUbi = externalPatientData.codigoInei || externalPatientData.ubigeoinei;
+                const ubi = rawUbi ? rawUbi.toString().trim() : null;
                 const pDireccion = (externalPatientData.direccion || "").trim();
 
-                let extDistrito = "";
-                let extProvincia = "";
-                let extDepartamento = "";
-                if (ubi) {
+                let extDistrito = externalPatientData.distrito ? externalPatientData.distrito.toString().trim() : "";
+                let extProvincia = externalPatientData.provincia ? externalPatientData.provincia.toString().trim() : "";
+                let extDepartamento = externalPatientData.departamento ? externalPatientData.departamento.toString().trim() : "";
+
+                if (ubi && (!extDistrito || !extProvincia || !extDepartamento)) {
                     const ubiInfo = await db.select().from(cqUbigeo).where(eq(cqUbigeo.code, ubi)).limit(1);
                     if (ubiInfo.length > 0) {
-                        extDistrito = ubiInfo[0].distrito;
-                        extProvincia = ubiInfo[0].provincia;
-                        extDepartamento = ubiInfo[0].departamento;
+                        if (!extDistrito) extDistrito = ubiInfo[0].distrito;
+                        if (!extProvincia) extProvincia = ubiInfo[0].provincia;
+                        if (!extDepartamento) extDepartamento = ubiInfo[0].departamento;
                     }
                 }
 
@@ -599,7 +603,8 @@ export async function syncOrphan(dni: string) {
             
             let fechaNac = parseLocalDate(externalPatientData.fechaNacimiento);
             let pHistoriaClinica = (externalPatientData.observacion || "").trim() || dni;
-            let ubi = (externalPatientData.ubigeoinei || "").toString().trim() || null;
+            const rawUbi = externalPatientData.codigoInei || externalPatientData.ubigeoinei;
+            let ubi = rawUbi ? rawUbi.toString().trim() : null;
             let pDireccion = (externalPatientData.direccion || "").trim() || null;
 
             const existingPii = await db.select().from(cqPatientPii).where(eq(cqPatientPii.dni, dni)).limit(1);
