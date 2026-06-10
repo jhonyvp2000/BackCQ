@@ -13,6 +13,7 @@ type ReportData = {
     fechaSolicitud: string;
     edad: string;
     sexo: string;
+    documento: string;
     historiaClinica: string;
     nombresApellidos: string;
     diagnostico: string;
@@ -129,7 +130,7 @@ export function ReportClientTable() {
         // --- ROW 5: Headers ---
         const headers = [
             "N° CORRELATIVO", "ESPECIALIDAD", "SALA PROGRAMADA", "FECHA DE SOLICITUD", "FECHA PROGRAMADA", "HORA PROGRAMADA", "FECHA DE INTERVENCION QUIRURGICA", "HORA DE INTERVENCION QUIRURGICA",
-            "EDAD", "SEXO (M/F)", "HISTORIA CLINICA", "NOMBRES Y APELLIDOS DEL PACIENTE", "DIAGNOSTICO", 
+            "EDAD", "SEXO (M/F)", "N° DOCUMENTO", "HISTORIA CLINICA", "NOMBRES Y APELLIDOS DEL PACIENTE", "DIAGNOSTICO", 
             "TIPO DIAGNOSTICO", "TIPO DE INTERVENCIÓN", "CIRUJANO", 
             "ANESTESIOLOGO", "INSTRUMENTISTA", "CIRCULANTE", "TIPO SEGURO", "PROCEDENCIA", "TIPO ANESTECIA", 
             "HORA INGRESO PACIENTE", "HORA INICIO ANESTECIA", "HORA ANTES DE LA INCISIÓN", 
@@ -148,7 +149,7 @@ export function ReportClientTable() {
         data.forEach(item => {
             const rowData = [
                 item.correlativo, item.especialidad, item.sala, item.fechaSolicitud, item.fechaIntervencionQuirurgica, item.horaProgramada, item.fechaRealIntervencion, item.horaRealIntervencion,
-                item.edad, item.sexo, item.historiaClinica, item.nombresApellidos, item.diagnostico, 
+                item.edad, item.sexo, item.documento, item.historiaClinica, item.nombresApellidos, item.diagnostico, 
                 item.tipoDiagnostico, item.tipoIntervencion, item.cirujano, item.anestesiologo, 
                 item.instrumentista, item.circulante, 
                 item.tipoSeguro, item.procedencia, item.tipoAnestesia, item.horaIngresoPaciente, 
@@ -184,21 +185,22 @@ export function ReportClientTable() {
         sheet.getColumn(8).width = 15; // Hora IQ
         sheet.getColumn(9).width = 8;  // Edad
         sheet.getColumn(10).width = 10; // Sexo (M/F)
-        sheet.getColumn(11).width = 12; // HC
-        sheet.getColumn(12).width = 35; // Nombres
-        sheet.getColumn(13).width = 30; // Diagnóstico
-        sheet.getColumn(14).width = 17.5; // Tipo Diagnóstico
-        sheet.getColumn(15).width = 35; // Tipo Intervención
-        sheet.getColumn(16).width = 25; // Cirujano
-        sheet.getColumn(17).width = 25; // Anestesiólogo
-        sheet.getColumn(18).width = 25; // Instrumentista
-        sheet.getColumn(19).width = 25; // Circulante
-        sheet.getColumn(23).width = 18; // HORA INGRESO PACIENTE
-        sheet.getColumn(24).width = 18; // HORA INICIO ANESTECIA
-        sheet.getColumn(25).width = 18; // HORA ANTES DE LA INCISIÓN
-        sheet.getColumn(26).width = 18; // HORA TERMINO CIRUGIA
-        sheet.getColumn(27).width = 18; // HORA SALIDA PACIENTE
-        sheet.getColumn(28).width = 18; // HORA SALIDA DE URPA
+        sheet.getColumn(11).width = 15; // N° Documento
+        sheet.getColumn(12).width = 12; // HC
+        sheet.getColumn(13).width = 35; // Nombres
+        sheet.getColumn(14).width = 30; // Diagnóstico
+        sheet.getColumn(15).width = 17.5; // Tipo Diagnóstico
+        sheet.getColumn(16).width = 35; // Tipo Intervención
+        sheet.getColumn(17).width = 25; // Cirujano
+        sheet.getColumn(18).width = 25; // Anestesiólogo
+        sheet.getColumn(19).width = 25; // Instrumentista
+        sheet.getColumn(20).width = 25; // Circulante
+        sheet.getColumn(24).width = 18; // HORA INGRESO PACIENTE
+        sheet.getColumn(25).width = 18; // HORA INICIO ANESTECIA
+        sheet.getColumn(26).width = 18; // HORA ANTES DE LA INCISIÓN
+        sheet.getColumn(27).width = 18; // HORA TERMINO CIRUGIA
+        sheet.getColumn(28).width = 18; // HORA SALIDA PACIENTE
+        sheet.getColumn(29).width = 18; // HORA SALIDA DE URPA
         sheet.getRow(5).height = 30; // Altura del header (ahora es fila 5)
         sheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 5 }]; // Congelar 5 primeras filas
 

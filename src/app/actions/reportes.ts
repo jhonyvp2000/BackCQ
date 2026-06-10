@@ -215,6 +215,7 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
             fechaSolicitud: s.surgery.requestDate ? new Date(s.surgery.requestDate + "T00:00:00").toLocaleDateString("es-PE", {timeZone: 'America/Lima'}) : "",
             edad: calculateAge(s.patient.fechaNacimiento, new Date(s.surgery.scheduledDate)),
             sexo: formattedSex,
+            documento: s.pii?.dni || s.pii?.carnetExtranjeria || s.pii?.pasaporte || "",
             historiaClinica: s.pii?.historiaClinica || s.pii?.dni || s.pii?.carnetExtranjeria || "",
             nombresApellidos: `${s.pii?.nombres || ''} ${s.pii?.apellidos || ''}`.trim(),
             diagnostico: combinedDiagnoses,
