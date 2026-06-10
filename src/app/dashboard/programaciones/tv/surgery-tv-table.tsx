@@ -252,6 +252,23 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
     const [isListFullscreen, setIsListFullscreen] = useState<boolean>(forceTvMode || false);
     const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
 
+    const enterNativeFullscreen = async () => {
+        try {
+            const docEl = document.documentElement as any;
+            if (docEl.requestFullscreen) {
+                await docEl.requestFullscreen();
+            } else if (docEl.webkitRequestFullscreen) {
+                await docEl.webkitRequestFullscreen();
+            } else if (docEl.mozRequestFullScreen) {
+                await docEl.mozRequestFullScreen();
+            } else if (docEl.msRequestFullscreen) {
+                await docEl.msRequestFullscreen();
+            }
+        } catch (err) {
+            console.error("Error al ingresar a pantalla completa nativa:", err);
+        }
+    };
+
     const handleToggleFullscreen = async () => {
         const nextFullscreen = !isListFullscreen;
         setIsListFullscreen(nextFullscreen);
@@ -556,7 +573,7 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
             {/* Banner de Pantalla Completa para Modo TV */}
             {forceTvMode && isListFullscreen && !isBrowserFullscreen && (
                 <div 
-                    onClick={handleToggleFullscreen}
+                    onClick={enterNativeFullscreen}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 text-white px-4 py-3 text-center text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer hover:from-blue-500 hover:to-indigo-500 transition-all select-none shadow-md z-[110] border-b border-blue-500/30 animate-pulse-slow"
                 >
                     <Activity size={16} className="animate-pulse text-blue-200 shrink-0" />
