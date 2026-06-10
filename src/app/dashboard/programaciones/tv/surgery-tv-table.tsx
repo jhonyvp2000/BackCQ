@@ -252,17 +252,34 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
     const [isListFullscreen, setIsListFullscreen] = useState<boolean>(forceTvMode || false);
     const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
 
-    const toggleBrowserFullscreen = async () => {
+    const handleToggleFullscreen = async () => {
+        const nextFullscreen = !isListFullscreen;
+        setIsListFullscreen(nextFullscreen);
+
         try {
-            const docEl = document.documentElement as any;
-            const isCurrentlyFullscreen = !!(
+            const isCurrentlyFS = !!(
                 document.fullscreenElement ||
                 (document as any).webkitFullscreenElement ||
                 (document as any).mozFullScreenElement ||
                 (document as any).msFullscreenElement
             );
 
-            if (!isCurrentlyFullscreen) {
+            if (!nextFullscreen) {
+                // Minimizar: Salir de pantalla completa nativa si está activa
+                if (isCurrentlyFS) {
+                    if (document.exitFullscreen) {
+                        await document.exitFullscreen();
+                    } else if ((document as any).webkitExitFullscreen) {
+                        await (document as any).webkitExitFullscreen();
+                    } else if ((document as any).mozCancelFullScreen) {
+                        await (document as any).mozCancelFullScreen();
+                    } else if ((document as any).msExitFullscreen) {
+                        await (document as any).msExitFullscreen();
+                    }
+                }
+            } else {
+                // Maximizar: Entrar en pantalla completa nativa
+                const docEl = document.documentElement as any;
                 if (docEl.requestFullscreen) {
                     await docEl.requestFullscreen();
                 } else if (docEl.webkitRequestFullscreen) {
@@ -272,19 +289,9 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                 } else if (docEl.msRequestFullscreen) {
                     await docEl.msRequestFullscreen();
                 }
-            } else {
-                if (document.exitFullscreen) {
-                    await document.exitFullscreen();
-                } else if ((document as any).webkitExitFullscreen) {
-                    await (document as any).webkitExitFullscreen();
-                } else if ((document as any).mozCancelFullScreen) {
-                    await (document as any).mozCancelFullScreen();
-                } else if ((document as any).msExitFullscreen) {
-                    await (document as any).msExitFullscreen();
-                }
             }
         } catch (err) {
-            console.error("Error toggling browser fullscreen:", err);
+            console.error("Error al alternar pantalla completa:", err);
         }
     };
 
@@ -297,10 +304,10 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                 (document as any).msFullscreenElement
             );
             setIsBrowserFullscreen(isFS);
-            if (isFS) {
-                setIsListFullscreen(true);
-            } else if (!forceTvMode) {
+            if (!isFS) {
                 setIsListFullscreen(false);
+            } else {
+                setIsListFullscreen(true);
             }
         };
 
@@ -309,16 +316,13 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
         document.addEventListener("mozfullscreenchange", handleFullscreenChange);
         document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
-        // Run initial check once mounted
-        handleFullscreenChange();
-
         return () => {
             document.removeEventListener("fullscreenchange", handleFullscreenChange);
             document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
             document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
             document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
         };
-    }, [forceTvMode]);
+    }, []);
 
     const [sortConfig, setSortConfig] = useState<Array<{ key: string, direction: 'asc' | 'desc' }>>([]);
     const [showSortLimitAlert, setShowSortLimitAlert] = useState(false);
@@ -550,9 +554,9 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
     return (
         <div className={`bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 overflow-hidden shadow-sm flex flex-col ${isListFullscreen ? 'fixed inset-0 z-[100] w-screen h-screen rounded-none' : 'relative rounded-3xl h-full ring-1 ring-zinc-100 dark:ring-zinc-800/50'}`}>
             {/* Banner de Pantalla Completa para Modo TV */}
-            {forceTvMode && !isBrowserFullscreen && (
+            {forceTvMode && isListFullscreen && !isBrowserFullscreen && (
                 <div 
-                    onClick={toggleBrowserFullscreen}
+                    onClick={handleToggleFullscreen}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-800 text-white px-4 py-3 text-center text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer hover:from-blue-500 hover:to-indigo-500 transition-all select-none shadow-md z-[110] border-b border-blue-500/30 animate-pulse-slow"
                 >
                     <Activity size={16} className="animate-pulse text-blue-200 shrink-0" />
@@ -583,11 +587,11 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                     </span>
                     {viewMode === 'list' && (
                         <button
-                            onClick={toggleBrowserFullscreen}
+                            onClick={handleToggleFullscreen}
                             className="bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 p-2 rounded-xl transition-colors border border-zinc-200 dark:border-zinc-700 shadow-sm flex items-center gap-2"
-                            title={isBrowserFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                            title={isListFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
                         >
-                            {isBrowserFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+                            {isListFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
                         </button>
                     )}
                     <div className="bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl flex items-center border border-zinc-200 dark:border-zinc-700 shadow-inner">
