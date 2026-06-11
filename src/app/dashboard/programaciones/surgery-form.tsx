@@ -94,6 +94,11 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     // Cloning State
     const [clonedData, setClonedData] = useState<any>(null);
     const [formKey, setFormKey] = useState(0);
+    const [isDev, setIsDev] = useState(false);
+
+    useEffect(() => {
+        setIsDev(process.env.NODE_ENV === 'development');
+    }, []);
 
     // Accordion State Manager
     const [openSection, setOpenSection] = useState<'patient' | 'classification' | 'team' | 'schedule'>('patient');
@@ -1091,7 +1096,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         />
                                     </div>
                                 </div>
-                                {process.env.NODE_ENV === 'development' ? (
+                                {isDev ? (
                                     <>
                                         {/* Column 3: Bed, Blood, COPRI, Rescheduled */}
                                         <div className="space-y-4 w-48 shrink-0 border-l border-zinc-100 dark:border-zinc-800/80 pl-4">
