@@ -1091,122 +1091,249 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-4 w-48 shrink-0">
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
-                                        <input
-                                            type="text"
-                                            name="bed_number"
-                                            disabled={!canSchedule}
-                                            defaultValue={clonedData?.surgery?.bedNumber || ""}
-                                            placeholder="Ej: A-308"
-                                            className={getInputCls("bed_number", "px-3")}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Grupo RH</label>
-                                        <select
-                                            name="blood_group_rh"
-                                            disabled={!canSchedule}
-                                            defaultValue={(selectedPatId && localPatients.find(p => p.id === selectedPatId)?.pii?.bloodGroupRh) || clonedData?.patientPii?.bloodGroupRh || ""}
-                                            className={getInputCls("blood_group_rh", "px-2")}
-                                        >
-                                            <option value="">N/A</option>
-                                            <option value="O+">O+</option>
-                                            <option value="O-">O-</option>
-                                            <option value="A+">A+</option>
-                                            <option value="A-">A-</option>
-                                            <option value="B+">B+</option>
-                                            <option value="B-">B-</option>
-                                            <option value="AB+">AB+</option>
-                                            <option value="AB-">AB-</option>
-                                        </select>
-                                    </div>
-                                    <div className="pt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30">
-                                            <input 
-                                                type="checkbox" 
-                                                name="is_from_copri" 
+                                {process.env.NODE_ENV === 'development' ? (
+                                    <>
+                                        {/* Column 3: Bed, Blood, COPRI, Rescheduled */}
+                                        <div className="space-y-4 w-48 shrink-0 border-l border-zinc-100 dark:border-zinc-800/80 pl-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
+                                                <input
+                                                    type="text"
+                                                    name="bed_number"
+                                                    disabled={!canSchedule}
+                                                    defaultValue={clonedData?.surgery?.bedNumber || ""}
+                                                    placeholder="Ej: A-308"
+                                                    className={getInputCls("bed_number", "px-3")}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Grupo RH</label>
+                                                <select
+                                                    name="blood_group_rh"
+                                                    disabled={!canSchedule}
+                                                    defaultValue={(selectedPatId && localPatients.find(p => p.id === selectedPatId)?.pii?.bloodGroupRh) || clonedData?.patientPii?.bloodGroupRh || ""}
+                                                    className={getInputCls("blood_group_rh", "px-2")}
+                                                >
+                                                    <option value="">N/A</option>
+                                                    <option value="O+">O+</option>
+                                                    <option value="O-">O-</option>
+                                                    <option value="A+">A+</option>
+                                                    <option value="A-">A-</option>
+                                                    <option value="B+">B+</option>
+                                                    <option value="B-">B-</option>
+                                                    <option value="AB+">AB+</option>
+                                                    <option value="AB-">AB-</option>
+                                                </select>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="is_from_copri" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.isFromCopri || false}
+                                                        className="w-4 h-4 text-[var(--color-hospital-blue)] bg-white border-zinc-300 rounded focus:ring-[var(--color-hospital-blue)] dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Viene de COPRI</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="is_rescheduled" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.isRescheduled || false}
+                                                        className="w-4 h-4 text-[var(--color-hospital-blue)] bg-white border-zinc-300 rounded focus:ring-[var(--color-hospital-blue)] dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Reprogramado</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {/* Column 4: Outcomes */}
+                                        <div className="space-y-4 w-52 shrink-0 border-l border-zinc-100 dark:border-zinc-800/80 pl-4">
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors border border-transparent hover:border-purple-100 dark:hover:border-purple-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="is_reintervention" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.isReintervention || false}
+                                                        className="w-4 h-4 text-purple-600 bg-white border-zinc-300 rounded focus:ring-purple-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Reintervención</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-amber-50/50 dark:hover:bg-amber-900/20 transition-colors border border-transparent hover:border-amber-100 dark:hover:border-amber-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="has_hypoxic_encephalopathy" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.hasHypoxicEncephalopathy || false}
+                                                        className="w-4 h-4 text-amber-600 bg-white border-zinc-300 rounded focus:ring-amber-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Encefalopatía Hipóxica</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="has_urpa_complication" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.hasUrpaComplication || false}
+                                                        className="w-4 h-4 text-indigo-600 bg-white border-zinc-300 rounded focus:ring-indigo-500 dark:bg-indigo-900/20 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Complicación URPA</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-rose-50/50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-100 dark:hover:border-rose-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="died_in_surgery" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.diedInSurgery || false}
+                                                        className="w-4 h-4 text-rose-600 bg-white border-zinc-300 rounded focus:ring-rose-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">Fallecido en Qx</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-rose-50/50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-100 dark:hover:border-rose-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="died_in_urpa" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.diedInUrpa || false}
+                                                        className="w-4 h-4 text-rose-600 bg-white border-zinc-300 rounded focus:ring-rose-500 dark:bg-zinc-950 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">Fallecido en URPA</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* Production: 3 columns layout (with checkboxes in Column 3) */
+                                    <div className="space-y-4 w-48 shrink-0 border-l border-zinc-100 dark:border-zinc-800/80 pl-4 animate-fade-in">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">N° Cama</label>
+                                            <input
+                                                type="text"
+                                                name="bed_number"
                                                 disabled={!canSchedule}
-                                                defaultChecked={clonedData?.surgery?.isFromCopri || false}
-                                                className="w-4 h-4 text-[var(--color-hospital-blue)] bg-white border-zinc-300 rounded focus:ring-[var(--color-hospital-blue)] dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                defaultValue={clonedData?.surgery?.bedNumber || ""}
+                                                placeholder="Ej: A-308"
+                                                className={getInputCls("bed_number", "px-3")}
                                             />
-                                            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Viene de COPRI</span>
-                                        </label>
-                                    </div>
-                                    <div className="pt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30">
-                                            <input 
-                                                type="checkbox" 
-                                                name="is_rescheduled" 
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Grupo RH</label>
+                                            <select
+                                                name="blood_group_rh"
                                                 disabled={!canSchedule}
-                                                defaultChecked={clonedData?.surgery?.isRescheduled || false}
-                                                className="w-4 h-4 text-[var(--color-hospital-blue)] bg-white border-zinc-300 rounded focus:ring-[var(--color-hospital-blue)] dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
-                                            />
-                                            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Reprogramado</span>
-                                        </label>
+                                                defaultValue={(selectedPatId && localPatients.find(p => p.id === selectedPatId)?.pii?.bloodGroupRh) || clonedData?.patientPii?.bloodGroupRh || ""}
+                                                className={getInputCls("blood_group_rh", "px-2")}
+                                            >
+                                                <option value="">N/A</option>
+                                                <option value="O+">O+</option>
+                                                <option value="O-">O-</option>
+                                                <option value="A+">A+</option>
+                                                <option value="A-">A-</option>
+                                                <option value="B+">B+</option>
+                                                <option value="B-">B-</option>
+                                                <option value="AB+">AB+</option>
+                                                <option value="AB-">AB-</option>
+                                            </select>
+                                        </div>
+                                        <div className="pt-2">
+                                            <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="is_from_copri" 
+                                                    disabled={!canSchedule}
+                                                    defaultChecked={clonedData?.surgery?.isFromCopri || false}
+                                                    className="w-4 h-4 text-[var(--color-hospital-blue)] bg-white border-zinc-300 rounded focus:ring-[var(--color-hospital-blue)] dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                />
+                                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Viene de COPRI</span>
+                                            </label>
+                                        </div>
+                                        <div className="pt-2">
+                                            <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800/30">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="is_rescheduled" 
+                                                    disabled={!canSchedule}
+                                                    defaultChecked={clonedData?.surgery?.isRescheduled || false}
+                                                    className="w-4 h-4 text-[var(--color-hospital-blue)] bg-white border-zinc-300 rounded focus:ring-[var(--color-hospital-blue)] dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                />
+                                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Reprogramado</span>
+                                            </label>
+                                        </div>
+                                        <div className="pt-2">
+                                            <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors border border-transparent hover:border-purple-100 dark:hover:border-purple-800/30">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="is_reintervention" 
+                                                    disabled={!canSchedule}
+                                                    defaultChecked={clonedData?.surgery?.isReintervention || false}
+                                                    className="w-4 h-4 text-purple-600 bg-white border-zinc-300 rounded focus:ring-purple-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                />
+                                                <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Reintervención</span>
+                                            </label>
+                                        </div>
+                                        <div className="pt-2">
+                                            <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-amber-50/50 dark:hover:bg-amber-900/20 transition-colors border border-transparent hover:border-amber-100 dark:hover:border-amber-800/30">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="has_hypoxic_encephalopathy" 
+                                                    disabled={!canSchedule}
+                                                    defaultChecked={clonedData?.surgery?.hasHypoxicEncephalopathy || false}
+                                                    className="w-4 h-4 text-amber-600 bg-white border-zinc-300 rounded focus:ring-amber-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                />
+                                                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Encefalopatía Hipóxica</span>
+                                            </label>
+                                        </div>
+                                        <div className="pt-2">
+                                            <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800/30">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="has_urpa_complication" 
+                                                    disabled={!canSchedule}
+                                                    defaultChecked={clonedData?.surgery?.hasUrpaComplication || false}
+                                                    className="w-4 h-4 text-indigo-600 bg-white border-zinc-300 rounded focus:ring-indigo-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                />
+                                                <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Complicación URPA</span>
+                                            </label>
+                                        </div>
+                                        <div className="pt-2">
+                                            <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-rose-50/50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-100 dark:hover:border-rose-800/30">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="died_in_surgery" 
+                                                    disabled={!canSchedule}
+                                                    defaultChecked={clonedData?.surgery?.diedInSurgery || false}
+                                                    className="w-4 h-4 text-rose-600 bg-white border-zinc-300 rounded focus:ring-rose-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                />
+                                                <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">Fallecido en Qx</span>
+                                            </label>
+                                        </div>
+                                        <div className="pt-2">
+                                            <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-rose-50/50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-100 dark:hover:border-rose-800/30">
+                                                <input 
+                                                    type="checkbox" 
+                                                    name="died_in_urpa" 
+                                                    disabled={!canSchedule}
+                                                    defaultChecked={clonedData?.surgery?.diedInUrpa || false}
+                                                    className="w-4 h-4 text-rose-600 bg-white border-zinc-300 rounded focus:ring-rose-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                />
+                                                <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">Fallecido en URPA</span>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div className="pt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors border border-transparent hover:border-purple-100 dark:hover:border-purple-800/30">
-                                            <input 
-                                                type="checkbox" 
-                                                name="is_reintervention" 
-                                                disabled={!canSchedule}
-                                                defaultChecked={clonedData?.surgery?.isReintervention || false}
-                                                className="w-4 h-4 text-purple-600 bg-white border-zinc-300 rounded focus:ring-purple-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
-                                            />
-                                            <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Reintervención</span>
-                                        </label>
-                                    </div>
-                                    <div className="pt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-amber-50/50 dark:hover:bg-amber-900/20 transition-colors border border-transparent hover:border-amber-100 dark:hover:border-amber-800/30">
-                                            <input 
-                                                type="checkbox" 
-                                                name="has_hypoxic_encephalopathy" 
-                                                disabled={!canSchedule}
-                                                defaultChecked={clonedData?.surgery?.hasHypoxicEncephalopathy || false}
-                                                className="w-4 h-4 text-amber-600 bg-white border-zinc-300 rounded focus:ring-amber-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
-                                            />
-                                            <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Encefalopatía Hipóxica</span>
-                                        </label>
-                                    </div>
-                                    <div className="pt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800/30">
-                                            <input 
-                                                type="checkbox" 
-                                                name="has_urpa_complication" 
-                                                disabled={!canSchedule}
-                                                defaultChecked={clonedData?.surgery?.hasUrpaComplication || false}
-                                                className="w-4 h-4 text-indigo-600 bg-white border-zinc-300 rounded focus:ring-indigo-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
-                                            />
-                                            <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Complicación URPA</span>
-                                        </label>
-                                    </div>
-                                    <div className="pt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-rose-50/50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-100 dark:hover:border-rose-800/30">
-                                            <input 
-                                                type="checkbox" 
-                                                name="died_in_surgery" 
-                                                disabled={!canSchedule}
-                                                defaultChecked={clonedData?.surgery?.diedInSurgery || false}
-                                                className="w-4 h-4 text-rose-600 bg-white border-zinc-300 rounded focus:ring-rose-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
-                                            />
-                                            <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">Fallecido en Qx</span>
-                                        </label>
-                                    </div>
-                                    <div className="pt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-rose-50/50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-100 dark:hover:border-rose-800/30">
-                                            <input 
-                                                type="checkbox" 
-                                                name="died_in_urpa" 
-                                                disabled={!canSchedule}
-                                                defaultChecked={clonedData?.surgery?.diedInUrpa || false}
-                                                className="w-4 h-4 text-rose-600 bg-white border-zinc-300 rounded focus:ring-rose-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
-                                            />
-                                            <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">Fallecido en URPA</span>
-                                        </label>
-                                    </div>
-                                </div>
+                                )}
                             </div>
 
                             <div className="pt-2 flex justify-end">
