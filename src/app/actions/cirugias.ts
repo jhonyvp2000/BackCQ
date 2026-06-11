@@ -777,6 +777,22 @@ export async function updateSurgeryStatus(formData: FormData) {
         }
     }
 
+    if (formData.has("isReintervention")) {
+        updatePayload.isReintervention = formData.get("isReintervention") === "true" || formData.get("isReintervention") === "on";
+    }
+    if (formData.has("hasHypoxicEncephalopathy")) {
+        updatePayload.hasHypoxicEncephalopathy = formData.get("hasHypoxicEncephalopathy") === "true" || formData.get("hasHypoxicEncephalopathy") === "on";
+    }
+    if (formData.has("hasUrpaComplication")) {
+        updatePayload.hasUrpaComplication = formData.get("hasUrpaComplication") === "true" || formData.get("hasUrpaComplication") === "on";
+    }
+    if (formData.has("diedInSurgery")) {
+        updatePayload.diedInSurgery = formData.get("diedInSurgery") === "true" || formData.get("diedInSurgery") === "on";
+    }
+    if (formData.has("diedInUrpa")) {
+        updatePayload.diedInUrpa = formData.get("diedInUrpa") === "true" || formData.get("diedInUrpa") === "on";
+    }
+
     await db.update(cqSurgeries).set(updatePayload).where(eq(cqSurgeries.id, id));
     const updated = await db.select().from(cqSurgeries).where(eq(cqSurgeries.id, id)).limit(1);
 
@@ -834,8 +850,13 @@ export async function editSurgery(formData: FormData) {
     const bedNumber = formData.get("bed_number") as string;
     const internalCode = formData.get("internal_code") as string;
     const specialtyId = formData.get("specialty_id") as string;
-    const isFromCopri = formData.get("is_from_copri") === "on";
-    const isRescheduled = formData.get("is_rescheduled") === "on";
+    const isFromCopri = formData.get("is_from_copri") === "on" || formData.get("is_from_copri") === "true";
+    const isRescheduled = formData.get("is_rescheduled") === "on" || formData.get("is_rescheduled") === "true";
+    const isReintervention = formData.get("is_reintervention") === "on" || formData.get("is_reintervention") === "true";
+    const hasHypoxicEncephalopathy = formData.get("has_hypoxic_encephalopathy") === "on" || formData.get("has_hypoxic_encephalopathy") === "true";
+    const hasUrpaComplication = formData.get("has_urpa_complication") === "on" || formData.get("has_urpa_complication") === "true";
+    const diedInSurgery = formData.get("died_in_surgery") === "on" || formData.get("died_in_surgery") === "true";
+    const diedInUrpa = formData.get("died_in_urpa") === "on" || formData.get("died_in_urpa") === "true";
     const anesthesiaType = formData.get("anesthesia_type") as string;
 
     const surgeonIds = formData.getAll("surgeons") as string[];
@@ -1099,6 +1120,11 @@ export async function editSurgery(formData: FormData) {
         notes,
         isFromCopri,
         isRescheduled,
+        isReintervention,
+        hasHypoxicEncephalopathy,
+        hasUrpaComplication,
+        diedInSurgery,
+        diedInUrpa,
         updatedAt: new Date(),
     }).where(eq(cqSurgeries.id, id));
 

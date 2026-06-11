@@ -1146,6 +1146,70 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                             <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Reprogramado</span>
                                         </label>
                                     </div>
+                                    {editMode && (
+                                        <>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-purple-50/50 dark:hover:bg-purple-900/20 transition-colors border border-transparent hover:border-purple-100 dark:hover:border-purple-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="is_reintervention" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.isReintervention || false}
+                                                        className="w-4 h-4 text-purple-600 bg-white border-zinc-300 rounded focus:ring-purple-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Reintervención</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-amber-50/50 dark:hover:bg-amber-900/20 transition-colors border border-transparent hover:border-amber-100 dark:hover:border-amber-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="has_hypoxic_encephalopathy" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.hasHypoxicEncephalopathy || false}
+                                                        className="w-4 h-4 text-amber-600 bg-white border-zinc-300 rounded focus:ring-amber-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Encefalopatía Hipóxica</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-colors border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="has_urpa_complication" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.hasUrpaComplication || false}
+                                                        className="w-4 h-4 text-indigo-600 bg-white border-zinc-300 rounded focus:ring-indigo-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Complicación URPA</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-rose-50/50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-100 dark:hover:border-rose-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="died_in_surgery" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.diedInSurgery || false}
+                                                        className="w-4 h-4 text-rose-600 bg-white border-zinc-300 rounded focus:ring-rose-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">Fallecido en Qx</span>
+                                                </label>
+                                            </div>
+                                            <div className="pt-2">
+                                                <label className="flex items-center gap-2 cursor-pointer group p-2 rounded-lg hover:bg-rose-50/50 dark:hover:bg-rose-900/20 transition-colors border border-transparent hover:border-rose-100 dark:hover:border-rose-800/30">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        name="died_in_urpa" 
+                                                        disabled={!canSchedule}
+                                                        defaultChecked={clonedData?.surgery?.diedInUrpa || false}
+                                                        className="w-4 h-4 text-rose-600 bg-white border-zinc-300 rounded focus:ring-rose-500 dark:bg-zinc-900 dark:border-zinc-700 cursor-pointer"
+                                                    />
+                                                    <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-widest">Fallecido en URPA</span>
+                                                </label>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 

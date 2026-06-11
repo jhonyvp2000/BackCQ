@@ -51,12 +51,22 @@ export function PhaseTransitionModal({
     const [errorMsg, setErrorMsg] = useState("");
     const [skipUrpa, setSkipUrpa] = useState(false);
     const [isDeathByEmergency, setIsDeathByEmergency] = useState(false);
+    const [isReintervention, setIsReintervention] = useState(false);
+    const [hasHypoxicEncephalopathy, setHasHypoxicEncephalopathy] = useState(false);
+    const [hasUrpaComplication, setHasUrpaComplication] = useState(false);
+    const [diedInSurgery, setDiedInSurgery] = useState(false);
+    const [diedInUrpa, setDiedInUrpa] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setTargetPhase(initialTargetPhase);
             setSkipUrpa(false);
             setIsDeathByEmergency(false);
+            setIsReintervention(false);
+            setHasHypoxicEncephalopathy(false);
+            setHasUrpaComplication(false);
+            setDiedInSurgery(false);
+            setDiedInUrpa(false);
 
             if (initialTime) {
                 setTransitionTime(initialTime);
@@ -89,6 +99,11 @@ export function PhaseTransitionModal({
             formData.append('id', surgeryId);
             formData.append('status', targetPhase);
             formData.append('transition_time', transitionTime);
+            formData.append('isReintervention', String(isReintervention));
+            formData.append('hasHypoxicEncephalopathy', String(hasHypoxicEncephalopathy));
+            formData.append('hasUrpaComplication', String(hasUrpaComplication));
+            formData.append('diedInSurgery', String(diedInSurgery));
+            formData.append('diedInUrpa', String(diedInUrpa));
             if (targetPhase === 'completed') {
                 formData.append('isDeathByEmergency', String(isDeathByEmergency));
             }
@@ -162,41 +177,125 @@ export function PhaseTransitionModal({
                                 </div>
                             )}
 
-                            {targetPhase === 'completed' && urgencyType === 'EMERGENCIA' && (
-                                <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/50">
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <div className="relative flex items-center">
+                            {targetPhase === 'completed' && (
+                                <div className="space-y-4 mb-6">
+                                    {/* Encefalopatía Hipóxica */}
+                                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/50">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
                                             <input
                                                 type="checkbox"
-                                                checked={isDeathByEmergency}
-                                                onChange={(e) => setIsDeathByEmergency(e.target.checked)}
+                                                checked={hasHypoxicEncephalopathy}
+                                                onChange={(e) => setHasHypoxicEncephalopathy(e.target.checked)}
+                                                className="w-5 h-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-amber-900 dark:text-amber-300">¿Presentó Encefalopatía Hipóxica?</span>
+                                                <span className="text-[11px] text-amber-700/70 dark:text-amber-400/60 font-medium">Complicación neurológica post-acto quirúrgico.</span>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Complicaciones en URPA */}
+                                    <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/50">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={hasUrpaComplication}
+                                                onChange={(e) => setHasUrpaComplication(e.target.checked)}
+                                                className="w-5 h-5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-indigo-900 dark:text-indigo-300">¿Complicaciones en URPA?</span>
+                                                <span className="text-[11px] text-indigo-700/70 dark:text-indigo-400/60 font-medium">Marcar si presentó eventos adversos durante recuperación.</span>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Fallecimiento en URPA */}
+                                    <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/50">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={diedInUrpa}
+                                                onChange={(e) => setDiedInUrpa(e.target.checked)}
                                                 className="w-5 h-5 rounded border-rose-300 text-rose-600 focus:ring-rose-500 cursor-pointer"
                                             />
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-rose-900 dark:text-rose-300">¿Fallecimiento en URPA?</span>
+                                                <span className="text-[11px] text-rose-700/70 dark:text-rose-400/60 font-medium">Deceso ocurrido en sala de recuperación post-anestésica.</span>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Fallecimiento en Emergencia */}
+                                    {urgencyType === 'EMERGENCIA' && (
+                                        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/50">
+                                            <label className="flex items-center gap-3 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isDeathByEmergency}
+                                                    onChange={(e) => setIsDeathByEmergency(e.target.checked)}
+                                                    className="w-5 h-5 rounded border-rose-300 text-rose-600 focus:ring-rose-500 cursor-pointer"
+                                                />
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm font-bold text-rose-900 dark:text-rose-300">¿Fallecimiento en Emergencia?</span>
+                                                    <span className="text-[11px] text-rose-700/70 dark:text-rose-400/60 font-medium">Marcar si el acto quirúrgico de emergencia resultó en deceso.</span>
+                                                </div>
+                                            </label>
                                         </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-rose-900 dark:text-rose-300">¿Fallecimiento en Emergencia?</span>
-                                            <span className="text-[11px] text-rose-700/70 dark:text-rose-400/60 font-medium">Marcar si el acto quirúrgico resultó en el deceso del paciente.</span>
-                                        </div>
-                                    </label>
+                                    )}
                                 </div>
                             )}
 
                             {targetPhase === 'patient_exit' && (
-                                <div className="mb-6 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/50">
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <div className="relative flex items-center">
+                                <div className="space-y-4 mb-6">
+                                    {/* Ingresa a URPA */}
+                                    <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/50">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
                                             <input
                                                 type="checkbox"
                                                 checked={!skipUrpa}
                                                 onChange={(e) => setSkipUrpa(!e.target.checked)}
                                                 className="w-5 h-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                             />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-bold text-blue-900 dark:text-blue-300">¿Ingresa a URPA / Recuperación?</span>
-                                            <span className="text-[11px] text-blue-700/70 dark:text-blue-400/60 font-medium">Desmarcar si el paciente pasa directamente a sala o alta.</span>
-                                        </div>
-                                    </label>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-blue-900 dark:text-blue-300">¿Ingresa a URPA / Recuperación?</span>
+                                                <span className="text-[11px] text-blue-700/70 dark:text-blue-400/60 font-medium">Desmarcar si el paciente pasa directamente a sala o alta.</span>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Reintervención */}
+                                    <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/50">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={isReintervention}
+                                                onChange={(e) => setIsReintervention(e.target.checked)}
+                                                className="w-5 h-5 rounded border-purple-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-purple-900 dark:text-purple-300">¿Es Reintervención quirúrgica?</span>
+                                                <span className="text-[11px] text-purple-700/70 dark:text-purple-400/60 font-medium">Marcar si el paciente es operado nuevamente por complicaciones.</span>
+                                            </div>
+                                        </label>
+                                    </div>
+
+                                    {/* Fallecimiento en Quirófano */}
+                                    <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-800/50">
+                                        <label className="flex items-center gap-3 cursor-pointer group">
+                                            <input
+                                                type="checkbox"
+                                                checked={diedInSurgery}
+                                                onChange={(e) => setDiedInSurgery(e.target.checked)}
+                                                className="w-5 h-5 rounded border-rose-300 text-rose-600 focus:ring-rose-500 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-rose-900 dark:text-rose-300">¿Fallecimiento en Quirófano?</span>
+                                                <span className="text-[11px] text-rose-700/70 dark:text-rose-400/60 font-medium">Marcar si el deceso ocurrió dentro de la sala de operaciones.</span>
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
                             )}
 

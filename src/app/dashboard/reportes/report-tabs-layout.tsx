@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { ReportClientTable } from "./report-client-table";
 import { IndicatorsReportTable } from "./indicators-report-table";
+import { InterventionIndicatorsReportTable } from "./intervention-indicators-report-table";
 import { InterventionsReportTable } from "./interventions-report-table";
-import { FileSpreadsheet, BarChart3, Activity } from "lucide-react";
+import { HospitalIndicatorsReportTable } from "./hospital-indicators-report-table";
+import { FileSpreadsheet, BarChart3, Activity, HeartPulse } from "lucide-react";
 
-type TabId = "detailed" | "indicators" | "interventions";
+type TabId = "detailed" | "indicators" | "intervention_indicators" | "interventions" | "hospital_indicators";
 
 export function ReportTabsLayout() {
     const [activeTab, setActiveTab] = useState<TabId>("detailed");
@@ -29,19 +31,35 @@ export function ReportTabsLayout() {
             color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400",
         },
         {
+            id: "intervention_indicators" as TabId,
+            label: "Indicadores por Intervención",
+            description: "Estadísticas por tipo de cirugía",
+            number: "03",
+            icon: BarChart3,
+            color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
+        },
+        {
             id: "interventions" as TabId,
             label: "Cuadro de Intervenciones",
             description: "Cirugías por especialidad",
-            number: "03",
+            number: "04",
             icon: Activity,
             color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:text-indigo-400",
+        },
+        {
+            id: "hospital_indicators" as TabId,
+            label: "Indicadores Hospitalarios",
+            description: "Calidad y rendimiento clínico",
+            number: "05",
+            icon: HeartPulse,
+            color: "text-rose-600 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-400",
         }
     ];
 
     return (
         <div className="w-full space-y-8">
             {/* Tabs Selector */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-zinc-100/70 dark:bg-zinc-800/40 p-2.5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/80">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 bg-zinc-100/70 dark:bg-zinc-800/40 p-2.5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/80">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -94,9 +112,19 @@ export function ReportTabsLayout() {
                         <IndicatorsReportTable />
                     </div>
                 )}
+                {activeTab === "intervention_indicators" && (
+                    <div className="animate-in fade-in duration-300 slide-in-from-bottom-2">
+                        <InterventionIndicatorsReportTable />
+                    </div>
+                )}
                 {activeTab === "interventions" && (
                     <div className="animate-in fade-in duration-300 slide-in-from-bottom-2">
                         <InterventionsReportTable />
+                    </div>
+                )}
+                {activeTab === "hospital_indicators" && (
+                    <div className="animate-in fade-in duration-300 slide-in-from-bottom-2">
+                        <HospitalIndicatorsReportTable />
                     </div>
                 )}
             </div>
