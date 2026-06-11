@@ -97,7 +97,10 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [isDev, setIsDev] = useState(false);
 
     useEffect(() => {
-        setIsDev(process.env.NODE_ENV === 'development');
+        setIsDev(
+            process.env.NODE_ENV === 'development' || 
+            (typeof window !== 'undefined' && window.location.port === '3106')
+        );
     }, []);
 
     // Accordion State Manager
