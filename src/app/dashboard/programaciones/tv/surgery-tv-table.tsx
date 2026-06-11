@@ -676,7 +676,7 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                         <Activity size={20} className="mr-2 text-[var(--color-hospital-blue)]" />
                         Agenda Central Intervenciones
                     </h3>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1 font-medium">Panel de control de operaciones programadas y en curso</p>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1 font-medium">Panel de control</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <span className="bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 px-3 py-1.5 rounded-xl text-xs font-bold border border-emerald-200/50 dark:border-emerald-800/50 shadow-sm hidden sm:block">
