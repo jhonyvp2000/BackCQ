@@ -29,7 +29,10 @@ const ANESTHESIA_TYPES = [
     { id: 'SEDA', name: 'Sedación' }
 ];
 
+const enableQuickAdd = process.env.NEXT_PUBLIC_ENABLE_QUICK_ADD === "true";
+
 export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, diagnoses, procedures, interventions = [], patients, editMode, editData, isOpenOverride, onCloseOverride }: {
+
     salas: any[],
     specialties: any[],
     staff: { surgeons: any[], anesthesiologists: any[], nurses: any[] },
@@ -1297,7 +1300,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     {filteredUnselectedDx.length === 0 && selectedDxList.length === 0 && (
                                         <div className="p-4 text-center">
                                             <p className="text-sm text-zinc-500 mb-2">No se encontraron diagnósticos que coincidan con la búsqueda.</p>
-                                            {dxSearchTerm && (
+                                            {dxSearchTerm && enableQuickAdd && (
                                                 <button 
                                                     type="button" 
                                                     onClick={handleCreateDx} 
@@ -1393,7 +1396,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     {filteredUnselectedPostDx.length === 0 && selectedPostDxList.length === 0 && (
                                         <div className="p-4 text-center">
                                             <p className="text-sm text-zinc-500 mb-2">No se encontraron diagnósticos que coincidan con la búsqueda.</p>
-                                            {postDxSearchTerm && (
+                                            {postDxSearchTerm && enableQuickAdd && (
                                                 <button 
                                                     type="button" 
                                                     onClick={handleCreatePostDx} 
@@ -1488,7 +1491,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     {filteredUnselectedProc.length === 0 && selectedProcList.length === 0 && (
                                         <div className="p-4 text-center">
                                             <p className="text-sm text-zinc-500 mb-2">No se encontraron procedimientos que coincidan con la búsqueda.</p>
-                                            {procSearchTerm && (
+                                            {procSearchTerm && enableQuickAdd && (
                                                 <button 
                                                     type="button" 
                                                     onClick={handleCreateProc} 
@@ -1562,7 +1565,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     {filteredUnselectedInt.length === 0 && selectedIntList.length === 0 && (
                                         <div className="p-4 text-center">
                                             <p className="text-sm text-zinc-500 mb-2">No se encontraron intervenciones que coincidan con la búsqueda.</p>
-                                            {intSearchTerm && (
+                                            {intSearchTerm && enableQuickAdd && (
                                                 <button 
                                                     type="button" 
                                                     onClick={handleCreateInt} 
