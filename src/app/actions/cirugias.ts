@@ -356,8 +356,13 @@ export async function createSurgery(formData: FormData) {
     const bedNumber = formData.get("bed_number") as string;
     const internalCode = formData.get("internal_code") as string;
     const specialtyId = formData.get("specialty_id") as string;
-    const isFromCopri = formData.get("is_from_copri") === "on";
-    const isRescheduled = formData.get("is_rescheduled") === "on";
+    const isFromCopri = formData.get("is_from_copri") === "on" || formData.get("is_from_copri") === "true";
+    const isRescheduled = formData.get("is_rescheduled") === "on" || formData.get("is_rescheduled") === "true";
+    const isReintervention = formData.get("is_reintervention") === "on" || formData.get("is_reintervention") === "true";
+    const hasHypoxicEncephalopathy = formData.get("has_hypoxic_encephalopathy") === "on" || formData.get("has_hypoxic_encephalopathy") === "true";
+    const hasUrpaComplication = formData.get("has_urpa_complication") === "on" || formData.get("has_urpa_complication") === "true";
+    const diedInSurgery = formData.get("died_in_surgery") === "on" || formData.get("died_in_surgery") === "true";
+    const diedInUrpa = formData.get("died_in_urpa") === "on" || formData.get("died_in_urpa") === "true";
 
     const surgeonIds = formData.getAll("surgeons") as string[];
     const anesthesiologistIds = formData.getAll("anesthesiologists") as string[];
@@ -624,6 +629,11 @@ export async function createSurgery(formData: FormData) {
         notes,
         isFromCopri,
         isRescheduled,
+        isReintervention,
+        hasHypoxicEncephalopathy,
+        hasUrpaComplication,
+        diedInSurgery,
+        diedInUrpa,
     }).returning({ id: cqSurgeries.id });
 
     const surgeryRecordId = newSurgery[0].id;
