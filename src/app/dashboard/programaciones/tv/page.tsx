@@ -7,20 +7,32 @@ import { SurgeryTvTable } from "./surgery-tv-table";
 
 import { checkSession } from "@/lib/auth-helpers";
 
-export default async function ProgramacionesTVPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string }> }) {
+export default async function ProgramacionesTVPage({ searchParams }: { searchParams: Promise<{ sort?: string, date?: string, dateNew?: string }> }) {
     await checkSession();
     const sortParams = await searchParams;
     const currentSort = sortParams?.sort === 'asc' ? 'asc' : 'desc';
     
-    // Default to today in Lima timezone if no date provided, but allow "all" to fetch everything
-    let currentDate: string | undefined = sortParams?.date;
-    if (currentDate === 'all') {
-        currentDate = undefined;
-    } else if (!currentDate) {
-        currentDate = new Date().toLocaleString("sv-SE", { timeZone: "America/Lima" }).split(' ')[0];
+    // Obtener hoy en zona horaria Lima
+    const todayStr = new Date().toLocaleString("sv-SE", { timeZone: "America/Lima" }).split(' ')[0];
+
+    // Por defecto hoy si no se especifica en la URL. Si es "all", se deja undefined.
+    let dateAntigua: string | undefined = sortParams?.date;
+    if (dateAntigua === 'all') {
+        dateAntigua = undefined;
+    } else if (dateAntigua === undefined) {
+        dateAntigua = todayStr;
     }
 
-    const surgeriesData = await getSurgeriesByDateDesc(currentSort, currentDate);
+    let dateNueva: string | undefined = sortParams?.dateNew;
+    if (dateNueva === undefined) {
+        dateNueva = todayStr;
+    }
+
+    const surgeriesData = await getSurgeriesByDateDesc(
+        currentSort, 
+        dateNueva || undefined, 
+        dateAntigua || undefined
+    );
     const salas = await getOperatingRooms();
     const specialties = await getSpecialties();
     const { diagnoses, procedures } = await getContextualCatalogs(surgeriesData);
@@ -45,7 +57,8 @@ export default async function ProgramacionesTVPage({ searchParams }: { searchPar
                 procedures={procedures} 
                 interventions={interventions} 
                 patients={patients} 
-                initialDate={currentDate || ""} 
+                initialDate={dateAntigua || ""} 
+                initialDateNew={dateNueva || ""}
                 forceTvMode={true}
             />
         </div>
