@@ -1,4 +1,4 @@
-import { getSurgeriesByDateDesc, updateSurgeryStatus, getActiveDiagnoses, getActiveProcedures, getActiveInterventions } from "@/app/actions/cirugias";
+import { getSurgeriesByDateDesc, updateSurgeryStatus, getContextualCatalogs, getActiveInterventions } from "@/app/actions/cirugias";
 import { getOperatingRooms } from "@/app/actions/salas";
 import { getSpecialties } from "@/app/actions/especialidades";
 import { getMedicalStaffByProfession } from "@/app/actions/personal";
@@ -42,8 +42,7 @@ export default async function ProgramacionesPage({ searchParams }: { searchParam
     );
     const salas = await getOperatingRooms();
     const specialties = await getSpecialties();
-    const diagnoses = await getActiveDiagnoses();
-    const procedures = await getActiveProcedures();
+    const { diagnoses, procedures } = await getContextualCatalogs(surgeriesData);
     const interventions = await getActiveInterventions();
     const patients = await getPacientes();
 

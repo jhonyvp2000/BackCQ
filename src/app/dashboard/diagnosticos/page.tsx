@@ -1,10 +1,19 @@
-import { getAllDiagnoses } from "@/app/actions/diagnoses";
+import { getPaginatedDiagnoses } from "@/app/actions/diagnoses";
 import { Plus, ActivitySquare, LayoutList } from "lucide-react";
 import { CreateDiagnosisForm } from "./create-diagnosis-form";
 import { DiagnosesTable } from "./diagnoses-table";
 
-export default async function DiagnosesPage() {
-    const data = await getAllDiagnoses();
+export default async function DiagnosesPage({
+    searchParams
+}: {
+    searchParams: Promise<{ query?: string; page?: string }>
+}) {
+    const params = await searchParams;
+    const query = params.query || "";
+    const page = parseInt(params.page || "1", 10);
+    const limit = 50;
+
+    const { data, totalCount, totalPages } = await getPaginatedDiagnoses(query, page, limit);
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -39,13 +48,18 @@ export default async function DiagnosesPage() {
                                 Base de Datos
                             </h3>
                             <div className="text-xs font-medium px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
-                                {data.length} Índices Clínicos
+                                {totalCount} Índices Clínicos
                             </div>
                         </div>
 
                         {/* Motor de Búsqueda Multivariable Integrado */}
                         <div className="flex-1 overflow-auto">
-                            <DiagnosesTable records={data} />
+                            <DiagnosesTable 
+                                records={data} 
+                                currentPage={page} 
+                                totalPages={totalPages} 
+                                initialSearch={query}
+                            />
                         </div>
                     </div>
                 </div>

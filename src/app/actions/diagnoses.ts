@@ -2,13 +2,56 @@
 
 import { db } from "@/db";
 import { cqDiagnoses } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql, and, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function getAllDiagnoses() {
     return await db.select()
         .from(cqDiagnoses)
         .orderBy(desc(cqDiagnoses.createdAt));
+}
+
+export async function getPaginatedDiagnoses(query: string = "", page: number = 1, limit: number = 50) {
+    const offset = (page - 1) * limit;
+    
+    let searchCondition = eq(cqDiagnoses.isActive, true);
+    
+    if (query.trim()) {
+        const terms = query.trim().split(/\s+/).filter(Boolean);
+        if (terms.length > 0) {
+            const termConditions = terms.map(term => 
+                or(
+                    ilike(cqDiagnoses.code, `%${term}%`),
+                    ilike(cqDiagnoses.name, `%${term}%`)
+                )
+            );
+            searchCondition = and(
+                eq(cqDiagnoses.isActive, true),
+                ...termConditions
+            ) as any;
+        }
+    }
+
+    const [countResult] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(cqDiagnoses)
+        .where(searchCondition);
+        
+    const totalCount = countResult?.count || 0;
+
+    const data = await db
+        .select()
+        .from(cqDiagnoses)
+        .where(searchCondition)
+        .orderBy(desc(cqDiagnoses.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+    return {
+        data,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+    };
 }
 
 export async function createDiagnosis(formData: FormData) {

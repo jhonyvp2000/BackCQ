@@ -1,27 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, Edit2, Trash2, X, AlertTriangle, Loader2, BookA, ShieldAlert, BadgeCheck, FileX } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 import { deleteDiagnosis, updateDiagnosis } from "@/app/actions/diagnoses";
 
-export function DiagnosesTable({ records }: { records: any[] }) {
-    const [search, setSearch] = useState("");
+export function DiagnosesTable({ 
+    records,
+    currentPage = 1,
+    totalPages = 1,
+    initialSearch = ""
+}: { 
+    records: any[],
+    currentPage?: number,
+    totalPages?: number,
+    initialSearch?: string
+}) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const [search, setSearch] = useState(initialSearch);
     const [editDx, setEditDx] = useState<any>(null);
     const [deleteDx, setDeleteDx] = useState<any>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [actionMsg, setActionMsg] = useState<{type: 'error'|'success', text: string} | null>(null);
 
-    // Motor de Búsqueda Multivariable (Operador AND)
-    const filtered = records.filter(dx => {
-        if (!search.trim()) return true;
-        
-        const str = `${dx.name} ${dx.code || ""}`.toLowerCase();
-        const searchTerms = search.toLowerCase().trim().split(/\s+/);
-        
-        return searchTerms.every(term => str.includes(term));
-    });
+    useEffect(() => {
+        setSearch(initialSearch);
+    }, [initialSearch]);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            const params = new URLSearchParams(searchParams.toString());
+            if (search.trim()) {
+                params.set("query", search.trim());
+            } else {
+                params.delete("query");
+            }
+            params.set("page", "1");
+            router.push(`${pathname}?${params.toString()}`);
+        }, 400);
+        return () => clearTimeout(timeoutId);
+    }, [search, pathname, router, searchParams]);
+
+    const handlePageChange = (page: number) => {
+        if (page < 1 || page > totalPages) return;
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("page", page.toString());
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const filtered = records;
 
     const handleDelete = async () => {
         setIsSubmitting(true);
@@ -139,6 +171,31 @@ export function DiagnosesTable({ records }: { records: any[] }) {
                     </table>
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/20 flex items-center justify-between gap-4">
+                    <div className="text-xs text-zinc-500 font-semibold uppercase tracking-wider">
+                        Página {currentPage} de {totalPages}
+                    </div>
+                    <div className="flex gap-1.5">
+                        <button
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage <= 1}
+                            className="px-3 py-1.5 text-xs font-bold border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                        >
+                            &larr; Anterior
+                        </button>
+                        <button
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage >= totalPages}
+                            className="px-3 py-1.5 text-xs font-bold border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                        >
+                            Siguiente &rarr;
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Modal de Extirpación (Delete) */}
             {typeof document !== "undefined" && createPortal(

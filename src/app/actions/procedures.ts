@@ -2,13 +2,56 @@
 
 import { db } from "@/db";
 import { cqProcedures } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql, and, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function getAllProcedures() {
     return await db.select()
         .from(cqProcedures)
         .orderBy(desc(cqProcedures.createdAt));
+}
+
+export async function getPaginatedProcedures(query: string = "", page: number = 1, limit: number = 50) {
+    const offset = (page - 1) * limit;
+    
+    let searchCondition = eq(cqProcedures.isActive, true);
+    
+    if (query.trim()) {
+        const terms = query.trim().split(/\s+/).filter(Boolean);
+        if (terms.length > 0) {
+            const termConditions = terms.map(term => 
+                or(
+                    ilike(cqProcedures.code, `%${term}%`),
+                    ilike(cqProcedures.name, `%${term}%`)
+                )
+            );
+            searchCondition = and(
+                eq(cqProcedures.isActive, true),
+                ...termConditions
+            ) as any;
+        }
+    }
+
+    const [countResult] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(cqProcedures)
+        .where(searchCondition);
+        
+    const totalCount = countResult?.count || 0;
+
+    const data = await db
+        .select()
+        .from(cqProcedures)
+        .where(searchCondition)
+        .orderBy(desc(cqProcedures.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+    return {
+        data,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+    };
 }
 
 export async function createProcedure(formData: FormData) {

@@ -6,11 +6,57 @@ import { eq, desc, asc, and, gte, lte, ne, inArray, or, ilike } from "drizzle-or
 import { revalidatePath } from "next/cache";
 
 export async function getActiveDiagnoses() {
-    return await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.isActive, true)).orderBy(asc(cqDiagnoses.name));
+    return await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.isActive, true)).orderBy(asc(cqDiagnoses.name)).limit(50);
 }
 
 export async function getActiveProcedures() {
-    return await db.select().from(cqProcedures).where(eq(cqProcedures.isActive, true)).orderBy(asc(cqProcedures.name));
+    return await db.select().from(cqProcedures).where(eq(cqProcedures.isActive, true)).orderBy(asc(cqProcedures.name)).limit(50);
+}
+
+export async function getContextualCatalogs(surgeries: any[]) {
+    const usedDxIds = new Set<string>();
+    const usedProcIds = new Set<string>();
+    
+    surgeries.forEach(s => {
+        if (s.diagnoses && Array.isArray(s.diagnoses)) {
+            s.diagnoses.forEach((id: string) => usedDxIds.add(id));
+        }
+        if (s.postDiagnoses && Array.isArray(s.postDiagnoses)) {
+            s.postDiagnoses.forEach((id: string) => usedDxIds.add(id));
+        }
+        if (s.procedures && Array.isArray(s.procedures)) {
+            s.procedures.forEach((id: string) => usedProcIds.add(id));
+        }
+    });
+
+    const usedDxIdsArr = Array.from(usedDxIds).filter(Boolean);
+    const usedProcIdsArr = Array.from(usedProcIds).filter(Boolean);
+
+    const specificDiagnoses = usedDxIdsArr.length > 0 
+        ? await db.select().from(cqDiagnoses).where(inArray(cqDiagnoses.id, usedDxIdsArr)) 
+        : [];
+        
+    const specificProcedures = usedProcIdsArr.length > 0 
+        ? await db.select().from(cqProcedures).where(inArray(cqProcedures.id, usedProcIdsArr)) 
+        : [];
+
+    const defaultDiagnoses = await getActiveDiagnoses();
+    const defaultProcedures = await getActiveProcedures();
+
+    const mergedDiagnosesMap = new Map<string, any>();
+    defaultDiagnoses.forEach(d => mergedDiagnosesMap.set(d.id, d));
+    specificDiagnoses.forEach(d => mergedDiagnosesMap.set(d.id, d));
+    const diagnoses = Array.from(mergedDiagnosesMap.values());
+
+    const mergedProceduresMap = new Map<string, any>();
+    defaultProcedures.forEach(p => mergedProceduresMap.set(p.id, p));
+    specificProcedures.forEach(p => mergedProceduresMap.set(p.id, p));
+    const procedures = Array.from(mergedProceduresMap.values());
+
+    return {
+        diagnoses,
+        procedures
+    };
 }
 
 export async function getActiveInterventions() {

@@ -1,10 +1,19 @@
-import { getAllProcedures } from "@/app/actions/procedures";
+import { getPaginatedProcedures } from "@/app/actions/procedures";
 import { Plus, SplitSquareHorizontal, LayoutList } from "lucide-react";
 import { CreateProcedureForm } from "./create-procedure-form";
 import { ProceduresTable } from "./procedures-table";
 
-export default async function ProceduresPage() {
-    const data = await getAllProcedures();
+export default async function ProceduresPage({
+    searchParams
+}: {
+    searchParams: Promise<{ query?: string; page?: string }>
+}) {
+    const params = await searchParams;
+    const query = params.query || "";
+    const page = parseInt(params.page || "1", 10);
+    const limit = 50;
+
+    const { data, totalCount, totalPages } = await getPaginatedProcedures(query, page, limit);
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -39,13 +48,18 @@ export default async function ProceduresPage() {
                                 Base de Datos
                             </h3>
                             <div className="text-xs font-medium px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full">
-                                {data.length} Intervenciones
+                                {totalCount} Intervenciones
                             </div>
                         </div>
 
                         {/* Motor de Búsqueda Multivariable Integrado */}
                         <div className="flex-1 overflow-auto">
-                            <ProceduresTable records={data} />
+                            <ProceduresTable 
+                                records={data} 
+                                currentPage={page} 
+                                totalPages={totalPages} 
+                                initialSearch={query}
+                            />
                         </div>
                     </div>
                 </div>
