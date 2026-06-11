@@ -1162,6 +1162,14 @@ export function SurgeryViewToggle({
     }
   };
 
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center p-12 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm animate-pulse w-full">
+        <span className="text-zinc-500 font-semibold text-sm">Cargando agenda quirúrgica...</span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`bg-white dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800 overflow-hidden shadow-sm flex flex-col ${isListFullscreen ? "fixed inset-0 z-[100] w-screen h-screen rounded-none" : "relative rounded-3xl h-full ring-1 ring-zinc-100 dark:ring-zinc-800/50"}`}
