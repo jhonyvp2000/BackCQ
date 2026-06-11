@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { fetchSurgeryReportData } from "@/app/actions/reportes";
-import { Download, Search, Loader2, Calendar as CalendarIcon, FileSpreadsheet } from "lucide-react";
+import { Download, Search, Loader2, Calendar as CalendarIcon, FileSpreadsheet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth, startOfYear } from "date-fns";
 
 type ReportData = {
@@ -50,12 +50,19 @@ export function ReportClientTable() {
     const [data, setData] = useState<ReportData[]>([]);
     const [isPending, startTransition] = useTransition();
     const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+    
+    // Estados de paginación y filtrado local
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [filterText, setFilterText] = useState("");
 
     function handleSearch() {
         startTransition(async () => {
             const results = await fetchSurgeryReportData(startDate, endDate);
             setData(results);
             setHasLoadedOnce(true);
+            setCurrentPage(1);
+            setFilterText("");
         });
     }
 
@@ -216,6 +223,31 @@ export function ReportClientTable() {
         document.body.removeChild(link);
     }
 
+    // local search filtering and pagination calculation
+    const filteredData = data.filter(item => {
+        const query = filterText.toLowerCase();
+        return (
+            (item.nombresApellidos || "").toLowerCase().includes(query) ||
+            (item.diagnostico || "").toLowerCase().includes(query) ||
+            (item.cirujano || "").toLowerCase().includes(query) ||
+            (item.sala || "").toLowerCase().includes(query) ||
+            (item.especialidad || "").toLowerCase().includes(query) ||
+            (item.documento || "").toLowerCase().includes(query) ||
+            (item.historiaClinica || "").toLowerCase().includes(query)
+        );
+    });
+
+    const totalItems = filteredData.length;
+    const totalPages = Math.ceil(totalItems / pageSize) || 1;
+    const safeCurrentPage = currentPage > totalPages ? totalPages : currentPage;
+    const startIndex = (safeCurrentPage - 1) * pageSize;
+    const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
+
+    const handleFilterChange = (val: string) => {
+        setFilterText(val);
+        setCurrentPage(1);
+    };
+
     return (
         <div className="space-y-6">
             <div className="bg-white dark:bg-zinc-900 p-6 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
@@ -278,47 +310,137 @@ export function ReportClientTable() {
                 )}
             </div>
 
+            {data.length > 0 && (
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-200/50 dark:border-zinc-800/60">
+                    <div className="relative w-full sm:w-80">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 w-4 h-4" />
+                        <input
+                            type="text"
+                            value={filterText}
+                            onChange={(e) => handleFilterChange(e.target.value)}
+                            placeholder="Filtrar por paciente, médico, especialidad, DNI..."
+                            className="pl-10 pr-4 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-lg w-full focus:ring-2 focus:ring-blue-500 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                        />
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 shrink-0">
+                        <span>Mostrar</span>
+                        <select
+                            value={pageSize}
+                            onChange={(e) => {
+                                setPageSize(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="border border-zinc-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        >
+                            <option value={10}>10 filas</option>
+                            <option value={25}>25 filas</option>
+                            <option value={50}>50 filas</option>
+                            <option value={100}>100 filas</option>
+                        </select>
+                    </div>
+                </div>
+            )}
+
             {!hasLoadedOnce ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white/50 dark:bg-zinc-900/50 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
                     <FileSpreadsheet className="w-16 h-16 text-zinc-300 animate-pulse mb-4" />
                     <p className="text-zinc-500 font-medium">Selecciona un rango de fechas y genera la grilla de reporte.</p>
                 </div>
-            ) : data.length === 0 ? (
+            ) : totalItems === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white/50 dark:bg-zinc-900/50 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
                     <p className="text-zinc-500 font-medium">No se encontraron programaciones quirúrgicas en el rango especificado.</p>
                 </div>
             ) : (
-                <div className="bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden overflow-x-auto rounded-xl">
-                    <table className="min-w-max w-full text-left text-sm whitespace-nowrap">
-                        <thead className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold uppercase text-[10px] tracking-wider border-b border-zinc-200 dark:border-zinc-700">
-                            <tr>
-                                <th className="px-3 py-3">N°</th>
-                                <th className="px-3 py-3">Paciente</th>
-                                <th className="px-3 py-3">Sala</th>
-                                <th className="px-3 py-3">Diagnóstico</th>
-                                <th className="px-3 py-3">Cirujano(s)</th>
-                                <th className="px-3 py-3">F. Solicitud</th>
-                                <th className="px-3 py-3">F. Intervención</th>
-                                <th className="px-3 py-3">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-200/50 dark:divide-zinc-800 border-b border-zinc-200 dark:border-zinc-800">
-                            {data.map((row) => (
-                                <tr key={row.correlativo} className={`transition-colors border-l-4 ${getRowColorClasses(row)}`}>
-                                    <td className="px-3 py-2.5 font-medium">{row.correlativo}</td>
-                                    <td className="px-3 py-2.5 max-w-[200px] truncate" title={row.nombresApellidos}>{row.nombresApellidos}</td>
-                                    <td className="px-3 py-2.5">{row.sala}</td>
-                                    <td className="px-3 py-2.5 max-w-[250px] truncate" title={row.diagnostico}>{row.diagnostico}</td>
-                                    <td className="px-3 py-2.5 max-w-[200px] truncate" title={row.cirujano}>{row.cirujano}</td>
-                                    <td className="px-3 py-2.5 font-semibold font-mono text-xs">{row.fechaSolicitud}</td>
-                                    <td className="px-3 py-2.5 font-semibold font-mono text-xs">{row.fechaIntervencionQuirurgica}</td>
-                                    <td className="px-3 py-2.5 uppercase text-[10px] font-bold">
-                                        {translateStatus(row.estadoAlerta)}
-                                    </td>
+                <div className="bg-white dark:bg-zinc-900 shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden rounded-xl">
+                    <div className="overflow-x-auto w-full">
+                        <table className="min-w-max w-full text-left text-sm whitespace-nowrap">
+                            <thead className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold uppercase text-[10px] tracking-wider border-b border-zinc-200 dark:border-zinc-700">
+                                <tr>
+                                    <th className="px-3 py-3">N°</th>
+                                    <th className="px-3 py-3">Paciente</th>
+                                    <th className="px-3 py-3">Sala</th>
+                                    <th className="px-3 py-3">Diagnóstico</th>
+                                    <th className="px-3 py-3">Cirujano(s)</th>
+                                    <th className="px-3 py-3">F. Solicitud</th>
+                                    <th className="px-3 py-3">F. Intervención</th>
+                                    <th className="px-3 py-3">Estado</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-200/50 dark:divide-zinc-800 border-b border-zinc-200 dark:border-zinc-800">
+                                {paginatedData.map((row) => (
+                                    <tr key={row.correlativo} className={`transition-colors border-l-4 ${getRowColorClasses(row)}`}>
+                                        <td className="px-3 py-2.5 font-medium">{row.correlativo}</td>
+                                        <td className="px-3 py-2.5 max-w-[200px] truncate" title={row.nombresApellidos}>{row.nombresApellidos}</td>
+                                        <td className="px-3 py-2.5">{row.sala}</td>
+                                        <td className="px-3 py-2.5 max-w-[250px] truncate" title={row.diagnostico}>{row.diagnostico}</td>
+                                        <td className="px-3 py-2.5 max-w-[200px] truncate" title={row.cirujano}>{row.cirujano}</td>
+                                        <td className="px-3 py-2.5 font-semibold font-mono text-xs">{row.fechaSolicitud}</td>
+                                        <td className="px-3 py-2.5 font-semibold font-mono text-xs">{row.fechaIntervencionQuirurgica}</td>
+                                        <td className="px-3 py-2.5 uppercase text-[10px] font-bold">
+                                            {translateStatus(row.estadoAlerta)}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {/* Pagination Footer */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-zinc-50 dark:bg-zinc-850/30 border-t border-zinc-200 dark:border-zinc-800/80 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                        <div>
+                            <span>
+                                Mostrando <strong className="text-zinc-900 dark:text-white">{startIndex + 1}</strong> al{" "}
+                                <strong className="text-zinc-900 dark:text-white">
+                                    {Math.min(startIndex + pageSize, totalItems)}
+                                </strong>{" "}
+                                de <strong className="text-zinc-900 dark:text-white">{totalItems}</strong> resultados
+                                {filterText && " (filtrados)"}
+                            </span>
+                        </div>
+
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    onClick={() => setCurrentPage(1)}
+                                    disabled={safeCurrentPage === 1}
+                                    className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:hover:bg-transparent transition text-zinc-700 dark:text-zinc-300 cursor-pointer disabled:cursor-not-allowed"
+                                    title="Primera página"
+                                >
+                                    <ChevronsLeft className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={safeCurrentPage === 1}
+                                    className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:hover:bg-transparent transition text-zinc-700 dark:text-zinc-300 cursor-pointer disabled:cursor-not-allowed"
+                                    title="Página anterior"
+                                >
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                </button>
+                                
+                                <span className="px-3 py-1 bg-white dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-700 rounded-md text-zinc-900 dark:text-white">
+                                    Página {safeCurrentPage} de {totalPages}
+                                </span>
+
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={safeCurrentPage === totalPages}
+                                    className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:hover:bg-transparent transition text-zinc-700 dark:text-zinc-300 cursor-pointer disabled:cursor-not-allowed"
+                                    title="Siguiente página"
+                                >
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => setCurrentPage(totalPages)}
+                                    disabled={safeCurrentPage === totalPages}
+                                    className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:hover:bg-transparent transition text-zinc-700 dark:text-zinc-300 cursor-pointer disabled:cursor-not-allowed"
+                                    title="Última página"
+                                >
+                                    <ChevronsRight className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
         </div>
