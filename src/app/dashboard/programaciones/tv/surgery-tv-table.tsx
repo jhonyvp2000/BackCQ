@@ -5,14 +5,9 @@ import { LayoutGrid, List as ListIcon, Calendar, ArrowUp, ArrowDown, User, Clock
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { StartSurgeryButton } from "../start-surgery-button";
-import { DeleteSurgeryButton } from "../delete-button";
 import { updateSurgeryStatus } from "@/app/actions/cirugias";
 import { SurgeryTimeline } from "@/components/ui/surgery-timeline";
 import { AnimatePresence, motion } from "framer-motion";
-import { EditSurgeryModal } from "../edit-surgery-modal";
-import { PhaseTransitionModal } from "../phase-transition-modal";
-import { PhaseTimesModal } from "../phase-times-modal";
 
 function getFormattedDate(dateValue: Date | string | null | undefined, isTimeDefined: boolean = true): React.ReactNode {
     if (!dateValue) return 'Fecha no definida';
@@ -237,6 +232,28 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
         };
         window.addEventListener('OPEN_TRANSITION_MODAL', handleOpenModal);
         return () => window.removeEventListener('OPEN_TRANSITION_MODAL', handleOpenModal);
+    }, []);
+
+    // Atajo de teclado global: tecla 'F' para abrir/cerrar filtros
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const activeEl = document.activeElement;
+            if (
+                activeEl &&
+                (activeEl.tagName === "INPUT" ||
+                 activeEl.tagName === "TEXTAREA" ||
+                 activeEl.tagName === "SELECT" ||
+                 activeEl.getAttribute("contenteditable") === "true")
+            ) {
+                return;
+            }
+            if (e.key.toLowerCase() === "f") {
+                e.preventDefault();
+                setIsFilterOpen(prev => !prev);
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
 
     // Estados para Filtros de Lista
@@ -1810,12 +1827,6 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                                     </Link>
                                                                 )}
 
-                                                                {/* Modal Seguro de Eliminación */}
-                                                                {canDelete && (
-                                                                    <div className="inline-block ml-1 border-l border-zinc-200 dark:border-zinc-700 pl-1">
-                                                                        <DeleteSurgeryButton id={row.surgery.id} />
-                                                                    </div>
-                                                                )}
                                                             </div>
                                                         </td>
                                                     )}
@@ -1830,44 +1841,6 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                     )}
                 </AnimatePresence>
             </div>
-
-            {editingSurgery && specialties && staff && (
-                <EditSurgeryModal
-                    isOpen={!!editingSurgery}
-                    onClose={() => setEditingSurgery(null)}
-                    initialData={editingSurgery}
-                    salas={salas}
-                    specialties={specialties || []}
-                    staff={staff}
-                    diagnoses={diagnoses}
-                    procedures={procedures}
-                    interventions={interventions}
-                    patients={patients}
-                />
-            )}
-
-            <PhaseTransitionModal
-                isOpen={transitionModal.isOpen}
-                onClose={() => setTransitionModal({ ...transitionModal, isOpen: false })}
-                surgeryId={transitionModal.surgeryId}
-                targetPhase={transitionModal.targetPhase}
-                patientName={transitionModal.patientName}
-                initialTime={transitionModal.initialTime}
-                urgencyType={transitionModal.urgencyType}
-                onSuccess={(nextPhase) => {
-                    if (!nextPhase) {
-                        setTransitionModal({ ...transitionModal, isOpen: false });
-                    }
-                    router.refresh();
-                }}
-            />
-
-            {editingTimesSurgery && (
-                <PhaseTimesModal
-                    surgery={editingTimesSurgery}
-                    onClose={() => setEditingTimesSurgery(null)}
-                />
-            )}
 
             {typeof document !== "undefined" && createPortal(
                 <AnimatePresence>
