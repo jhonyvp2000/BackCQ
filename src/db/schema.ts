@@ -110,7 +110,7 @@ export const cqSurgeries = pgTable("cq_surgeries", {
   diagnosis: text("diagnosis"), // custom text
   postDiagnosis: text("post_diagnosis"), // custom text
   surgeryType: varchar("surgery_type", { length: 50 }), // 'Cirugía Menor', 'Cirugía Mayor'
-  insuranceType: varchar("insurance_type", { length: 50 }), // 'SIS', 'SOAT', 'PARTICULAR', 'SISPOL'
+  insuranceType: varchar("insurance_type", { length: 50 }), // 'SIS', 'SOAT', 'PARTICULAR', 'SALUDPOL'
   anesthesiaType: varchar("anesthesia_type", { length: 50 }), // 'RAQ', 'EPI', 'AGB', 'AGE', 'AGI', 'BLOQ', 'LOCL'
   origin: varchar("origin", { length: 255 }), // Procedencia: Cama, Ambulatorio, etc.
   bedNumber: varchar("bed_number", { length: 50 }),

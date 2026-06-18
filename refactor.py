@@ -85,7 +85,7 @@ new_sec2 = """<div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                                         <option value="SIS">SIS</option>
                                         <option value="SOAT">SOAT</option>
                                         <option value="PARTICULAR">PARTICULAR</option>
-                                        <option value="SISPOL">SISPOL</option>
+                                        <option value="SALUDPOL">SALUDPOL</option>
                                     </select>
                                     <FieldError msg={errors.insurance_type} />
                                 </div>

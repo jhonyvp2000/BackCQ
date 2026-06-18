@@ -1273,8 +1273,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.surgery_type} />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Prioridad</label>
-                                    <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
+                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Cirugía</label>
+                                     <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
                                         <option value="">- Seleccionar -</option>
                                         <option value="ELECTIVO">Electivo</option>
                                         <option value="EMERGENCIA">Emergencia</option>
@@ -1288,7 +1288,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         <option value="SIS">SIS</option>
                                         <option value="SOAT">SOAT</option>
                                         <option value="PARTICULAR">PARTICULAR</option>
-                                        <option value="SISPOL">SISPOL</option>
+                                        <option value="SALUDPOL">SALUDPOL</option>
                                     </select>
                                     <FieldError msg={errors.insurance_type} />
                                 </div>
