@@ -40,6 +40,10 @@ type ReportData = {
     mesIntervencion: string;
     estadoAlerta: string;
     turno: string;
+    direccion: string;
+    distrito: string;
+    provincia: string;
+    departamento: string;
 };
 
 export function ReportClientTable() {
@@ -145,7 +149,7 @@ export function ReportClientTable() {
             "ANESTESIOLOGO", "INSTRUMENTISTA", "CIRCULANTE", "TIPO SEGURO", "PROCEDENCIA", "TIPO ANESTECIA", 
             "HORA INGRESO PACIENTE", "HORA INICIO ANESTECIA", "HORA ANTES DE LA INCISIÓN", 
             "HORA TERMINO CIRUGIA", "HORA SALIDA PACIENTE", "HORA SALIDA DE URPA", 
-            "PRIORIDAD", "MES DE INTERVENCION", "TURNO", "ESTADO", "INCOMPLETO"
+            "PRIORIDAD", "MES DE INTERVENCION", "TURNO", "ESTADO", "DIRECCIÓN", "DISTRITO", "PROVINCIA", "DEPARTAMENTO", "INCOMPLETO"
         ];
         const headerRow = sheet.addRow(headers);
         headerRow.font = { name: 'Arial', size: 9, bold: true, color: { argb: 'FFFFFFFF' } }; // White text
@@ -166,6 +170,7 @@ export function ReportClientTable() {
                 item.horaInicioAnestesia, item.horaAntesIncision, item.horaTerminoCirugia, 
                 item.horaSalidaPaciente, item.horaSalidaUrpa, 
                 item.tipoPrioridad, item.mesIntervencion, item.turno, getStatusText(item.estadoAlerta),
+                item.direccion || "", item.distrito || "", item.provincia || "", item.departamento || "",
                 (item.estadoAlerta === 'completed' && (!item.tipoAnestesia || item.tipoAnestesia.trim() === '' || item.tipoAnestesia === '-')) ? 'X' : ''
             ];
             const dataRow = sheet.addRow(rowData);
@@ -212,6 +217,10 @@ export function ReportClientTable() {
         sheet.getColumn(28).width = 18; // HORA TERMINO CIRUGIA
         sheet.getColumn(29).width = 18; // HORA SALIDA PACIENTE
         sheet.getColumn(30).width = 18; // HORA SALIDA DE URPA
+        sheet.getColumn(35).width = 30; // Dirección
+        sheet.getColumn(36).width = 20; // Distrito
+        sheet.getColumn(37).width = 20; // Provincia
+        sheet.getColumn(38).width = 20; // Departamento
         sheet.getRow(5).height = 30; // Altura del header (ahora es fila 5)
         sheet.views = [{ state: 'frozen', xSplit: 0, ySplit: 5 }]; // Congelar 5 primeras filas
 

@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { 
   cqSurgicalReports, cqSurgeries, usersTable, 
   cqOperatingRooms, cqSpecialties, cqPatients, cqPatientPii, cqSurgeryTeam, cqSurgeryProcedures, cqProcedures, cqSurgeryDiagnoses, cqDiagnoses,
-  cqInterventionTypes, cqSurgeryInterventions, cqSurgeryPostDiagnoses
+  cqInterventionTypes, cqSurgeryInterventions, cqSurgeryPostDiagnoses, cqUbigeo
 } from "@/db/schema";
 import { eq, and, gte, lte, inArray, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -119,13 +119,15 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
         room: cqOperatingRooms,
         specialty: cqSpecialties,
         patient: cqPatients,
-        pii: cqPatientPii
+        pii: cqPatientPii,
+        ubigeo: cqUbigeo
     })
     .from(cqSurgeries)
     .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
     .leftJoin(cqSpecialties, eq(cqSurgeries.specialtyId, cqSpecialties.id))
     .innerJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
     .leftJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+    .leftJoin(cqUbigeo, eq(cqPatients.ubigeo, cqUbigeo.code))
     .where(and(
         gte(cqSurgeries.scheduledDate, startDate),
         lte(cqSurgeries.scheduledDate, endDate)
@@ -241,7 +243,11 @@ export async function fetchSurgeryReportData(startDateStr: string, endDateStr: s
             tipoPrioridad: s.surgery.urgencyType || "",
             mesIntervencion: s.surgery.actualStartTime ? getMonthName(new Date(s.surgery.actualStartTime)) : "",
             estadoAlerta: s.surgery.status,
-            turno: turno
+            turno: turno,
+            direccion: s.pii?.direccion || "",
+            distrito: s.ubigeo?.distrito || "",
+            provincia: s.ubigeo?.provincia || "",
+            departamento: s.ubigeo?.departamento || ""
         };
     });
 }
