@@ -286,8 +286,10 @@ export function ReportClientTable() {
                             disabled={isPending}
                             className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-                            {isPending ? "Procesando..." : "Generar Grilla"}
+                            <span className="flex items-center gap-2">
+                                {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                                <span>{isPending ? "Procesando..." : "Generar Grilla"}</span>
+                            </span>
                         </button>
                     </div>
 
