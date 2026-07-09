@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { fetchSurgeryReportData } from "@/app/actions/reportes";
 import { Download, Search, Loader2, Calendar as CalendarIcon, FileSpreadsheet, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth, startOfYear } from "date-fns";
@@ -43,11 +43,13 @@ type ReportData = {
 };
 
 export function ReportClientTable() {
-    const defaultStart = format(startOfMonth(new Date()), "yyyy-MM-dd");
-    const defaultEnd = format(endOfMonth(new Date()), "yyyy-MM-dd");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
-    const [startDate, setStartDate] = useState(defaultStart);
-    const [endDate, setEndDate] = useState(defaultEnd);
+    useEffect(() => {
+        setStartDate(format(startOfMonth(new Date()), "yyyy-MM-dd"));
+        setEndDate(format(endOfMonth(new Date()), "yyyy-MM-dd"));
+    }, []);
     const [data, setData] = useState<ReportData[]>([]);
     const [isPending, startTransition] = useTransition();
     const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
