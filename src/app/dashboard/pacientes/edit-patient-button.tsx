@@ -114,7 +114,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                     <X size={18} strokeWidth={2.5} />
                                 </button>
                             </div>
-                             <form onSubmit={handleSubmit} className="p-6 relative">
+                             <form key={`${currentPatient.pii?.nombres}-${currentPatient.pii?.apellidos}-${isSyncing}`} onSubmit={handleSubmit} className="p-6 relative">
                                 {isSyncing && (
                                     <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/80 z-20 flex flex-col items-center justify-center rounded-b-3xl">
                                         <Loader2 className="animate-spin text-[var(--color-hospital-blue)] mb-3" size={32} />
