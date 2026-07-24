@@ -145,10 +145,42 @@ export async function lookupPatientByDni(rawId: string) {
         if (localPatient) {
             // Ya existía en Bóveda (posiblemente como "No Identificado")
             if (pFoundInApi) {
+                // Auto-actualizar base de datos si localmente era "NO IDENTIFICADO"
+                const localIsUnidentified = 
+                    localPatient.pii.nombres.toUpperCase() === 'NO IDENTIFICADO' || 
+                    localPatient.pii.apellidos.toUpperCase() === 'NO IDENTIFICADO';
+                
+                if (localIsUnidentified && pName.toUpperCase() !== 'NO IDENTIFICADO') {
+                    try {
+                        await db.transaction(async (tx) => {
+                            await tx.update(cqPatients)
+                                .set({
+                                    fechaNacimiento: fechaNac,
+                                    sexo: sexo,
+                                    ubigeo: ubi,
+                                    updatedAt: new Date()
+                                })
+                                .where(eq(cqPatients.id, localPatient.patient.id));
+
+                            await tx.update(cqPatientPii)
+                                .set({
+                                    nombres: pName,
+                                    apellidos: pLastName,
+                                    historiaClinica: pHistoriaClinica,
+                                    direccion: pDireccion
+                                })
+                                .where(eq(cqPatientPii.patientId, localPatient.patient.id));
+                        });
+                        console.log(`[lookupPatientByDni] Autocorregido paciente DNI: ${dni} (${fullName})`);
+                    } catch (dbErr) {
+                        console.error(`[lookupPatientByDni] Fallo en la auto-curación del DNI ${dni}:`, dbErr);
+                    }
+                }
+
                 return {
                     found: true,
                     fullName,
-                    source: 'Registro Local CQ (Bóveda / API Sync)',
+                    source: 'Registro Local CQ (Bóveda / API Sync Autocurado)',
                     direccion: pDireccion,
                     distrito: extDistrito,
                     provincia: extProvincia,

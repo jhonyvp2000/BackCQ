@@ -1,19 +1,57 @@
 "use client";
 
 import { useState } from "react";
-import { Edit2, Save, X } from "lucide-react";
-import { updatePaciente } from "@/app/actions/pacientes";
+import { Edit2, Save, X, Loader2 } from "lucide-react";
+import { updatePaciente, lookupPatientByDni } from "@/app/actions/pacientes";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { UbigeoSelector } from "./ubigeo-selector";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 
 export function EditPatientButton({ patient }: { patient: any }) {
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
+    const [currentPatient, setCurrentPatient] = useState(patient);
 
-    const handleOpen = () => setIsOpen(true);
+    const handleOpen = async () => {
+        setIsOpen(true);
+        const nameUpper = (currentPatient.pii?.nombres || "").toUpperCase();
+        const lastnameUpper = (currentPatient.pii?.apellidos || "").toUpperCase();
+        const dni = currentPatient.pii?.dni;
+
+        if ((nameUpper.includes("NO IDENTIFICADO") || lastnameUpper.includes("NO IDENTIFICADO")) && dni) {
+            setIsSyncing(true);
+            try {
+                const res = await lookupPatientByDni(dni);
+                if (res && res.found && res.apiData) {
+                    const data = JSON.parse(res.apiData);
+                    setCurrentPatient((prev: any) => ({
+                        ...prev,
+                        fechaNacimiento: data.fechaNacimiento,
+                        sexo: data.sexo,
+                        ubigeo: data.ubigeo,
+                        pii: {
+                            ...prev.pii,
+                            nombres: data.nombres,
+                            apellidos: data.apellidos,
+                            historiaClinica: data.historiaClinica,
+                            direccion: data.direccion
+                        }
+                    }));
+                    router.refresh();
+                }
+            } catch (err) {
+                console.error("Error al auto-sincronizar desde modal de edición:", err);
+            } finally {
+                setIsSyncing(false);
+            }
+        }
+    };
+
     const handleClose = () => {
         setIsOpen(false);
         setErrorMsg("");
@@ -76,8 +114,16 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                     <X size={18} strokeWidth={2.5} />
                                 </button>
                             </div>
+                             <form onSubmit={handleSubmit} className="p-6 relative">
+                                {isSyncing && (
+                                    <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/80 z-20 flex flex-col items-center justify-center rounded-b-3xl">
+                                        <Loader2 className="animate-spin text-[var(--color-hospital-blue)] mb-3" size={32} />
+                                        <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300 animate-pulse">
+                                            Sincronizando datos oficiales con NETHOS...
+                                        </p>
+                                    </div>
+                                )}
 
-                            <form onSubmit={handleSubmit} className="p-6">
                                 {errorMsg && (
                                     <div className="mb-6 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-xl font-medium animate-in fade-in zoom-in-95 duration-200">
                                         {errorMsg}
@@ -91,7 +137,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <input
                                                 type="text"
                                                 name="nombres"
-                                                defaultValue={patient.pii?.nombres}
+                                                defaultValue={currentPatient.pii?.nombres}
                                                 required
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium placeholder-zinc-400"
                                             />
@@ -101,7 +147,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <input
                                                 type="text"
                                                 name="apellidos"
-                                                defaultValue={patient.pii?.apellidos}
+                                                defaultValue={currentPatient.pii?.apellidos}
                                                 required
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium placeholder-zinc-400"
                                             />
@@ -114,7 +160,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <input
                                                 type="text"
                                                 name="dni"
-                                                defaultValue={patient.pii?.dni || ""}
+                                                defaultValue={currentPatient.pii?.dni || ""}
                                                 maxLength={8}
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium placeholder-zinc-400"
                                                 placeholder="8 dígitos"
@@ -125,7 +171,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <input
                                                 type="text"
                                                 name="carnetExtranjeria"
-                                                defaultValue={patient.pii?.carnetExtranjeria || ""}
+                                                defaultValue={currentPatient.pii?.carnetExtranjeria || ""}
                                                 maxLength={20}
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium placeholder-zinc-400"
                                                 placeholder="Opcional"
@@ -139,7 +185,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <input
                                                 type="text"
                                                 name="pasaporte"
-                                                defaultValue={patient.pii?.pasaporte || ""}
+                                                defaultValue={currentPatient.pii?.pasaporte || ""}
                                                 maxLength={20}
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium placeholder-zinc-400"
                                                 placeholder="Opcional"
@@ -150,7 +196,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <input
                                                 type="text"
                                                 name="historiaClinica"
-                                                defaultValue={patient.pii?.historiaClinica || ""}
+                                                defaultValue={currentPatient.pii?.historiaClinica || ""}
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium placeholder-zinc-400"
                                             />
                                         </div>
@@ -161,7 +207,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Sexo</label>
                                             <select
                                                 name="sexo"
-                                                defaultValue={patient.sexo || ""}
+                                                defaultValue={currentPatient.sexo || ""}
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium"
                                             >
                                                 <option value="">-- Seleccionar --</option>
@@ -174,7 +220,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
                                             <input
                                                 type="date"
                                                 name="fechaNacimiento"
-                                                defaultValue={patient.fechaNacimiento ? format(new Date(patient.fechaNacimiento), 'yyyy-MM-dd') : ""}
+                                                defaultValue={currentPatient.fechaNacimiento ? format(new Date(currentPatient.fechaNacimiento), 'yyyy-MM-dd') : ""}
                                                 className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-[var(--color-hospital-light)] outline-none transition-all font-medium [color-scheme:light] dark:[color-scheme:dark]"
                                             />
                                         </div>
@@ -182,7 +228,7 @@ export function EditPatientButton({ patient }: { patient: any }) {
 
                                     <div className="space-y-1.5">
                                         <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Ubigeo (INEI)</label>
-                                        <UbigeoSelector name="ubigeo" defaultValue={patient.ubigeo || ""} />
+                                        <UbigeoSelector name="ubigeo" defaultValue={currentPatient.ubigeo || ""} />
                                     </div>
                                 </div>
 
