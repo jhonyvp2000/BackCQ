@@ -11,6 +11,14 @@ const parseLocalDate = (dateStr: string | null) => {
     return new Date(`${baseDateStr}T12:00:00`);
 };
 
+const sanitizeHc = (hcRaw: string | null | undefined): string | null => {
+    if (!hcRaw) return null;
+    const trimmed = hcRaw.trim();
+    if (!trimmed) return null;
+    const firstToken = trimmed.split(/\s+/)[0];
+    return firstToken.substring(0, 50);
+};
+
 export async function GET(request: Request) {
     try {
         console.log("[CRON] Iniciando tarea de sincronización de pacientes 'NO IDENTIFICADO'...");
@@ -82,7 +90,7 @@ export async function GET(request: Request) {
                         const fechaNac = externalPatientData.fechaNacimiento ? parseLocalDate(externalPatientData.fechaNacimiento) : null;
                         const ubi = externalPatientData.codigoInei ? externalPatientData.codigoInei.toString().trim() : null;
                         const pDireccion = externalPatientData.direccion ? (externalPatientData.direccion || "").trim() : null;
-                        const pHistoriaClinica = externalPatientData.observacion ? (externalPatientData.observacion || "").trim() : dni;
+                        const pHistoriaClinica = externalPatientData.observacion ? (sanitizeHc(externalPatientData.observacion) || dni) : dni;
 
                         // Ejecutar actualización
                         await db.transaction(async (tx) => {

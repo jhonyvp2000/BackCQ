@@ -13,6 +13,16 @@ const parseLocalDate = (dateStr: string | null) => {
     return new Date(`${baseDateStr}T12:00:00`);
 };
 
+// Helper to clean and sanitize Medical History (HC) removing long Nethos notes and capping to 50 chars
+const sanitizeHc = (hcRaw: string | null | undefined): string | null => {
+    if (!hcRaw) return null;
+    const trimmed = hcRaw.trim();
+    if (!trimmed) return null;
+    // Si viene con notas de Nethos (ej. "0000122571 MOD HC..."), tomamos solo el primer código
+    const firstToken = trimmed.split(/\s+/)[0];
+    return firstToken.substring(0, 50);
+};
+
 export async function lookupPatientByDni(rawId: string) {
     if (!rawId) return null;
     const dni = rawId.trim();
@@ -110,7 +120,7 @@ export async function lookupPatientByDni(rawId: string) {
 
             // Evaluamos observacion (Historia Clínica en NetHos)
             if (externalPatientData.observacion) {
-                pHistoriaClinica = (externalPatientData.observacion || "").trim();
+                pHistoriaClinica = sanitizeHc(externalPatientData.observacion) || dni;
             }
 
             // Evaluamos ubigeo
@@ -492,7 +502,7 @@ export async function createPaciente(formData: FormData) {
                 dni: dni || null,
                 carnetExtranjeria: carnetExtranjeria || null,
                 pasaporte: pasaporte || null,
-                historiaClinica: historiaClinica || null
+                historiaClinica: sanitizeHc(historiaClinica)
             });
         });
 
@@ -538,7 +548,7 @@ export async function updatePaciente(id: string, formData: FormData) {
                 dni: dni || null,
                 carnetExtranjeria: carnetExtranjeria || null,
                 pasaporte: pasaporte || null,
-                historiaClinica: historiaClinica || null
+                historiaClinica: sanitizeHc(historiaClinica)
             }).where(eq(cqPatientPii.patientId, id));
         });
 
