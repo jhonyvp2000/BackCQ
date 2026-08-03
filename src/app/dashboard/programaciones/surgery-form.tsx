@@ -24,6 +24,7 @@ const ANESTHESIA_TYPES = [
     { id: 'AGB', name: 'Anestesia General Balanceada' },
     { id: 'AGE', name: 'Anestesia General Endovenosa' },
     { id: 'AGI', name: 'Anestesia General Inhalatoria' },
+    { id: 'TIVA', name: 'TIVA (Anestesia Total Intravenosa)' },
     { id: 'BLOQ', name: 'Bloqueo Regional' },
     { id: 'LOCL', name: 'Local' },
     { id: 'SEDA', name: 'Sedación' }
