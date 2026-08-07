@@ -6,19 +6,28 @@ import { IndicatorsReportTable } from "./indicators-report-table";
 import { InterventionIndicatorsReportTable } from "./intervention-indicators-report-table";
 import { InterventionsReportTable } from "./interventions-report-table";
 import { HospitalIndicatorsReportTable } from "./hospital-indicators-report-table";
-import { FileSpreadsheet, BarChart3, Activity, HeartPulse } from "lucide-react";
+import { KpiDashboard } from "./kpi-dashboard";
+import { FileSpreadsheet, BarChart3, Activity, HeartPulse, LayoutDashboard } from "lucide-react";
 
-type TabId = "detailed" | "indicators" | "intervention_indicators" | "interventions" | "hospital_indicators";
+type TabId = "kpi_dashboard" | "detailed" | "indicators" | "intervention_indicators" | "interventions" | "hospital_indicators";
 
 export function ReportTabsLayout() {
-    const [activeTab, setActiveTab] = useState<TabId>("detailed");
+    const [activeTab, setActiveTab] = useState<TabId>("kpi_dashboard");
 
     const tabs = [
+        {
+            id: "kpi_dashboard" as TabId,
+            label: "Tablero KPIs",
+            description: "Gráficos y semáforos",
+            number: "01",
+            icon: LayoutDashboard,
+            color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400",
+        },
         {
             id: "detailed" as TabId,
             label: "Grilla Detallada",
             description: "Programaciones detalladas",
-            number: "01",
+            number: "02",
             icon: FileSpreadsheet,
             color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400",
         },
@@ -26,7 +35,7 @@ export function ReportTabsLayout() {
             id: "indicators" as TabId,
             label: "Indicadores de Gestión",
             description: "Estadísticas y rendimiento",
-            number: "02",
+            number: "03",
             icon: BarChart3,
             color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400",
         },
@@ -34,7 +43,7 @@ export function ReportTabsLayout() {
             id: "intervention_indicators" as TabId,
             label: "Indicadores por Intervención",
             description: "Estadísticas por tipo de cirugía",
-            number: "03",
+            number: "04",
             icon: BarChart3,
             color: "text-purple-600 bg-purple-50 dark:bg-purple-900/20 dark:text-purple-400",
         },
@@ -42,7 +51,7 @@ export function ReportTabsLayout() {
             id: "interventions" as TabId,
             label: "Cuadro de Intervenciones",
             description: "Cirugías por especialidad",
-            number: "04",
+            number: "05",
             icon: Activity,
             color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:text-indigo-400",
         },
@@ -50,7 +59,7 @@ export function ReportTabsLayout() {
             id: "hospital_indicators" as TabId,
             label: "Indicadores Hospitalarios",
             description: "Calidad y rendimiento clínico",
-            number: "05",
+            number: "06",
             icon: HeartPulse,
             color: "text-rose-600 bg-rose-50 dark:bg-rose-900/20 dark:text-rose-400",
         }
@@ -59,7 +68,7 @@ export function ReportTabsLayout() {
     return (
         <div className="w-full space-y-8">
             {/* Tabs Selector */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 bg-zinc-100/70 dark:bg-zinc-800/40 p-2.5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/80">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 bg-zinc-100/70 dark:bg-zinc-800/40 p-2.5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/80">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
@@ -102,6 +111,11 @@ export function ReportTabsLayout() {
 
             {/* Tab Content Display with subtle transitions */}
             <div className="transition-all duration-300 ease-in-out">
+                {activeTab === "kpi_dashboard" && (
+                    <div className="animate-in fade-in duration-300 slide-in-from-bottom-2">
+                        <KpiDashboard />
+                    </div>
+                )}
                 {activeTab === "detailed" && (
                     <div className="animate-in fade-in duration-300 slide-in-from-bottom-2">
                         <ReportClientTable />
