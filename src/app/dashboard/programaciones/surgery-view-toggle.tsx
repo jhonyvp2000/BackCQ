@@ -25,6 +25,8 @@ import {
   Minimize2,
   Download,
   ShieldCheck,
+  Printer,
+  FileSpreadsheet,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -34,6 +36,8 @@ import { DeleteSurgeryButton } from "./delete-button";
 import { updateSurgeryStatus } from "@/app/actions/cirugias";
 import { SurgeryTimeline } from "@/components/ui/surgery-timeline";
 import { SurgeryAuditModal } from "./audit-modal";
+import { PrintDailyAgendaModal } from "./print-daily-agenda-modal";
+import { exportDailyAgendaToExcel } from "./excel-export-utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { EditSurgeryModal } from "./edit-surgery-modal";
 import { PhaseTransitionModal } from "./phase-transition-modal";
@@ -721,6 +725,8 @@ export function SurgeryViewToggle({
   const [editingSurgery, setEditingSurgery] = useState<any>(null);
   const [editingTimesSurgery, setEditingTimesSurgery] = useState<any>(null);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
   const [cancelConfirmText, setCancelConfirmText] = useState<string>("");
   const [errorModalMsg, setErrorModalMsg] = useState<string>("");
@@ -1218,7 +1224,35 @@ export function SurgeryViewToggle({
             className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-red-700 dark:text-red-300 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 border border-red-200/80 dark:border-red-800/50 shadow-sm transition-all"
           >
             <ShieldCheck size={16} className="text-red-600 dark:text-red-400 animate-pulse" />
-            <span className="hidden md:inline">Auditoría MINSA</span>
+            <span className="hidden lg:inline">Auditoría MINSA</span>
+          </button>
+
+          <button
+            onClick={() => setIsPrintModalOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 border border-blue-200/80 dark:border-blue-800/50 shadow-sm transition-all"
+            title="Imprimir Agenda en PDF"
+          >
+            <Printer size={15} className="text-blue-600 dark:text-blue-400" />
+            <span className="hidden md:inline">Imprimir PDF</span>
+          </button>
+
+          <button
+            onClick={async () => {
+              setIsExportingExcel(true);
+              try {
+                await exportDailyAgendaToExcel(baseFilteredSurgeries, filterDate);
+              } catch (e) {
+                console.error("Error exporting excel:", e);
+              } finally {
+                setIsExportingExcel(false);
+              }
+            }}
+            disabled={isExportingExcel}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 border border-emerald-200/80 dark:border-emerald-800/50 shadow-sm transition-all disabled:opacity-50"
+            title="Exportar a Excel"
+          >
+            <FileSpreadsheet size={15} className="text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden md:inline">{isExportingExcel ? "Exportando..." : "Exportar Excel"}</span>
           </button>
           {viewMode === "list" && (
             <button
@@ -3242,6 +3276,13 @@ export function SurgeryViewToggle({
             setEditingSurgery(target);
           }
         }}
+      />
+
+      <PrintDailyAgendaModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        surgeriesData={baseFilteredSurgeries}
+        displayDate={filterDate}
       />
     </div>
   );
