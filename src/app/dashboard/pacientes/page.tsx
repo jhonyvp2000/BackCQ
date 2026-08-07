@@ -2,6 +2,7 @@ import { getPacientes } from "@/app/actions/pacientes";
 import { PatientsTable } from "./patients-table";
 import { CreatePatientModal } from "./create-patient-modal";
 import { PatientImporterPanel } from "./patient-importer-panel";
+import { SyncNethosButton } from "./sync-nethos-button";
 
 import { checkSession } from "@/lib/auth-helpers";
 
@@ -9,12 +10,10 @@ export default async function PacientesPage() {
     await checkSession();
     const pacientes = await getPacientes();
 
-    const calculateAge = (dob: Date | null) => {
-        if (!dob) return "N/D";
-        const diff = Date.now() - new Date(dob).getTime();
-        const age = new Date(diff).getUTCFullYear() - 1970;
-        return age + " años";
-    };
+    const unidentifiedCount = pacientes.filter(p => 
+        p.pii?.nombres?.toUpperCase().includes("NO IDENTIFICADO") || 
+        p.pii?.apellidos?.toUpperCase().includes("NO IDENTIFICADO")
+    ).length;
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -27,7 +26,8 @@ export default async function PacientesPage() {
                         Base de datos maestra de pacientes quirúrgicos y empadronamiento
                     </p>
                 </div>
-                <div>
+                <div className="flex items-center gap-3">
+                    <SyncNethosButton unidentifiedCount={unidentifiedCount} />
                     <CreatePatientModal />
                 </div>
             </div>

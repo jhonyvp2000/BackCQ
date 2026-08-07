@@ -744,3 +744,143 @@ export async function mergeOrphan(orphanPatientId: string, realDniToMergeWith: s
         return { success: false, message: "Error crítico interno durante la fusión." };
     }
 }
+
+export async function syncUnidentifiedPatientsAction(limit: number = 50) {
+    try {
+        const patients = await db
+            .select({
+                id: cqPatients.id,
+                nombres: cqPatientPii.nombres,
+                apellidos: cqPatientPii.apellidos,
+                dni: cqPatientPii.dni,
+            })
+            .from(cqPatients)
+            .innerJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+            .where(
+                or(
+                    ilike(cqPatientPii.nombres, "%NO IDENTIFICADO%"),
+                    ilike(cqPatientPii.apellidos, "%NO IDENTIFICADO%")
+                )
+            )
+            .limit(limit);
+
+        if (!patients || patients.length === 0) {
+            return {
+                success: true,
+                message: "No se encontraron pacientes con anomalías 'NO IDENTIFICADO' pendientes por sincronizar.",
+                processedCount: 0,
+                updatedCount: 0,
+                failedCount: 0,
+                updatedPatients: [],
+            };
+        }
+
+        const apiUrl = process.env.API_NETHOS_URL || "http://192.168.41.25:3010";
+        const updatedPatients: Array<{ dni: string; oldName: string; newName: string; hc: string }> = [];
+        let failedCount = 0;
+
+        for (const patient of patients) {
+            const dni = patient.dni;
+            if (!dni || dni.length < 8) continue;
+
+            try {
+                const response = await fetch(`${apiUrl}/api/pacientes/search?documento=${dni}`, {
+                    cache: "no-store",
+                });
+
+                if (!response.ok) {
+                    failedCount++;
+                    continue;
+                }
+
+                const data = await response.json();
+                let externalPatientData: any = null;
+
+                if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                    externalPatientData = data.data[0];
+                } else if (data.data && !Array.isArray(data.data) && data.data.nombres) {
+                    externalPatientData = data.data;
+                }
+
+                if (
+                    externalPatientData &&
+                    externalPatientData.nombres &&
+                    externalPatientData.nombres.toUpperCase() !== "NO IDENTIFICADO"
+                ) {
+                    const pName = (externalPatientData.nombres || "").trim();
+                    const pLastName = [
+                        (externalPatientData.apellidoPaterno || "").trim(),
+                        (externalPatientData.apellidoMaterno || "").trim(),
+                    ]
+                        .filter(Boolean)
+                        .join(" ");
+
+                    let sexo: string | null = null;
+                    if (externalPatientData.sexo === "M" || externalPatientData.sexo === "Masculino") sexo = "Masculino";
+                    else if (externalPatientData.sexo === "F" || externalPatientData.sexo === "Femenino") sexo = "Femenino";
+
+                    const fechaNac = externalPatientData.fechaNacimiento
+                        ? parseLocalDate(externalPatientData.fechaNacimiento)
+                        : null;
+                    const ubi = externalPatientData.codigoInei ? externalPatientData.codigoInei.toString().trim() : null;
+                    const pDireccion = externalPatientData.direccion ? (externalPatientData.direccion || "").trim() : null;
+                    const pHistoriaClinica = externalPatientData.observacion ? (sanitizeHc(externalPatientData.observacion) || dni) : dni;
+
+                    await db.transaction(async (tx) => {
+                        await tx
+                            .update(cqPatients)
+                            .set({
+                                fechaNacimiento: fechaNac,
+                                sexo: sexo,
+                                ubigeo: ubi,
+                                updatedAt: new Date(),
+                            })
+                            .where(eq(cqPatients.id, patient.id));
+
+                        await tx
+                            .update(cqPatientPii)
+                            .set({
+                                nombres: pName,
+                                apellidos: pLastName,
+                                direccion: pDireccion,
+                                historiaClinica: pHistoriaClinica,
+                            })
+                            .where(eq(cqPatientPii.patientId, patient.id));
+                    });
+
+                    updatedPatients.push({
+                        dni,
+                        oldName: `${patient.nombres} ${patient.apellidos}`,
+                        newName: `${pName} ${pLastName}`,
+                        hc: pHistoriaClinica,
+                    });
+                }
+            } catch (err) {
+                console.error(`[SYNC-MANUAL] Error procesando paciente DNI ${dni}:`, err);
+                failedCount++;
+            }
+        }
+
+        revalidatePath("/dashboard/pacientes");
+        revalidatePath("/dashboard/programaciones");
+
+        return {
+            success: true,
+            message: `Sincronización completada. Se actualizaron ${updatedPatients.length} de ${patients.length} pacientes procesados.`,
+            processedCount: patients.length,
+            updatedCount: updatedPatients.length,
+            failedCount,
+            updatedPatients,
+        };
+    } catch (error: any) {
+        console.error("Error in syncUnidentifiedPatientsAction:", error);
+        return {
+            success: false,
+            message: "Error interno al ejecutar la sincronización masiva.",
+            processedCount: 0,
+            updatedCount: 0,
+            failedCount: 0,
+            updatedPatients: [],
+        };
+    }
+}
