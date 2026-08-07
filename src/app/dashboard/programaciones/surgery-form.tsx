@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Plus, User, AlertCircle, CheckCircle, Search, Loader2, AlertTriangle, X, Shield, Users, CalendarDays, ChevronDown, ListX, Verified } from "lucide-react";
-import { createSurgery, editSurgery, createCustomDiagnosis, createCustomProcedure, lookupProcedureInApi, lookupDiagnosisInApi, createCustomIntervention } from "@/app/actions/cirugias";
+import { createSurgery, editSurgery, createCustomDiagnosis, createCustomProcedure, lookupProcedureInApi, lookupDiagnosisInApi, createCustomIntervention, checkSurgeryConflictsAction } from "@/app/actions/cirugias";
 import { useRouter } from "next/navigation";
 import { lookupPatientByDni, createTemporaryPatient, lookupPatientsInApi } from "@/app/actions/pacientes";
 import { motion, AnimatePresence } from "framer-motion";
@@ -96,6 +96,47 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [clonedData, setClonedData] = useState<any>(null);
     const [formKey, setFormKey] = useState(0);
     const [isDev, setIsDev] = useState(false);
+
+    // Realtime Conflict Detection State
+    const [selectedRoomId, setSelectedRoomId] = useState<string>("");
+    const [selectedDate, setSelectedDate] = useState<string>("");
+    const [selectedTime, setSelectedTime] = useState<string>("");
+    const [selectedDuration, setSelectedDuration] = useState<string>("1 hora");
+    const [conflictData, setConflictData] = useState<{
+        hasConflict: boolean;
+        roomConflict?: { surgeryTitle: string; patientName: string; timeRange: string; roomName: string } | null;
+        staffConflicts?: Array<{ staffName: string; role: string; surgeryTitle: string; timeRange: string; roomName: string }>;
+    } | null>(null);
+    const [isCheckingConflict, setIsCheckingConflict] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen || !selectedDate || !selectedTime) {
+            setConflictData(null);
+            return;
+        }
+
+        setIsCheckingConflict(true);
+        const timer = setTimeout(async () => {
+            try {
+                const res = await checkSurgeryConflictsAction({
+                    operatingRoomId: selectedRoomId || null,
+                    scheduledDateStr: selectedDate,
+                    scheduledTimeStr: selectedTime,
+                    estimatedDuration: selectedDuration,
+                    surgeonIds: Array.from(selectedSurgIds),
+                    anesthesiologistIds: Array.from(selectedAnesIds),
+                    excludeSurgeryId: editMode && editData?.surgery?.id ? editData.surgery.id : null,
+                });
+                setConflictData(res);
+            } catch (e) {
+                console.error("Error checking conflict:", e);
+            } finally {
+                setIsCheckingConflict(false);
+            }
+        }, 400);
+
+        return () => clearTimeout(timer);
+    }, [selectedRoomId, selectedDate, selectedTime, selectedDuration, selectedSurgIds, selectedAnesIds, isOpen]);
 
     useEffect(() => {
         setIsDev(
@@ -1718,17 +1759,39 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Fecha Programación</label>
-                                    <input type="date" name="scheduled_date" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'yyyy-MM-dd') : ""} className={getInputCls("scheduled_date")} />
+                                    <input 
+                                        type="date" 
+                                        name="scheduled_date" 
+                                        required 
+                                        disabled={!canSchedule} 
+                                        defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'yyyy-MM-dd') : ""} 
+                                        onChange={(e) => setSelectedDate(e.target.value)}
+                                        className={getInputCls("scheduled_date")} 
+                                    />
                                     <FieldError msg={errors.scheduled_date} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Hora</label>
-                                    <input type="time" name="scheduled_time" required={!!editMode} disabled={!canSchedule} defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} className={getInputCls("scheduled_time")} />
+                                    <input 
+                                        type="time" 
+                                        name="scheduled_time" 
+                                        required={!!editMode} 
+                                        disabled={!canSchedule} 
+                                        defaultValue={clonedData?.surgery?.scheduledDate ? format(new Date(clonedData.surgery.scheduledDate), 'HH:mm') : ""} 
+                                        onChange={(e) => setSelectedTime(e.target.value)}
+                                        className={getInputCls("scheduled_time")} 
+                                    />
                                     <FieldError msg={errors.scheduled_time} />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Sala Quirúrgica</label>
-                                    <select name="operating_room_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.operatingRoomId || ""} className={getSelectCls("operating_room_id")}>
+                                    <select 
+                                        name="operating_room_id" 
+                                        disabled={!canSchedule} 
+                                        defaultValue={clonedData?.surgery?.operatingRoomId || ""} 
+                                        onChange={(e) => setSelectedRoomId(e.target.value)}
+                                        className={getSelectCls("operating_room_id")}
+                                    >
                                         <option value="">- Seleccionar -</option>
                                         {salas.filter(s => s.status === 'available' || (editMode && clonedData?.surgery?.operatingRoomId === s.id)).map(sala => (
                                             <option key={sala.id} value={sala.id}>{sala.name}</option>
@@ -1738,7 +1801,14 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Duración Estimada</label>
-                                    <select name="estimated_duration" required disabled={!canSchedule} defaultValue={clonedData?.surgery?.estimatedDuration || "1 hora"} className={getSelectCls("estimated_duration", "px-2")}>
+                                    <select 
+                                        name="estimated_duration" 
+                                        required 
+                                        disabled={!canSchedule} 
+                                        defaultValue={clonedData?.surgery?.estimatedDuration || "1 hora"} 
+                                        onChange={(e) => setSelectedDuration(e.target.value)}
+                                        className={getSelectCls("estimated_duration", "px-2")}
+                                    >
                                         <option value="">- Seleccionar -</option>
                                         <option value="30 minutos">30 min (Exp.)</option>
                                         <option value="1 hora">1 hora o menos</option>
@@ -1749,6 +1819,42 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                     <FieldError msg={errors.estimated_duration} />
                                 </div>
                             </div>
+
+                            {/* Banner de Alerta de Traslape de Horarios / Conflicto Assistencial */}
+                            {isCheckingConflict ? (
+                                <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 flex items-center gap-2 text-xs font-semibold text-blue-700 dark:text-blue-300">
+                                    <Loader2 size={15} className="animate-spin text-blue-600" />
+                                    <span>Verificando disponibilidad de sala y equipo médico en tiempo real...</span>
+                                </div>
+                            ) : conflictData && conflictData.hasConflict ? (
+                                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/70 text-xs space-y-2.5 shadow-sm animate-in fade-in duration-200">
+                                    <div className="flex items-center gap-2 text-red-700 dark:text-red-300 font-bold">
+                                        <AlertTriangle size={16} className="text-red-600 flex-shrink-0 animate-bounce" />
+                                        <span className="uppercase tracking-wider">¡Alerta Preventiva de Traslape de Horario!</span>
+                                    </div>
+
+                                    {conflictData.roomConflict && (
+                                        <div className="pl-6 text-zinc-700 dark:text-zinc-300 text-[11px] leading-relaxed">
+                                            <span className="font-bold text-red-700 dark:text-red-400">Conflicto de Quirófano ({conflictData.roomConflict.roomName}):</span> La sala ya tiene una cirugía en ese horario (<strong>{conflictData.roomConflict.timeRange}</strong>) para el paciente <strong>{conflictData.roomConflict.patientName}</strong> (<em>"{conflictData.roomConflict.surgeryTitle}"</em>).
+                                        </div>
+                                    )}
+
+                                    {conflictData.staffConflicts && conflictData.staffConflicts.length > 0 && (
+                                        <div className="pl-6 text-zinc-700 dark:text-zinc-300 text-[11px] space-y-1 leading-relaxed">
+                                            {conflictData.staffConflicts.map((sc, idx) => (
+                                                <div key={idx}>
+                                                    <span className="font-bold text-amber-700 dark:text-amber-400">Conflicto de Personal Asistencial ({sc.role}):</span> <strong>{sc.staffName}</strong> ya tiene asignada otra cirugía en <strong>{sc.roomName}</strong> de <strong>{sc.timeRange}</strong> (<em>"{sc.surgeryTitle}"</em>).
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : selectedDate && selectedTime && selectedRoomId ? (
+                                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                                    <CheckCircle size={15} className="text-emerald-600" />
+                                    <span>Quirófano y equipo asistencial disponibles en el rango de tiempo seleccionado.</span>
+                                </div>
+                            ) : null}
 
 
 

@@ -1294,3 +1294,150 @@ export async function updateSurgeryPhaseTimes(data: {
         return { error: "Ocurrió un error al actualizar los tiempos." };
     }
 }
+
+export async function checkSurgeryConflictsAction(params: {
+    operatingRoomId?: string | null;
+    scheduledDateStr: string;
+    scheduledTimeStr?: string | null;
+    estimatedDuration?: string | null;
+    surgeonIds?: string[];
+    anesthesiologistIds?: string[];
+    excludeSurgeryId?: string | null;
+}) {
+    const {
+        operatingRoomId,
+        scheduledDateStr,
+        scheduledTimeStr,
+        estimatedDuration = "1 hora",
+        surgeonIds = [],
+        anesthesiologistIds = [],
+        excludeSurgeryId = null,
+    } = params;
+
+    if (!scheduledDateStr || !scheduledTimeStr) {
+        return { hasConflict: false, roomConflict: null, staffConflicts: [] };
+    }
+
+    try {
+        const scheduledDate = new Date(`${scheduledDateStr}T${scheduledTimeStr}:00`);
+        const newStartMs = scheduledDate.getTime();
+        const newEndMs = newStartMs + getDurationMs(estimatedDuration || "1 hora");
+
+        let roomConflict: { surgeryTitle: string; patientName: string; timeRange: string; roomName: string } | null = null;
+        const staffConflicts: Array<{ staffName: string; role: string; surgeryTitle: string; timeRange: string; roomName: string }> = [];
+
+        // 1. Detección de Conflicto de Sala
+        if (operatingRoomId) {
+            const queryConditions = [
+                eq(cqSurgeries.operatingRoomId, operatingRoomId),
+                ne(cqSurgeries.status, "cancelled"),
+                eq(cqSurgeries.isTimeDefined, true),
+            ];
+
+            if (excludeSurgeryId) {
+                queryConditions.push(ne(cqSurgeries.id, excludeSurgeryId));
+            }
+
+            const existingSurgeries = await db
+                .select({
+                    id: cqSurgeries.id,
+                    scheduledDate: cqSurgeries.scheduledDate,
+                    estimatedDuration: cqSurgeries.estimatedDuration,
+                    diagnosis: cqSurgeries.diagnosis,
+                    roomName: cqOperatingRooms.name,
+                    patientName: cqPatientPii.nombres,
+                    patientLastName: cqPatientPii.apellidos,
+                })
+                .from(cqSurgeries)
+                .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
+                .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
+                .leftJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+                .where(and(...queryConditions));
+
+            for (const s of existingSurgeries) {
+                const existingStartMs = s.scheduledDate.getTime();
+                const existingEndMs = existingStartMs + getDurationMs(s.estimatedDuration || "1 hora");
+
+                if (newStartMs < existingEndMs && newEndMs > existingStartMs) {
+                    const startTimeStr = s.scheduledDate.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+                    const endObj = new Date(existingEndMs);
+                    const endTimeStr = endObj.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+
+                    const patientFullName = s.patientName ? `${s.patientName} ${s.patientLastName}` : "Paciente en Quirófano";
+
+                    roomConflict = {
+                        surgeryTitle: s.diagnosis || "Cirugía Programada",
+                        patientName: patientFullName,
+                        timeRange: `${startTimeStr} - ${endTimeStr}`,
+                        roomName: s.roomName || "Quirófano",
+                    };
+                    break;
+                }
+            }
+        }
+
+        // 2. Detección de Conflicto de Médicos (Cirujanos y Anestesiólogos)
+        const targetStaffIds = [...surgeonIds, ...anesthesiologistIds].filter(Boolean);
+        if (targetStaffIds.length > 0) {
+            const staffQueryConditions = [
+                inArray(cqSurgeryTeam.staffUserId, targetStaffIds),
+                ne(cqSurgeries.status, "cancelled"),
+                eq(cqSurgeries.isTimeDefined, true),
+            ];
+
+            if (excludeSurgeryId) {
+                staffQueryConditions.push(ne(cqSurgeries.id, excludeSurgeryId));
+            }
+
+            const teamSurgeries = await db
+                .select({
+                    surgeryId: cqSurgeries.id,
+                    staffUserId: cqSurgeryTeam.staffUserId,
+                    roleInSurgery: cqSurgeryTeam.roleInSurgery,
+                    userName: usersTable.name,
+                    userLastName: usersTable.lastname,
+                    scheduledDate: cqSurgeries.scheduledDate,
+                    estimatedDuration: cqSurgeries.estimatedDuration,
+                    diagnosis: cqSurgeries.diagnosis,
+                    roomName: cqOperatingRooms.name,
+                })
+                .from(cqSurgeryTeam)
+                .innerJoin(cqSurgeries, eq(cqSurgeryTeam.surgeryId, cqSurgeries.id))
+                .innerJoin(usersTable, eq(cqSurgeryTeam.staffUserId, usersTable.id))
+                .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
+                .where(and(...staffQueryConditions));
+
+            for (const item of teamSurgeries) {
+                const existingStartMs = item.scheduledDate.getTime();
+                const existingEndMs = existingStartMs + getDurationMs(item.estimatedDuration || "1 hora");
+
+                if (newStartMs < existingEndMs && newEndMs > existingStartMs) {
+                    const startTimeStr = item.scheduledDate.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+                    const endObj = new Date(existingEndMs);
+                    const endTimeStr = endObj.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+
+                    const roleLabel = item.roleInSurgery === "CIRUJANO_PRINCIPAL" ? "Cirujano Principal" : item.roleInSurgery === "ANESTESIOLOGO" ? "Anestesiólogo" : "Equipo Médico";
+
+                    if (!staffConflicts.some(sc => sc.staffName.includes(item.userLastName) && sc.timeRange === `${startTimeStr} - ${endTimeStr}`)) {
+                        staffConflicts.push({
+                            staffName: `Dr(a). ${item.userName} ${item.userLastName}`,
+                            role: roleLabel,
+                            surgeryTitle: item.diagnosis || "Cirugía Programada",
+                            timeRange: `${startTimeStr} - ${endTimeStr}`,
+                            roomName: item.roomName || "Quirófano Sin Asignar",
+                        });
+                    }
+                }
+            }
+        }
+
+        return {
+            hasConflict: Boolean(roomConflict) || staffConflicts.length > 0,
+            roomConflict,
+            staffConflicts,
+        };
+    } catch (error) {
+        console.error("Error in checkSurgeryConflictsAction:", error);
+        return { hasConflict: false, roomConflict: null, staffConflicts: [] };
+    }
+}
