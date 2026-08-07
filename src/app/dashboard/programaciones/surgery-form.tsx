@@ -1735,6 +1735,11 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <CalendarDays size={18} />
                             </div>
                             <span className="text-sm">3. Sala y Horarios</span>
+                            {conflictData?.hasConflict && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 animate-pulse border border-red-300 dark:border-red-800">
+                                    <AlertTriangle size={12} /> Alerta de Traslape
+                                </span>
+                            )}
                         </div>
                         <div className="flex items-center gap-2">
                             <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'schedule' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
@@ -1878,6 +1883,11 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <Users size={18} />
                             </div>
                             <span className="text-sm">4. Equipo Asistencial</span>
+                            {conflictData?.hasConflict && conflictData.staffConflicts && conflictData.staffConflicts.length > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 animate-pulse border border-amber-300 dark:border-amber-800">
+                                    <AlertTriangle size={12} /> Conflicto Asistencial
+                                </span>
+                            )}
                         </div>
                         <div className="flex items-center gap-2">
                             <ChevronDown size={18} className={`transition-transform duration-300 ${openSection === 'team' ? 'rotate-180 text-[var(--color-hospital-blue)]' : ''}`} />
@@ -2156,9 +2166,54 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                 <FieldError msg={errors.anesthesia_type} />
                             </div>
 
+                            {/* Alerta de Traslape para la Ficha 4 */}
+                            {conflictData && conflictData.hasConflict && (
+                                <div className="space-y-2 pt-2 md:col-span-2 lg:col-span-4">
+                                    <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/70 text-xs space-y-2.5 shadow-sm animate-in fade-in duration-200">
+                                        <div className="flex items-center gap-2 text-red-700 dark:text-red-300 font-bold">
+                                            <AlertTriangle size={16} className="text-red-600 flex-shrink-0 animate-bounce" />
+                                            <span className="uppercase tracking-wider">¡Alerta Preventiva de Traslape de Horario!</span>
+                                        </div>
+                                        {conflictData.roomConflict && (
+                                            <div className="pl-6 text-zinc-700 dark:text-zinc-300 text-[11px] leading-relaxed">
+                                                <span className="font-bold text-red-700 dark:text-red-400">Conflicto de Quirófano ({conflictData.roomConflict.roomName}):</span> La sala está ocupada de <strong>{conflictData.roomConflict.timeRange}</strong> por la cirugía de <strong>{conflictData.roomConflict.patientName}</strong> (<em>"{conflictData.roomConflict.surgeryTitle}"</em>).
+                                            </div>
+                                        )}
+                                        {conflictData.staffConflicts && conflictData.staffConflicts.length > 0 && (
+                                            <div className="pl-6 text-zinc-700 dark:text-zinc-300 text-[11px] space-y-1 leading-relaxed">
+                                                {conflictData.staffConflicts.map((sc, idx) => (
+                                                    <div key={idx}>
+                                                        <span className="font-bold text-amber-700 dark:text-amber-400">Conflicto de Personal Asistencial ({sc.role}):</span> <strong>{sc.staffName}</strong> ya tiene asignada otra cirugía en <strong>{sc.roomName}</strong> de <strong>{sc.timeRange}</strong> (<em>"{sc.surgeryTitle}"</em>).
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                         </div>
                     </motion.div>
                 </div>
+
+                {/* Banner Global Flotante Persistente en el Footer antes del Botón de Guardado */}
+                {conflictData && conflictData.hasConflict && (
+                    <div className="mt-4 p-3.5 rounded-xl bg-red-600 text-white dark:bg-red-900/90 shadow-md flex items-center justify-between gap-3 animate-in slide-in-from-bottom-2 duration-300">
+                        <div className="flex items-center gap-2.5 text-xs font-semibold">
+                            <AlertTriangle size={18} className="shrink-0 animate-bounce text-amber-300" />
+                            <span>
+                                <strong>¡Atención! Existe un conflicto de horarios detectado.</strong> Revisa las pestañas <em>3. Sala y Horarios</em> o <em>4. Equipo Asistencial</em> antes de confirmar.
+                            </span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => toggleSection(conflictData.roomConflict ? 'schedule' : 'team')}
+                            className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-bold transition-colors whitespace-nowrap shrink-0"
+                        >
+                            Ver Conflicto &rarr;
+                        </button>
+                    </div>
+                )}
 
                 {/* Footer Actions */}
                 <div className={`pt-6 mt-6 border-t border-zinc-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center gap-4 ${editMode ? 'justify-end' : 'justify-between'}`}>
