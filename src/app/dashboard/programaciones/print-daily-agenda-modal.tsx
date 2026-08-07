@@ -91,8 +91,8 @@ export function PrintDailyAgendaModal({ isOpen, onClose, surgeriesData, displayD
                     {/* Encabezado Hospitalario Oficial */}
                     <div className="border-b-2 border-zinc-900 pb-4 mb-6 flex justify-between items-start">
                         <div>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block">MINISTERIO DE SALUD — OGESS ALTO MAYO / SAN MARTÍN</span>
-                            <h1 className="text-lg font-black text-zinc-900 tracking-tight uppercase">HOSPITAL III BANDA DE SHILCAYO</h1>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 block">MINISTERIO DE SALUD — OGESS ESPECIALIZADA / SAN MARTÍN</span>
+                            <h1 className="text-lg font-black text-zinc-900 tracking-tight uppercase">HOSPITAL II-2 TARAPOTO</h1>
                             <h2 className="text-sm font-extrabold text-blue-800 uppercase tracking-wider mt-0.5">CENTRO QUIRÚRGICO — PROGRAMACIÓN DIARIA DE CIRUGÍAS</h2>
                         </div>
                         <div className="text-right">

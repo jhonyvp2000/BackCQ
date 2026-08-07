@@ -37,7 +37,7 @@ export async function exportDailyAgendaToExcel(surgeriesData: any[], displayDate
     // Fila 1: Título Institucional
     worksheet.mergeCells("A1:N1");
     const titleCell = worksheet.getCell("A1");
-    titleCell.value = "HOSPITAL III BANDA DE SHILCAYO — PROGRAMACIÓN DIARIA DE CIRUGÍAS";
+    titleCell.value = "HOSPITAL II-2 TARAPOTO — PROGRAMACIÓN DIARIA DE CIRUGÍAS";
     titleCell.font = { name: "Arial", size: 14, bold: true, color: { argb: "FFFFFFFF" } };
     titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E3A8A font" } };
     titleCell.alignment = { horizontal: "center", vertical: "middle" };
