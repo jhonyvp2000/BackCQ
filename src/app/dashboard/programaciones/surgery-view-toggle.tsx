@@ -28,6 +28,7 @@ import {
   Printer,
   FileSpreadsheet,
   Mail,
+  MailCheck,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -729,6 +730,12 @@ export function SurgeryViewToggle({
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
+  const [emailFeedbackModal, setEmailFeedbackModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+  }>({ isOpen: false, type: 'success', title: '', message: '' });
   const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
   const [cancelConfirmText, setCancelConfirmText] = useState<string>("");
   const [errorModalMsg, setErrorModalMsg] = useState<string>("");
@@ -2988,23 +2995,33 @@ export function SurgeryViewToggle({
                                       {canEdit && (
                                          <>
                                            <button
-                                             type="button"
-                                             disabled={sendingEmailId === row.surgery.id}
-                                             onClick={async () => {
-                                               setSendingEmailId(row.surgery.id);
-                                               try {
-                                                 const res = await sendSurgeryNotificationEmailAction(row.surgery.id);
-                                                 if (res.success) {
-                                                   alert(`✅ ${res.message}`);
-                                                 } else {
-                                                   alert(`⚠️ ${res.error}`);
-                                                 }
-                                               } catch (e) {
-                                                 console.error("Error sending email:", e);
-                                               } finally {
-                                                 setSendingEmailId(null);
-                                               }
-                                             }}
+                                              type="button"
+                                              disabled={sendingEmailId === row.surgery.id}
+                                              onClick={async () => {
+                                                setSendingEmailId(row.surgery.id);
+                                                try {
+                                                  const res = await sendSurgeryNotificationEmailAction(row.surgery.id);
+                                                  if (res.success) {
+                                                    setEmailFeedbackModal({
+                                                      isOpen: true,
+                                                      type: 'success',
+                                                      title: '¡Notificación Enviada con Éxito!',
+                                                      message: res.message || 'Se han enviado los correos electrónicos al equipo médico.',
+                                                    });
+                                                  } else {
+                                                    setEmailFeedbackModal({
+                                                      isOpen: true,
+                                                      type: 'error',
+                                                      title: 'Atención con la Notificación',
+                                                      message: res.error || 'No se pudo completar el envío de correos.',
+                                                    });
+                                                  }
+                                                } catch (e) {
+                                                  console.error("Error sending email:", e);
+                                                } finally {
+                                                  setSendingEmailId(null);
+                                                }
+                                              }}
                                              className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-2.5 rounded-xl transition-all disabled:opacity-40"
                                              title="Notificar por Email al Equipo Médico"
                                            >
@@ -3312,6 +3329,39 @@ export function SurgeryViewToggle({
         surgeriesData={baseFilteredSurgeries}
         displayDate={filterDate}
       />
+
+      {emailFeedbackModal.isOpen &&
+        mounted &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center flex flex-col items-center"
+            >
+              <div className={`w-14 h-14 rounded-2xl ${emailFeedbackModal.type === 'success' ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50' : 'bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400 border border-red-200 dark:border-red-800/50'} flex items-center justify-center mb-4 shadow-sm`}>
+                {emailFeedbackModal.type === 'success' ? <MailCheck size={28} /> : <AlertTriangle size={28} />}
+              </div>
+
+              <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-1">
+                {emailFeedbackModal.title}
+              </h3>
+              
+              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">
+                {emailFeedbackModal.message}
+              </p>
+
+              <button
+                onClick={() => setEmailFeedbackModal(prev => ({ ...prev, isOpen: false }))}
+                className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all cursor-pointer"
+              >
+                Entendido
+              </button>
+            </motion.div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
