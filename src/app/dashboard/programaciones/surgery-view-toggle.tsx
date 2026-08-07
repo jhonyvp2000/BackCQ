@@ -24,6 +24,7 @@ import {
   Maximize2,
   Minimize2,
   Download,
+  ShieldCheck,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -32,6 +33,7 @@ import { StartSurgeryButton } from "./start-surgery-button";
 import { DeleteSurgeryButton } from "./delete-button";
 import { updateSurgeryStatus } from "@/app/actions/cirugias";
 import { SurgeryTimeline } from "@/components/ui/surgery-timeline";
+import { SurgeryAuditModal } from "./audit-modal";
 import { AnimatePresence, motion } from "framer-motion";
 import { EditSurgeryModal } from "./edit-surgery-modal";
 import { PhaseTransitionModal } from "./phase-transition-modal";
@@ -718,6 +720,7 @@ export function SurgeryViewToggle({
   }, []);
   const [editingSurgery, setEditingSurgery] = useState<any>(null);
   const [editingTimesSurgery, setEditingTimesSurgery] = useState<any>(null);
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
   const [cancelConfirmText, setCancelConfirmText] = useState<string>("");
   const [errorModalMsg, setErrorModalMsg] = useState<string>("");
@@ -1210,6 +1213,13 @@ export function SurgeryViewToggle({
             }{" "}
             Activas
           </span>
+          <button
+            onClick={() => setIsAuditModalOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-red-700 dark:text-red-300 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 border border-red-200/80 dark:border-red-800/50 shadow-sm transition-all"
+          >
+            <ShieldCheck size={16} className="text-red-600 dark:text-red-400 animate-pulse" />
+            <span className="hidden md:inline">Auditoría MINSA</span>
+          </button>
           {viewMode === "list" && (
             <button
               onClick={() => setIsListFullscreen(!isListFullscreen)}
@@ -3222,6 +3232,17 @@ export function SurgeryViewToggle({
           </AnimatePresence>,
           document.body,
         )}
+
+      <SurgeryAuditModal
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        onEditSurgery={(id) => {
+          const target = baseFilteredSurgeries.find((s: any) => s.surgery?.id === id);
+          if (target) {
+            setEditingSurgery(target);
+          }
+        }}
+      />
     </div>
   );
 }

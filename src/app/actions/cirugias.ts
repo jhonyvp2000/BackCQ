@@ -1441,3 +1441,150 @@ export async function checkSurgeryConflictsAction(params: {
         return { hasConflict: false, roomConflict: null, staffConflicts: [] };
     }
 }
+
+export async function getSurgeryAuditReportAction(month?: number, year?: number) {
+    try {
+        const targetYear = year || new Date().getFullYear();
+        const targetMonth = month !== undefined ? month : new Date().getMonth() + 1;
+
+        const startDate = new Date(targetYear, targetMonth - 1, 1, 0, 0, 0);
+        const endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
+
+        const surgeries = await db
+            .select({
+                id: cqSurgeries.id,
+                scheduledDate: cqSurgeries.scheduledDate,
+                status: cqSurgeries.status,
+                diagnosis: cqSurgeries.diagnosis,
+                estimatedDuration: cqSurgeries.estimatedDuration,
+                actualStartTime: cqSurgeries.actualStartTime,
+                anesthesiaStartTime: cqSurgeries.anesthesiaStartTime,
+                preIncisionTime: cqSurgeries.preIncisionTime,
+                surgeryEndTime: cqSurgeries.surgeryEndTime,
+                patientExitTime: cqSurgeries.patientExitTime,
+                urpaExitTime: cqSurgeries.urpaExitTime,
+                cancellationReason: cqSurgeries.cancellationReason,
+                operatingRoomId: cqSurgeries.operatingRoomId,
+                roomName: cqOperatingRooms.name,
+                patientDni: cqPatientPii.dni,
+                patientName: cqPatientPii.nombres,
+                patientLastName: cqPatientPii.apellidos,
+                patientHc: cqPatientPii.historiaClinica,
+            })
+            .from(cqSurgeries)
+            .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
+            .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
+            .leftJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+            .where(
+                and(
+                    gte(cqSurgeries.scheduledDate, startDate),
+                    lte(cqSurgeries.scheduledDate, endDate),
+                    ne(cqSurgeries.status, 'cancelled')
+                )
+            )
+            .orderBy(desc(cqSurgeries.scheduledDate));
+
+        const surgeryIds = surgeries.map(s => s.id);
+        
+        let teamRecords: any[] = [];
+        let postDxRecords: any[] = [];
+
+        if (surgeryIds.length > 0) {
+            teamRecords = await db
+                .select({
+                    surgeryId: cqSurgeryTeam.surgeryId,
+                    roleInSurgery: cqSurgeryTeam.roleInSurgery,
+                    userName: usersTable.name,
+                    userLastName: usersTable.lastname,
+                })
+                .from(cqSurgeryTeam)
+                .innerJoin(usersTable, eq(cqSurgeryTeam.staffUserId, usersTable.id))
+                .where(inArray(cqSurgeryTeam.surgeryId, surgeryIds));
+
+            postDxRecords = await db
+                .select({
+                    surgeryId: cqSurgeryPostDiagnoses.surgeryId,
+                })
+                .from(cqSurgeryPostDiagnoses)
+                .where(inArray(cqSurgeryPostDiagnoses.surgeryId, surgeryIds));
+        }
+
+        let totalAudited = surgeries.length;
+        let completeCount = 0;
+        let missingTimesCount = 0;
+        let missingTeamCount = 0;
+        let missingDxCount = 0;
+
+        const auditedSurgeries = surgeries.map(s => {
+            const team = teamRecords.filter(t => t.surgeryId === s.id);
+            const hasSurgeon = team.some(t => t.roleInSurgery === 'CIRUJANO_PRINCIPAL' || t.roleInSurgery === 'CIRUJANO');
+            const hasAnesthesiologist = team.some(t => t.roleInSurgery === 'ANESTESIOLOGO');
+
+            const hasPostDx = postDxRecords.some(p => p.surgeryId === s.id);
+
+            const missingFields: string[] = [];
+
+            if (!s.diagnosis || s.diagnosis.includes("NO IDENTIFICADO")) {
+                missingFields.push("Dx Preoperatorio pendiente");
+            }
+
+            if (!hasSurgeon) {
+                missingFields.push("Sin Cirujano Principal");
+            }
+            if (!hasAnesthesiologist) {
+                missingFields.push("Sin Anestesiólogo");
+            }
+
+            if (s.status === 'in_progress' || s.status === 'completed') {
+                if (!s.anesthesiaStartTime) missingFields.push("Sin hora inicio anestesia");
+                if (!s.preIncisionTime) missingFields.push("Sin hora de incisión");
+                if (!s.surgeryEndTime && !s.patientExitTime) missingFields.push("Sin hora fin de cirugía");
+            }
+
+            if (s.status === 'completed') {
+                if (!s.urpaExitTime) missingFields.push("Sin hora salida de URPA");
+                if (!hasPostDx) missingFields.push("Sin Dx Postoperatorio");
+            }
+
+            const isComplete = missingFields.length === 0;
+
+            if (isComplete) completeCount++;
+            if (missingFields.some(m => m.includes("hora"))) missingTimesCount++;
+            if (missingFields.some(m => m.includes("Cirujano") || m.includes("Anestesiólogo"))) missingTeamCount++;
+            if (missingFields.some(m => m.includes("Dx"))) missingDxCount++;
+
+            return {
+                ...s,
+                patientFullName: s.patientName ? `${s.patientName} ${s.patientLastName}` : 'PACIENTE NO IDENTIFICADO',
+                team,
+                missingFields,
+                isComplete,
+            };
+        });
+
+        const integrityPercentage = totalAudited > 0 ? Math.round((completeCount / totalAudited) * 100) : 100;
+
+        return {
+            totalAudited,
+            completeCount,
+            incompleteCount: totalAudited - completeCount,
+            missingTimesCount,
+            missingTeamCount,
+            missingDxCount,
+            integrityPercentage,
+            surgeries: auditedSurgeries,
+        };
+    } catch (error) {
+        console.error("Error in getSurgeryAuditReportAction:", error);
+        return {
+            totalAudited: 0,
+            completeCount: 0,
+            incompleteCount: 0,
+            missingTimesCount: 0,
+            missingTeamCount: 0,
+            missingDxCount: 0,
+            integrityPercentage: 0,
+            surgeries: [],
+        };
+    }
+}
