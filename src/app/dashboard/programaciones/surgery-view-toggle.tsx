@@ -27,13 +27,14 @@ import {
   ShieldCheck,
   Printer,
   FileSpreadsheet,
+  Mail,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { StartSurgeryButton } from "./start-surgery-button";
 import { DeleteSurgeryButton } from "./delete-button";
-import { updateSurgeryStatus } from "@/app/actions/cirugias";
+import { updateSurgeryStatus, sendSurgeryNotificationEmailAction } from "@/app/actions/cirugias";
 import { SurgeryTimeline } from "@/components/ui/surgery-timeline";
 import { SurgeryAuditModal } from "./audit-modal";
 import { PrintDailyAgendaModal } from "./print-daily-agenda-modal";
@@ -727,6 +728,7 @@ export function SurgeryViewToggle({
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
   const [cancellingSurgery, setCancellingSurgery] = useState<any>(null);
   const [cancelConfirmText, setCancelConfirmText] = useState<string>("");
   const [errorModalMsg, setErrorModalMsg] = useState<string>("");
@@ -2984,14 +2986,40 @@ export function SurgeryViewToggle({
                                         </button>
                                       )}
                                       {canEdit && (
-                                        <button
-                                          onClick={() => setEditingSurgery(row)}
-                                          className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"
-                                          title="Editar Programación"
-                                        >
-                                          <Pencil size={18} />
-                                        </button>
-                                      )}
+                                         <>
+                                           <button
+                                             type="button"
+                                             disabled={sendingEmailId === row.surgery.id}
+                                             onClick={async () => {
+                                               setSendingEmailId(row.surgery.id);
+                                               try {
+                                                 const res = await sendSurgeryNotificationEmailAction(row.surgery.id);
+                                                 if (res.success) {
+                                                   alert(`✅ ${res.message}`);
+                                                 } else {
+                                                   alert(`⚠️ ${res.error}`);
+                                                 }
+                                               } catch (e) {
+                                                 console.error("Error sending email:", e);
+                                               } finally {
+                                                 setSendingEmailId(null);
+                                               }
+                                             }}
+                                             className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 p-2.5 rounded-xl transition-all disabled:opacity-40"
+                                             title="Notificar por Email al Equipo Médico"
+                                           >
+                                             <Mail size={18} className={sendingEmailId === row.surgery.id ? "animate-spin text-blue-600" : ""} />
+                                           </button>
+
+                                           <button
+                                             onClick={() => setEditingSurgery(row)}
+                                             className="text-zinc-400 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-xl transition-all"
+                                             title="Editar Programación"
+                                           >
+                                             <Pencil size={18} />
+                                           </button>
+                                         </>
+                                       )}
                                     </>
                                   )}
 

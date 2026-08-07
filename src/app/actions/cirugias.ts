@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqSurgeryPostDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions, cqUbigeo } from "@/db/schema";
 import { eq, desc, asc, and, gte, lte, ne, inArray, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { sendSurgeryEmailNotification } from "@/lib/email-service";
 
 export async function getActiveDiagnoses() {
     return await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.isActive, true)).orderBy(asc(cqDiagnoses.name)).limit(50);
@@ -727,6 +728,9 @@ export async function createSurgery(formData: FormData) {
     revalidatePath("/dashboard/pacientes");
     revalidatePath("/dashboard", "layout");
 
+    // Disparar notificaciones por correo electrónico al equipo asistencial asignado
+    sendSurgeryNotificationEmailAction(surgeryRecordId, false).catch(err => console.error("Error dispatching email on surgery create:", err));
+
     return { success: true, surgeryId: surgeryRecordId };
 }
 
@@ -1235,6 +1239,9 @@ export async function editSurgery(formData: FormData) {
 
     revalidatePath("/dashboard/programaciones");
     revalidatePath("/dashboard/pacientes");
+
+    // Disparar notificaciones por correo electrónico de actualización al equipo asistencial
+    sendSurgeryNotificationEmailAction(id, true).catch(err => console.error("Error dispatching email on surgery update:", err));
 }
 
 export async function updateSurgeryPhaseTimes(data: {
@@ -1586,5 +1593,92 @@ export async function getSurgeryAuditReportAction(month?: number, year?: number)
             integrityPercentage: 0,
             surgeries: [],
         };
+    }
+}
+
+export async function sendSurgeryNotificationEmailAction(surgeryId: string, isUpdate?: boolean) {
+    try {
+        if (!surgeryId) return { success: false, error: "ID de cirugía no especificado" };
+
+        const [surgeryData] = await db
+            .select({
+                id: cqSurgeries.id,
+                scheduledDate: cqSurgeries.scheduledDate,
+                diagnosis: cqSurgeries.diagnosis,
+                roomName: cqOperatingRooms.name,
+                patientName: cqPatientPii.nombres,
+                patientLastName: cqPatientPii.apellidos,
+                patientDni: cqPatientPii.dni,
+            })
+            .from(cqSurgeries)
+            .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
+            .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
+            .leftJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+            .where(eq(cqSurgeries.id, surgeryId));
+
+        if (!surgeryData) {
+            return { success: false, error: "Cirugía no encontrada" };
+        }
+
+        const team = await db
+            .select({
+                roleInSurgery: cqSurgeryTeam.roleInSurgery,
+                userName: usersTable.name,
+                userLastName: usersTable.lastname,
+                userEmail: usersTable.email,
+            })
+            .from(cqSurgeryTeam)
+            .innerJoin(usersTable, eq(cqSurgeryTeam.staffUserId, usersTable.id))
+            .where(eq(cqSurgeryTeam.surgeryId, surgeryId));
+
+        if (team.length === 0) {
+            return { success: false, error: "La cirugía no tiene personal asignado aún" };
+        }
+
+        const dateStr = surgeryData.scheduledDate 
+            ? surgeryData.scheduledDate.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })
+            : "Por determinar";
+
+        const patientFullName = surgeryData.patientName 
+            ? `${surgeryData.patientName} ${surgeryData.patientLastName}`
+            : "PACIENTE NO IDENTIFICADO";
+
+        let sentCount = 0;
+        const roleLabels: Record<string, string> = {
+            CIRUJANO_PRINCIPAL: "Cirujano Principal",
+            CIRUJANO: "Cirujano Asistente",
+            ANESTESIOLOGO: "Anestesiólogo",
+            ENFERMERO: "Enfermero(a) de Quirófano",
+            INSTRUMENTISTA: "Enfermero(a) Instrumentista",
+            CIRCULANTE: "Enfermero(a) Circulante",
+        };
+
+        for (const member of team) {
+            if (member.userEmail) {
+                const res = await sendSurgeryEmailNotification({
+                    recipientEmail: member.userEmail,
+                    recipientName: `${member.userName || ''} ${member.userLastName || ''}`.trim(),
+                    roleInSurgery: roleLabels[member.roleInSurgery] || member.roleInSurgery,
+                    patientFullName,
+                    patientDni: surgeryData.patientDni || "S/DNI",
+                    scheduledDateStr: dateStr,
+                    roomName: surgeryData.roomName || "Quirófano Sin Asignar",
+                    diagnosis: surgeryData.diagnosis || "Sin registro",
+                    interventionName: "Intervención Quirúrgica Programada",
+                    isUpdate: Boolean(isUpdate),
+                });
+                if (res.success) sentCount++;
+            }
+        }
+
+        return {
+            success: true,
+            sentCount,
+            totalTeam: team.length,
+            message: `Notificación enviada con éxito a ${sentCount} miembro(s) del equipo asistencial.`,
+        };
+    } catch (error: any) {
+        console.error("Error in sendSurgeryNotificationEmailAction:", error);
+        return { success: false, error: error.message || "Error al procesar notificaciones por correo" };
     }
 }
