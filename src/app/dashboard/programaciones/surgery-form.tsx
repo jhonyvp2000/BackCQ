@@ -138,6 +138,87 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
         return () => clearTimeout(timer);
     }, [selectedRoomId, selectedDate, selectedTime, selectedDuration, selectedSurgIds, selectedAnesIds, isOpen]);
 
+    // Auto-sync Patient with NETHOS State
+    const [isSearchingNethosModal, setIsSearchingNethosModal] = useState(false);
+    const [nethosSyncedMsg, setNethosSyncedMsg] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!isOpen) {
+            setNethosSyncedMsg(null);
+            return;
+        }
+
+        const term = patSearchTerm.trim();
+        if (term.length !== 8 || !/^\d{8}$/.test(term)) {
+            setNethosSyncedMsg(null);
+            return;
+        }
+
+        const existing = localPatients.find(p => 
+            p.pii?.dni === term && 
+            p.pii?.nombres && 
+            p.pii.nombres.toUpperCase() !== 'NO IDENTIFICADO'
+        );
+        if (existing) {
+            if (selectedPatId !== existing.id) {
+                setSelectedPatId(existing.id);
+            }
+            return;
+        }
+
+        setIsSearchingNethosModal(true);
+        setNethosSyncedMsg(null);
+
+        const timer = setTimeout(async () => {
+            try {
+                const result = await lookupPatientByDni(term);
+                if (result && result.found && result.fullName && !result.fullName.includes("NO IDENTIFICADO")) {
+                    const newPatId = `__api_pat__${term}`;
+                    const nameParts = result.fullName.split(" ");
+                    const pNombres = nameParts[0] || "PACIENTE";
+                    const pApellidos = nameParts.slice(1).join(" ") || "NETHOS";
+
+                    const newPatObj = {
+                        id: newPatId,
+                        pii: {
+                            patientId: newPatId,
+                            dni: term,
+                            nombres: pNombres,
+                            apellidos: pApellidos,
+                            direccion: result.direccion || "",
+                            historiaClinica: term,
+                        },
+                        ubigeoData: {
+                            distrito: result.distrito || "",
+                            provincia: result.provincia || "",
+                            departamento: result.departamento || "",
+                        },
+                        apiData: result.apiData || JSON.stringify({
+                            direccion: result.direccion || "",
+                            distrito: result.distrito || "",
+                            provincia: result.provincia || "",
+                            departamento: result.departamento || ""
+                        })
+                    };
+
+                    setLocalPatients(prev => {
+                        const filtered = prev.filter(p => p.pii?.dni !== term);
+                        return [newPatObj, ...filtered];
+                    });
+
+                    setSelectedPatId(newPatId);
+                    setNethosSyncedMsg(`✨ ${result.fullName} encontrado en NETHOS y auto-sincronizado.`);
+                }
+            } catch (e) {
+                console.error("Error fetching patient from Nethos in modal:", e);
+            } finally {
+                setIsSearchingNethosModal(false);
+            }
+        }, 450);
+
+        return () => clearTimeout(timer);
+    }, [patSearchTerm, isOpen]);
+
     useEffect(() => {
         setIsDev(
             process.env.NODE_ENV === 'development' || 
@@ -1019,9 +1100,23 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                         {editMode && <input type="hidden" name="id" value={editData?.surgery?.id || ""} />}
                                         
                                         <div className="absolute right-3 top-2.5 flex items-center">
-                                            {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-[var(--color-hospital-blue)]" /> : <Search className="h-4 w-4 text-zinc-400" />}
+                                            {(isSearching || isSearchingNethosModal) ? <Loader2 className="h-4 w-4 animate-spin text-[var(--color-hospital-blue)]" /> : <Search className="h-4 w-4 text-zinc-400" />}
                                         </div>
                                     </div>
+
+                                     {isSearchingNethosModal && (
+                                         <div className="mt-1.5 px-3 py-1.5 bg-blue-50/70 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-semibold flex items-center gap-2 animate-pulse border border-blue-200 dark:border-blue-800/50">
+                                             <Loader2 size={13} className="animate-spin text-blue-600" />
+                                             <span>Consultando NETHOS / MINSA PIDE en tiempo real...</span>
+                                         </div>
+                                     )}
+
+                                     {nethosSyncedMsg && (
+                                         <div className="mt-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-bold flex items-center gap-2 border border-emerald-200 dark:border-emerald-800/50 shadow-sm animate-in fade-in duration-200">
+                                             <CheckCircle size={14} className="text-emerald-600 flex-shrink-0" />
+                                             <span>{nethosSyncedMsg}</span>
+                                         </div>
+                                     )}
 
                                     <div className={`mt-2 border rounded-xl overflow-hidden bg-white dark:bg-zinc-900 shadow-sm transition-all ${
                                         selectedPatId ? "border-[var(--color-hospital-blue)] ring-2 ring-blue-500/20" : "border-zinc-200 dark:border-zinc-800"
