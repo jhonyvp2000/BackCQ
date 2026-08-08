@@ -1480,8 +1480,7 @@ export async function getSurgeryAuditReportAction(month?: number, year?: number)
             })
             .from(cqSurgeries)
             .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
-            .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
-            .leftJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+            .leftJoin(cqPatientPii, eq(cqSurgeries.patientId, cqPatientPii.patientId))
             .where(
                 and(
                     gte(cqSurgeries.scheduledDate, startDate),
@@ -1612,8 +1611,7 @@ export async function sendSurgeryNotificationEmailAction(surgeryId: string, isUp
             })
             .from(cqSurgeries)
             .leftJoin(cqOperatingRooms, eq(cqSurgeries.operatingRoomId, cqOperatingRooms.id))
-            .leftJoin(cqPatients, eq(cqSurgeries.patientId, cqPatients.id))
-            .leftJoin(cqPatientPii, eq(cqPatients.id, cqPatientPii.patientId))
+            .leftJoin(cqPatientPii, eq(cqSurgeries.patientId, cqPatientPii.patientId))
             .where(eq(cqSurgeries.id, surgeryId));
 
         if (!surgeryData) {
