@@ -19,7 +19,9 @@ export async function sendSurgeryEmailNotification(payload: SurgeryEmailPayload)
         const smtpPort = Number(process.env.SMTP_PORT) || 587;
         const smtpUser = process.env.SMTP_USER || "";
         const smtpPass = process.env.SMTP_PASS || "";
-        const smtpFrom = process.env.SMTP_FROM || `"Centro Quirúrgico - Hospital II-2 Tarapoto" <notificaciones@hospitalii2tarapoto.gob.pe>`;
+        const rawFrom = process.env.SMTP_FROM || smtpUser || "notificaciones@hospitalii2tarapoto.gob.pe";
+        const cleanFrom = rawFrom.replace(/\\"/g, '"').replace(/\\/g, '');
+        const smtpFrom = cleanFrom.includes('<') ? cleanFrom : `"Centro Quirúrgico - Hospital II-2 Tarapoto" <${cleanFrom}>`;
 
         if (!payload.recipientEmail || !payload.recipientEmail.includes("@")) {
             console.log(`[EmailService] Omisió: Email no válido o ausente para ${payload.recipientName}`);
