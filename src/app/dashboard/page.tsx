@@ -574,9 +574,13 @@ export default async function DashboardPage() {
                                                     <Clock size={12} className="text-zinc-400" />
                                                     {format(new Date(s.scheduledDate), 'HH:mm')}
                                                 </div>
-                                                <div className={`text-[9px] font-black uppercase mt-1 ${s.urgencyType === 'EMERGENCIA' ? 'text-red-500' : 'text-zinc-400'}`}>
-                                                    {s.urgencyType}
-                                                </div>
+                                                 {s.urgencyType && (
+                                                     <div className="mt-1 block">
+                                                         <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${s.urgencyType === 'EMERGENCIA' ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50'}`}>
+                                                             {s.urgencyType}
+                                                         </span>
+                                                     </div>
+                                                 )}
                                             </td>
                                             <td className="px-5 py-3.5 whitespace-nowrap">
                                                 <div className="font-extrabold text-zinc-800 dark:text-white">

@@ -2418,6 +2418,15 @@ export function SurgeryViewToggle({
                                     </span>
                                   </div>
                                 )}
+                                {row.surgery.urgencyType && (
+                                  <div className="mt-1 block">
+                                    <span
+                                      className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.urgencyType === 'EMERGENCIA' ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50'}`}
+                                    >
+                                      {row.surgery.urgencyType}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </td>
                             <td className="hidden px-3 py-1.5 whitespace-nowrap align-middle">
@@ -2429,12 +2438,13 @@ export function SurgeryViewToggle({
                                     {row.surgery.surgeryType}
                                   </div>
                                 )}
-                                {/* row.surgery.urgencyType oculta a petición del usuario
-                                                            {row.surgery.urgencyType && (
-                                                                <div className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.urgencyType === 'EMERGENCIA' ? 'bg-rose-50 text-rose-600 border-rose-200 animate-pulse' : 'bg-blue-50 text-blue-600 border-blue-200'}`}>
-                                                                    {row.surgery.urgencyType}
-                                                                </div>
-                                                            )} */}
+                                {row.surgery.urgencyType && (
+                                  <div
+                                    className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.urgencyType === 'EMERGENCIA' ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50'}`}
+                                  >
+                                    {row.surgery.urgencyType}
+                                  </div>
+                                )}
                               </div>
                             </td>
                             <td className="px-3 py-1.5 align-middle min-w-[330px] max-w-[430px]">
