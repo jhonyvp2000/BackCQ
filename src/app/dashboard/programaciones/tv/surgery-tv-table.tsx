@@ -1368,7 +1368,7 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                             )}
                                                             {row.surgery.surgeryType && (
                                                                 <span className={`${forceTvMode ? 'ml-1' : 'mt-1.5 block'}`}>
-                                                                    <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                                                                    <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50'}`}>
                                                                         {row.surgery.surgeryType}
                                                                     </span>
                                                                 </span>
@@ -1378,7 +1378,7 @@ export function SurgeryTvTable({ surgeriesData, salas, sortParams, specialties, 
                                                     <td className="hidden px-3 py-3 whitespace-nowrap align-middle">
                                                         <div className="flex flex-col gap-1 items-start">
                                                             {row.surgery.surgeryType && (
-                                                                <div className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-emerald-50 text-emerald-600 border-emerald-200'}`}>
+                                                                <div className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${row.surgery.surgeryType === 'Cirugía Mayor' ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50'}`}>
                                                                     {row.surgery.surgeryType}
                                                                 </div>
                                                             )}
