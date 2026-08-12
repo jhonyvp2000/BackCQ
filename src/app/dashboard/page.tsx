@@ -574,11 +574,18 @@ export default async function DashboardPage() {
                                                     <Clock size={12} className="text-zinc-400" />
                                                     {format(new Date(s.scheduledDate), 'HH:mm')}
                                                 </div>
-                                                 {s.urgencyType && (
-                                                     <div className="mt-1 block">
-                                                         <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${s.urgencyType === 'EMERGENCIA' ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50'}`}>
-                                                             {s.urgencyType}
-                                                         </span>
+                                                 {(s.surgeryType || s.urgencyType) && (
+                                                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                                         {s.surgeryType && (
+                                                             <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${s.surgeryType === "Cirugía Mayor" ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/40 dark:text-blue-400 dark:border-blue-800/50" : "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50"}`}>
+                                                                 {s.surgeryType}
+                                                             </span>
+                                                         )}
+                                                         {s.urgencyType && (
+                                                             <span className={`text-[9px] inline-block px-1.5 py-0.5 rounded border font-bold uppercase text-center ${s.urgencyType === 'EMERGENCIA' ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-800/50' : 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50'}`}>
+                                                                 {s.urgencyType}
+                                                             </span>
+                                                         )}
                                                      </div>
                                                  )}
                                             </td>
