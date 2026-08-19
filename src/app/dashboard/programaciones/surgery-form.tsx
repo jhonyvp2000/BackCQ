@@ -247,18 +247,26 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [manualPatientName, setManualPatientName] = useState("");
     const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<string>(editData?.surgery?.specialtyId || "");
     const [showAllDiagnoses, setShowAllDiagnoses] = useState<boolean>(false);
+    const [allowedDxIdsSet, setAllowedDxIdsSet] = useState<Set<string> | null>(null);
 
     useEffect(() => {
         let active = true;
         const fetchDiagnosesBySpec = async () => {
             try {
                 const list = await getDiagnosesBySpecialtyAction(selectedSpecialtyId, dxSearchTerm, showAllDiagnoses);
-                if (active && Array.isArray(list) && list.length > 0) {
-                    setLocalDiagnoses(prev => {
-                        const existingMap = new Map(prev.map(item => [item.id, item]));
-                        list.forEach(item => existingMap.set(item.id, item));
-                        return Array.from(existingMap.values());
-                    });
+                if (active && Array.isArray(list)) {
+                    if (selectedSpecialtyId && !showAllDiagnoses) {
+                        setAllowedDxIdsSet(new Set(list.map(d => d.id)));
+                    } else {
+                        setAllowedDxIdsSet(null);
+                    }
+                    if (list.length > 0) {
+                        setLocalDiagnoses(prev => {
+                            const existingMap = new Map(prev.map(item => [item.id, item]));
+                            list.forEach(item => existingMap.set(item.id, item));
+                            return Array.from(existingMap.values());
+                        });
+                    }
                 }
             } catch (err) {
                 console.error("Error fetching diagnoses by specialty:", err);
@@ -267,7 +275,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
         fetchDiagnosesBySpec();
         return () => { active = false; };
-    }, [selectedSpecialtyId, showAllDiagnoses]);
+    }, [selectedSpecialtyId, showAllDiagnoses, dxSearchTerm]);
 
     useEffect(() => {
         setLocalPatients(prev => {
@@ -560,6 +568,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const filteredUnselectedDx = localDiagnoses
         .filter(dx => !selectedDxIds.has(dx.id))
         .filter(dx => {
+            if (allowedDxIdsSet && !allowedDxIdsSet.has(dx.id)) return false;
             if (searchTerms.length === 0) return true;
             const fullText = removeDiacritics(`${dx.code || ""} ${dx.name}`.toLowerCase());
             return searchTerms.every(term => fullText.includes(term));
@@ -582,6 +591,7 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const filteredUnselectedPostDx = localDiagnoses
         .filter(dx => !selectedPostDxIds.has(dx.id))
         .filter(dx => {
+            if (allowedDxIdsSet && !allowedDxIdsSet.has(dx.id)) return false;
             if (postDxSearchTerms.length === 0) return true;
             const fullText = removeDiacritics(`${dx.code || ""} ${dx.name}`.toLowerCase());
             return postDxSearchTerms.every(term => fullText.includes(term));
@@ -1585,7 +1595,25 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                             </div>
 
                             <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos Post (Dx)</label>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1">
+                                        <span>Diagnósticos Post (Dx)</span>
+                                        {selectedSpecialtyId && !showAllDiagnoses && (
+                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
+                                                Filtro Especialidad
+                                            </span>
+                                        )}
+                                    </label>
+                                    <label className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
+                                        <input
+                                            type="checkbox"
+                                            checked={showAllDiagnoses}
+                                            onChange={(e) => setShowAllDiagnoses(e.target.checked)}
+                                            className="w-3.5 h-3.5 text-blue-600 rounded border-zinc-300 dark:border-zinc-700 focus:ring-blue-500"
+                                        />
+                                        <span>Ver todos (CIE-10)</span>
+                                    </label>
+                                </div>
                                 <div className="relative mb-2">
                                     <input
                                         id="post_diagnoses"

@@ -23,7 +23,7 @@ export async function getDiagnosesBySpecialtyAction(specialtyId?: string, query?
     const qTrim = query ? query.trim() : '';
 
     if (!qTrim) {
-        const results = await db.select({
+        return await db.select({
             id: cqDiagnoses.id,
             code: cqDiagnoses.code,
             name: cqDiagnoses.name,
@@ -36,14 +36,9 @@ export async function getDiagnosesBySpecialtyAction(specialtyId?: string, query?
         .where(and(eq(cqSpecialtyDiagnoses.specialtyId, specialtyId), eq(cqDiagnoses.isActive, true)))
         .orderBy(asc(cqDiagnoses.name))
         .limit(50);
-
-        if (results.length > 0) return results;
-
-        // Fallback to active diagnoses if no specialty mapping exists yet
-        return await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.isActive, true)).orderBy(asc(cqDiagnoses.name)).limit(50);
     }
 
-    const results = await db.select({
+    return await db.select({
         id: cqDiagnoses.id,
         code: cqDiagnoses.code,
         name: cqDiagnoses.name,
@@ -62,13 +57,6 @@ export async function getDiagnosesBySpecialtyAction(specialtyId?: string, query?
     )
     .orderBy(asc(cqDiagnoses.name))
     .limit(50);
-
-    if (results.length > 0) return results;
-
-    // Fallback if query returns empty within specialty
-    return await db.select().from(cqDiagnoses)
-        .where(and(eq(cqDiagnoses.isActive, true), or(ilike(cqDiagnoses.code, `%${qTrim}%`), ilike(cqDiagnoses.name, `%${qTrim}%`))))
-        .orderBy(asc(cqDiagnoses.name)).limit(50);
 }
 
 export async function getActiveProcedures() {
