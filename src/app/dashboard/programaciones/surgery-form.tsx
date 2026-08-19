@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Plus, User, AlertCircle, CheckCircle, Search, Loader2, AlertTriangle, X, Shield, Users, CalendarDays, ChevronDown, ListX, Verified } from "lucide-react";
-import { createSurgery, editSurgery, createCustomDiagnosis, createCustomProcedure, lookupProcedureInApi, lookupDiagnosisInApi, createCustomIntervention, checkSurgeryConflictsAction } from "@/app/actions/cirugias";
+import { createSurgery, editSurgery, createCustomDiagnosis, createCustomProcedure, lookupProcedureInApi, lookupDiagnosisInApi, createCustomIntervention, checkSurgeryConflictsAction, getDiagnosesBySpecialtyAction } from "@/app/actions/cirugias";
 import { useRouter } from "next/navigation";
 import { lookupPatientByDni, createTemporaryPatient, lookupPatientsInApi } from "@/app/actions/pacientes";
 import { motion, AnimatePresence } from "framer-motion";
@@ -245,6 +245,29 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
     const [isCreatingInt, setIsCreatingInt] = useState(false);
     const [isCreatingPat, setIsCreatingPat] = useState(false);
     const [manualPatientName, setManualPatientName] = useState("");
+    const [selectedSpecialtyId, setSelectedSpecialtyId] = useState<string>(editData?.surgery?.specialtyId || "");
+    const [showAllDiagnoses, setShowAllDiagnoses] = useState<boolean>(false);
+
+    useEffect(() => {
+        let active = true;
+        const fetchDiagnosesBySpec = async () => {
+            try {
+                const list = await getDiagnosesBySpecialtyAction(selectedSpecialtyId, dxSearchTerm, showAllDiagnoses);
+                if (active && Array.isArray(list) && list.length > 0) {
+                    setLocalDiagnoses(prev => {
+                        const existingMap = new Map(prev.map(item => [item.id, item]));
+                        list.forEach(item => existingMap.set(item.id, item));
+                        return Array.from(existingMap.values());
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching diagnoses by specialty:", err);
+            }
+        };
+
+        fetchDiagnosesBySpec();
+        return () => { active = false; };
+    }, [selectedSpecialtyId, showAllDiagnoses]);
 
     useEffect(() => {
         setLocalPatients(prev => {
@@ -1391,58 +1414,82 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                     >
                         <div className="p-4 pt-4 grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4 border-t border-zinc-100 dark:border-zinc-800/60">
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Especialidad</label>
-                                    <select name="specialty_id" disabled={!canSchedule} defaultValue={clonedData?.surgery?.specialtyId || ""} className={getSelectCls("specialty_id")}>
-                                        <option value="">- Seleccionar -</option>
-                                        {specialties.map(spec => (
-                                            <option key={spec.id} value={spec.id}>{spec.name}</option>
-                                        ))}
-                                    </select>
-                                    <FieldError msg={errors.specialty_id} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
-                                    <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || "Cirugía Mayor"} className={getSelectCls("surgery_type")}>
-                                        <option value="">- Seleccionar -</option>
-                                        <option value="Cirugía Menor">Cirugía Menor</option>
-                                        <option value="Cirugía Mayor">Cirugía Mayor</option>
-                                    </select>
-                                    <FieldError msg={errors.surgery_type} />
-                                </div>
-                                <div className="space-y-2">
-                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Cirugía</label>
-                                     <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
-                                        <option value="">- Seleccionar -</option>
-                                        <option value="ELECTIVO">Electivo</option>
-                                        <option value="EMERGENCIA">Emergencia</option>
-                                    </select>
-                                    <FieldError msg={errors.urgency_type} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de seguro</label>
-                                    <select name="insurance_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.insuranceType || ""} className={getSelectCls("insurance_type")}>
-                                        <option value="">- Seleccionar -</option>
-                                        <option value="SIS">SIS</option>
-                                        <option value="SOAT">SOAT</option>
-                                        <option value="PARTICULAR">PARTICULAR</option>
-                                        <option value="SALUDPOL">SALUDPOL</option>
-                                    </select>
-                                    <FieldError msg={errors.insurance_type} />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Procedencia</label>
-                                    <select name="origin" disabled={!canSchedule} defaultValue={clonedData?.surgery?.origin || ""} className={getSelectCls("origin")}>
-                                        <option value="">- Seleccionar -</option>
-                                        <option value="Consultorio Externo">Consultorio Externo</option>
-                                        <option value="Hospitalización">Hospitalización</option>
-                                        <option value="Emergencia">Emergencia</option>
-                                        <option value="Urgencia">Urgencia</option>
-                                    </select>
-                                    <FieldError msg={errors.origin} />
-                                </div>
-                                <div className="col-span-full grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div className="space-y-2 pt-2">
-                                <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Diagnósticos Pre (Dx)</label>
+                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Especialidad</label>
+                                     <select
+                                         name="specialty_id"
+                                         disabled={!canSchedule}
+                                         value={selectedSpecialtyId}
+                                         onChange={(e) => setSelectedSpecialtyId(e.target.value)}
+                                         className={getSelectCls("specialty_id")}
+                                     >
+                                         <option value="">- Seleccionar -</option>
+                                         {specialties.map(spec => (
+                                             <option key={spec.id} value={spec.id}>{spec.name}</option>
+                                         ))}
+                                     </select>
+                                     <FieldError msg={errors.specialty_id} />
+                                 </div>
+                                 <div className="space-y-2">
+                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Operación</label>
+                                     <select name="surgery_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.surgeryType || "Cirugía Mayor"} className={getSelectCls("surgery_type")}>
+                                         <option value="">- Seleccionar -</option>
+                                         <option value="Cirugía Menor">Cirugía Menor</option>
+                                         <option value="Cirugía Mayor">Cirugía Mayor</option>
+                                     </select>
+                                     <FieldError msg={errors.surgery_type} />
+                                 </div>
+                                 <div className="space-y-2">
+                                      <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo Cirugía</label>
+                                      <select name="urgency_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.urgencyType || "ELECTIVO"} className={getSelectCls("urgency_type")}>
+                                         <option value="">- Seleccionar -</option>
+                                         <option value="ELECTIVO">Electivo</option>
+                                         <option value="EMERGENCIA">Emergencia</option>
+                                     </select>
+                                     <FieldError msg={errors.urgency_type} />
+                                 </div>
+                                 <div className="space-y-2">
+                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Tipo de seguro</label>
+                                     <select name="insurance_type" disabled={!canSchedule} defaultValue={clonedData?.surgery?.insuranceType || ""} className={getSelectCls("insurance_type")}>
+                                         <option value="">- Seleccionar -</option>
+                                         <option value="SIS">SIS</option>
+                                         <option value="SOAT">SOAT</option>
+                                         <option value="PARTICULAR">PARTICULAR</option>
+                                         <option value="SALUDPOL">SALUDPOL</option>
+                                     </select>
+                                     <FieldError msg={errors.insurance_type} />
+                                 </div>
+                                 <div className="space-y-2">
+                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">Procedencia</label>
+                                     <select name="origin" disabled={!canSchedule} defaultValue={clonedData?.surgery?.origin || ""} className={getSelectCls("origin")}>
+                                         <option value="">- Seleccionar -</option>
+                                         <option value="Consultorio Externo">Consultorio Externo</option>
+                                         <option value="Hospitalización">Hospitalización</option>
+                                         <option value="Emergencia">Emergencia</option>
+                                         <option value="Urgencia">Urgencia</option>
+                                     </select>
+                                     <FieldError msg={errors.origin} />
+                                 </div>
+                                 <div className="col-span-full grid grid-cols-1 md:grid-cols-4 gap-6">
+                             <div className="space-y-2 pt-2">
+                                 <div className="flex items-center justify-between mb-1">
+                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1">
+                                         <span>Diagnósticos Pre (Dx)</span>
+                                         {selectedSpecialtyId && !showAllDiagnoses && (
+                                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
+                                                 Filtro Especialidad
+                                             </span>
+                                         )}
+                                     </label>
+                                     <label className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
+                                         <input
+                                             type="checkbox"
+                                             checked={showAllDiagnoses}
+                                             onChange={(e) => setShowAllDiagnoses(e.target.checked)}
+                                             className="w-3.5 h-3.5 text-blue-600 rounded border-zinc-300 dark:border-zinc-700 focus:ring-blue-500"
+                                         />
+                                         <span>Ver todos (CIE-10)</span>
+                                     </label>
+                                 </div>
                                 <div className="relative mb-2">
                                     <input
                                         id="diagnoses"
