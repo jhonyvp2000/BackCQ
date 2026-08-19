@@ -1,13 +1,74 @@
 "use server";
 
 import { db } from "@/db";
-import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSurgeryDiagnoses, cqSurgeryPostDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions, cqUbigeo } from "@/db/schema";
+import { cqSurgeries, cqOperatingRooms, cqPatients, cqPatientPii, cqSpecialties, cqSurgeryTeam, usersTable, cqDiagnoses, cqSpecialtyDiagnoses, cqSurgeryDiagnoses, cqSurgeryPostDiagnoses, cqProcedures, cqSurgeryProcedures, cqInterventionTypes, cqSurgeryInterventions, cqUbigeo } from "@/db/schema";
 import { eq, desc, asc, and, gte, lte, ne, inArray, or, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendSurgeryEmailNotification } from "@/lib/email-service";
 
 export async function getActiveDiagnoses() {
     return await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.isActive, true)).orderBy(asc(cqDiagnoses.name)).limit(50);
+}
+
+export async function getDiagnosesBySpecialtyAction(specialtyId?: string, query?: string, showAll?: boolean) {
+    if (!specialtyId || showAll) {
+        if (!query || query.trim() === '') {
+            return await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.isActive, true)).orderBy(asc(cqDiagnoses.name)).limit(50);
+        }
+        return await db.select().from(cqDiagnoses)
+            .where(and(eq(cqDiagnoses.isActive, true), or(ilike(cqDiagnoses.code, `%${query.trim()}%`), ilike(cqDiagnoses.name, `%${query.trim()}%`))))
+            .orderBy(asc(cqDiagnoses.name)).limit(50);
+    }
+
+    const qTrim = query ? query.trim() : '';
+
+    if (!qTrim) {
+        const results = await db.select({
+            id: cqDiagnoses.id,
+            code: cqDiagnoses.code,
+            name: cqDiagnoses.name,
+            isActive: cqDiagnoses.isActive,
+            isVerifiedMinsa: cqDiagnoses.isVerifiedMinsa,
+            createdAt: cqDiagnoses.createdAt,
+        })
+        .from(cqDiagnoses)
+        .innerJoin(cqSpecialtyDiagnoses, eq(cqDiagnoses.id, cqSpecialtyDiagnoses.diagnosisId))
+        .where(and(eq(cqSpecialtyDiagnoses.specialtyId, specialtyId), eq(cqDiagnoses.isActive, true)))
+        .orderBy(asc(cqDiagnoses.name))
+        .limit(50);
+
+        if (results.length > 0) return results;
+
+        // Fallback to active diagnoses if no specialty mapping exists yet
+        return await db.select().from(cqDiagnoses).where(eq(cqDiagnoses.isActive, true)).orderBy(asc(cqDiagnoses.name)).limit(50);
+    }
+
+    const results = await db.select({
+        id: cqDiagnoses.id,
+        code: cqDiagnoses.code,
+        name: cqDiagnoses.name,
+        isActive: cqDiagnoses.isActive,
+        isVerifiedMinsa: cqDiagnoses.isVerifiedMinsa,
+        createdAt: cqDiagnoses.createdAt,
+    })
+    .from(cqDiagnoses)
+    .innerJoin(cqSpecialtyDiagnoses, eq(cqDiagnoses.id, cqSpecialtyDiagnoses.diagnosisId))
+    .where(
+        and(
+            eq(cqSpecialtyDiagnoses.specialtyId, specialtyId),
+            eq(cqDiagnoses.isActive, true),
+            or(ilike(cqDiagnoses.code, `%${qTrim}%`), ilike(cqDiagnoses.name, `%${qTrim}%`))
+        )
+    )
+    .orderBy(asc(cqDiagnoses.name))
+    .limit(50);
+
+    if (results.length > 0) return results;
+
+    // Fallback if query returns empty within specialty
+    return await db.select().from(cqDiagnoses)
+        .where(and(eq(cqDiagnoses.isActive, true), or(ilike(cqDiagnoses.code, `%${qTrim}%`), ilike(cqDiagnoses.name, `%${qTrim}%`))))
+        .orderBy(asc(cqDiagnoses.name)).limit(50);
 }
 
 export async function getActiveProcedures() {

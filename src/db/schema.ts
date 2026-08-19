@@ -168,6 +168,14 @@ export const cqDiagnoses = pgTable("cq_diagnoses", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+// Junction table: Specialties to Diagnoses mapping (CIE-10 filter)
+export const cqSpecialtyDiagnoses = pgTable("cq_specialty_diagnoses", {
+  specialtyId: uuid("specialty_id").notNull().references(() => cqSpecialties.id, { onDelete: 'cascade' }),
+  diagnosisId: uuid("diagnosis_id").notNull().references(() => cqDiagnoses.id, { onDelete: 'cascade' }),
+}, (t) => [
+  primaryKey({ columns: [t.specialtyId, t.diagnosisId] })
+]);
+
 // Junction table: multiple diagnoses per surgery
 export const cqSurgeryDiagnoses = pgTable("cq_surgery_diagnoses", {
   surgeryId: uuid("surgery_id").notNull().references(() => cqSurgeries.id, { onDelete: 'cascade' }),
