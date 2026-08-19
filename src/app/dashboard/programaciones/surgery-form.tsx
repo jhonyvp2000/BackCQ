@@ -1482,13 +1482,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
                                  <div className="col-span-full grid grid-cols-1 md:grid-cols-4 gap-6">
                              <div className="space-y-2 pt-2">
                                  <div className="flex items-center justify-between mb-1">
-                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1">
-                                         <span>Diagnósticos Pre (Dx)</span>
-                                         {selectedSpecialtyId && !showAllDiagnoses && (
-                                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
-                                                 Filtro Especialidad
-                                             </span>
-                                         )}
+                                     <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                                         Diagnósticos Pre (Dx)
                                      </label>
                                      <label className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
                                          <input
@@ -1596,13 +1591,8 @@ export function SurgerySchedulerForm({ salas, specialties, staff, canSchedule, d
 
                             <div className="space-y-2 pt-2">
                                 <div className="flex items-center justify-between mb-1">
-                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1">
-                                        <span>Diagnósticos Post (Dx)</span>
-                                        {selectedSpecialtyId && !showAllDiagnoses && (
-                                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
-                                                Filtro Especialidad
-                                            </span>
-                                        )}
+                                    <label className="text-[11px] font-normal text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                                        Diagnósticos Post (Dx)
                                     </label>
                                     <label className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 cursor-pointer select-none">
                                         <input
